@@ -1,0 +1,1588 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Forja — PRD v2</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* ========== FORJA DESIGN TOKENS ========== */
+    :root {
+      --bg:         #080808;
+      --surface:    #111111;
+      --surface-2:  #1C1C1C;
+      --border:     #222222;
+      --border-med: #333333;
+      --accent:     #C2F000;
+      --accent-dim: rgba(194,240,0,0.10);
+      --accent-glow:rgba(194,240,0,0.25);
+      --text:       #FFFFFF;
+      --text-med:   #AAAAAA;
+      --muted:      #888888;
+      --dim:        #444444;
+      --danger:     #FF453A;
+      --warning:    #F59E0B;
+      --info:       #3B82F6;
+      --r-sm: 8px;
+      --r-md: 12px;
+      --r-lg: 16px;
+      --r-pill: 100px;
+      --shadow-sm: 0 2px 6px rgba(0,0,0,0.4);
+      --shadow-md: 0 6px 24px rgba(0,0,0,0.5);
+      --shadow-lg: 0 16px 48px rgba(0,0,0,0.6);
+      --font-display: 'Bebas Neue', sans-serif;
+      --font-ui:      'Syne', sans-serif;
+    }
+
+    /* ========== BASE ========== */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: var(--font-ui);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ========== LAYOUT ========== */
+    .container { max-width: 920px; margin: 0 auto; padding: 0 24px; }
+
+    /* ========== HERO ========== */
+    .hero {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 56px 0 44px;
+    }
+    .hero-eyebrow {
+      font-family: var(--font-ui); font-size: 10px; font-weight: 700;
+      letter-spacing: 3.5px; text-transform: uppercase;
+      color: var(--accent); margin-bottom: 12px;
+    }
+    .hero-title {
+      font-family: var(--font-display); font-size: 56px; line-height: 0.95;
+      letter-spacing: 1px; color: var(--text); margin-bottom: 12px;
+    }
+    .hero-subtitle {
+      font-size: 15px; color: var(--muted); font-weight: 400;
+      max-width: 600px; line-height: 1.7; margin-bottom: 28px;
+    }
+    .hero-meta { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 14px; border-radius: var(--r-pill);
+      font-size: 11px; font-weight: 600; letter-spacing: 0.5px;
+    }
+    .badge-status { background: rgba(194,240,0,0.12); color: var(--accent); }
+    .badge-version { background: var(--surface-2); color: var(--text-med); border: 1px solid var(--border); }
+    .badge-date { background: var(--surface-2); color: var(--muted); border: 1px solid var(--border); }
+
+    /* ========== TOC ========== */
+    .toc {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--r-lg); padding: 24px 28px; margin: 36px 0;
+    }
+    .toc h2 {
+      font-family: var(--font-ui); font-size: 10px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 3px; color: var(--dim); margin-bottom: 16px;
+    }
+    .toc-list { list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 6px 28px; }
+    .toc-list a {
+      color: var(--text-med); text-decoration: none; font-size: 13px;
+      font-weight: 500; padding: 5px 0; display: flex; align-items: center; gap: 10px;
+      transition: color 0.15s;
+    }
+    .toc-list a:hover { color: var(--accent); }
+    .toc-num {
+      font-family: var(--font-display); color: var(--accent);
+      font-size: 16px; min-width: 24px; letter-spacing: 0.5px;
+    }
+
+    /* ========== SECTIONS ========== */
+    .section { margin: 48px 0; }
+    .section-label {
+      font-family: var(--font-ui); font-size: 10px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 3px; color: var(--accent); margin-bottom: 8px;
+    }
+    .section-title {
+      font-family: var(--font-display); font-size: 36px;
+      letter-spacing: 0.5px; color: var(--text);
+      margin-bottom: 16px; line-height: 1;
+    }
+    .section-body { font-size: 14px; color: var(--muted); line-height: 1.7; }
+    .section-body p + p { margin-top: 12px; }
+    .section-body strong { color: var(--text); }
+    .section-body em { color: var(--text-med); }
+
+    /* ========== CARDS ========== */
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--r-lg); padding: 24px; margin-bottom: 16px;
+    }
+    .card-accent { border-top: 3px solid var(--accent); }
+    .card-warning { border-top: 3px solid var(--warning); }
+    .card-danger { border-top: 3px solid var(--danger); }
+    .card-info { border-top: 3px solid var(--info); }
+    .card h3 { font-size: 15px; font-weight: 700; margin-bottom: 8px; color: var(--text); }
+    .card p { font-size: 13px; color: var(--muted); line-height: 1.6; }
+
+    /* ========== METRICS ========== */
+    .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin: 24px 0; }
+    .metric {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--r-md); padding: 20px; text-align: center;
+    }
+    .metric-value {
+      font-family: var(--font-display); font-size: 40px;
+      color: var(--accent); line-height: 1; letter-spacing: 1px;
+    }
+    .metric-label {
+      font-size: 10px; color: var(--muted); font-weight: 700; margin-top: 6px;
+      text-transform: uppercase; letter-spacing: 2px;
+    }
+
+    /* ========== PRIORITY BADGES ========== */
+    .priority {
+      display: inline-flex; padding: 3px 10px; border-radius: var(--r-pill);
+      font-size: 10px; font-weight: 700; letter-spacing: 0.5px;
+    }
+    .p0 { background: rgba(255,69,58,0.15); color: #FF453A; }
+    .p1 { background: rgba(245,158,11,0.15); color: #F59E0B; }
+    .p2 { background: rgba(59,130,246,0.15); color: #3B82F6; }
+
+    /* ========== TABLES ========== */
+    .data-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 13px; }
+    .data-table th {
+      background: var(--surface-2); text-align: left; padding: 10px 14px;
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 1.5px; color: var(--dim); border-bottom: 1px solid var(--border-med);
+    }
+    .data-table td {
+      padding: 10px 14px; border-bottom: 1px solid var(--border);
+      color: var(--text-med); vertical-align: top;
+    }
+    .data-table tr:hover td { background: var(--accent-dim); }
+
+    /* ========== USER STORIES ========== */
+    .story {
+      background: var(--surface); border: 1px solid var(--border);
+      border-left: 3px solid var(--accent); border-radius: 0 var(--r-sm) var(--r-sm) 0;
+      padding: 16px 20px; margin: 12px 0; font-size: 13px;
+    }
+    .story-title { font-weight: 700; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; color: var(--text); }
+    .story .criteria { color: var(--muted); font-size: 12px; margin-top: 8px; line-height: 1.7; }
+    .story .criteria strong { color: var(--accent); }
+
+    /* ========== MOCKUP FRAMES ========== */
+    .mockup-frame {
+      background: var(--surface-2); border: 1px solid var(--border);
+      border-radius: var(--r-lg); padding: 12px; margin: 24px auto; max-width: 400px;
+      box-shadow: var(--shadow-lg);
+    }
+    .mockup-phone {
+      background: var(--bg); border-radius: 12px; overflow: hidden;
+      position: relative; min-height: 500px;
+      font-family: var(--font-ui);
+    }
+    .mockup-phone * { box-sizing: border-box; }
+    .mockup-notch {
+      width: 120px; height: 24px; background: #000; border-radius: 0 0 16px 16px;
+      margin: 0 auto; position: relative; z-index: 10;
+    }
+    .mp-pad { padding: 16px 20px; }
+    .mp-eyebrow { font-size: 9px; font-weight: 700; letter-spacing: 3px; color: var(--accent); text-transform: uppercase; }
+    .mp-title { font-family: var(--font-display); font-size: 28px; color: #fff; letter-spacing: 0.5px; line-height: 1; margin-top: 4px; }
+    .mp-muted { font-size: 11px; color: var(--muted); }
+    .mp-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+      padding: 16px; margin-top: 12px; position: relative; overflow: hidden;
+    }
+    .mp-card-num {
+      position: absolute; right: 12px; top: -4px;
+      font-family: var(--font-display); font-size: 64px;
+      color: rgba(255,255,255,0.04); line-height: 1;
+    }
+    .mp-card-label { font-size: 9px; font-weight: 700; letter-spacing: 2px; color: var(--accent); }
+    .mp-card-name { font-family: var(--font-display); font-size: 22px; color: #fff; line-height: 1; margin-top: 4px; }
+    .mp-card-desc { font-size: 10px; color: var(--muted); margin-top: 4px; }
+    .mp-chip {
+      display: inline-block; padding: 3px 10px; border-radius: 100px;
+      font-size: 9px; font-weight: 700; letter-spacing: 1px;
+      background: var(--accent-dim); color: var(--accent); margin-top: 8px;
+    }
+    .mp-btn {
+      display: block; width: 100%; padding: 14px; border-radius: 14px;
+      background: var(--accent); color: var(--bg); font-family: var(--font-ui);
+      font-size: 13px; font-weight: 700; text-align: center; border: none;
+      margin-top: 16px; letter-spacing: 0.5px;
+    }
+    .mp-btn-secondary {
+      display: block; width: 100%; padding: 12px; border-radius: 12px;
+      background: transparent; border: 1px solid var(--border-med); color: var(--muted);
+      font-family: var(--font-ui); font-size: 11px; font-weight: 600;
+      text-align: center; margin-top: 8px;
+    }
+    .mp-progress-bar { height: 3px; background: var(--border); border-radius: 2px; margin: 12px 0; overflow: hidden; }
+    .mp-progress-fill { height: 100%; background: var(--accent); border-radius: 2px; box-shadow: 0 0 8px var(--accent-glow); }
+    .mp-badge {
+      display: inline-block; padding: 3px 8px; border-radius: 100px;
+      font-size: 8px; font-weight: 700; letter-spacing: 1px;
+      background: var(--accent-dim); color: var(--accent); margin-right: 4px;
+    }
+    .mp-exercise-name { font-family: var(--font-display); font-size: 32px; color: #fff; line-height: 0.95; margin-top: 8px; }
+    .mp-reps { font-size: 11px; color: var(--muted); margin-top: 4px; }
+    .mp-weight-input {
+      background: var(--surface-2); border: 1px solid var(--border-med); border-radius: 12px;
+      padding: 12px 16px; margin-top: 12px; display: flex; align-items: baseline; gap: 6px;
+    }
+    .mp-weight-val { font-family: var(--font-display); font-size: 28px; color: #fff; }
+    .mp-weight-unit { font-size: 12px; color: var(--muted); font-weight: 600; }
+    .mp-dots { display: flex; gap: 8px; justify-content: center; margin-top: 14px; }
+    .mp-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .mp-dot-done { background: var(--accent); }
+    .mp-dot-current { background: rgba(194,240,0,0.4); }
+    .mp-dot-pending { background: var(--border-med); }
+    .mp-timer-circle {
+      width: 180px; height: 180px; border-radius: 50%; margin: 24px auto;
+      border: 4px solid var(--accent); display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 0 30px var(--accent-glow);
+    }
+    .mp-timer-num { font-family: var(--font-display); font-size: 64px; color: #fff; letter-spacing: 2px; }
+    .mp-summary-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 0; border-bottom: 1px solid var(--surface-2); font-size: 12px;
+    }
+    .mp-summary-name { color: #fff; font-weight: 600; }
+    .mp-summary-val { color: var(--muted); }
+    .mp-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; }
+    .mp-back { color: var(--muted); font-size: 12px; font-weight: 600; }
+    .mp-count { color: var(--muted); font-size: 12px; }
+    .mp-skip-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 4px 10px; border-radius: 100px;
+      background: rgba(255,69,58,0.1); color: #FF453A;
+      font-size: 9px; font-weight: 700;
+    }
+    .mp-skip-dot { width: 6px; height: 6px; border-radius: 50%; background: #FF453A; }
+
+    /* ========== FLOW DIAGRAM ========== */
+    .flow-diagram {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--r-lg); padding: 32px; margin: 20px 0;
+      text-align: center; overflow-x: auto;
+    }
+    .flow-row { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; margin: 12px 0; }
+    .flow-node {
+      background: var(--surface-2); border: 2px solid var(--border-med);
+      border-radius: var(--r-md); padding: 12px 20px;
+      font-size: 12px; font-weight: 600; min-width: 120px; text-align: center;
+      color: var(--text-med);
+    }
+    .flow-node-active { border-color: var(--accent); background: var(--accent-dim); color: var(--accent); }
+    .flow-arrow { color: var(--dim); font-size: 20px; }
+    .flow-label { font-size: 10px; color: var(--dim); font-weight: 500; margin-top: 4px; }
+    .flow-branch { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+
+    /* ========== SWATCH GRID ========== */
+    .swatch-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; margin: 16px 0; }
+    .swatch { border-radius: var(--r-md); overflow: hidden; border: 1px solid var(--border); }
+    .swatch-color { height: 64px; }
+    .swatch-info { padding: 10px; background: var(--surface); }
+    .swatch-name { font-size: 11px; font-weight: 700; color: var(--text); }
+    .swatch-hex { font-size: 11px; color: var(--muted); font-family: 'SF Mono', monospace; }
+
+    /* ========== PHASE CARDS ========== */
+    .phase-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; margin: 24px 0; }
+    .phase-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--r-lg); padding: 24px;
+    }
+    .phase-num { font-size: 10px; font-weight: 700; color: var(--accent); letter-spacing: 2px; text-transform: uppercase; }
+    .phase-title { font-family: var(--font-display); font-size: 24px; letter-spacing: 0.5px; margin: 6px 0; }
+    .phase-list { list-style: none; margin-top: 12px; }
+    .phase-list li {
+      font-size: 12px; color: var(--muted); padding: 4px 0 4px 18px; position: relative;
+    }
+    .phase-list li::before {
+      content: ''; position: absolute; left: 0; top: 11px;
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--accent-dim); border: 1.5px solid var(--accent);
+    }
+
+    /* ========== PERSONA ========== */
+    .persona-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--r-lg); padding: 28px; display: flex; gap: 24px;
+      margin: 20px 0; align-items: flex-start;
+    }
+    .persona-avatar {
+      width: 72px; height: 72px; border-radius: 50%;
+      background: var(--accent); display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-display); font-size: 32px; color: var(--bg); flex-shrink: 0;
+    }
+    .persona-info { flex: 1; }
+    .persona-name { font-family: var(--font-display); font-size: 28px; letter-spacing: 0.5px; margin-bottom: 4px; }
+    .persona-role { font-size: 12px; color: var(--muted); margin-bottom: 12px; }
+    .persona-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+    .persona-tag {
+      padding: 4px 12px; border-radius: var(--r-pill); font-size: 10px; font-weight: 600;
+      background: var(--accent-dim); color: var(--accent); border: 1px solid rgba(194,240,0,0.15);
+    }
+
+    /* ========== TREINO CARDS ========== */
+    .treino-header {
+      font-family: var(--font-display); font-size: 22px; letter-spacing: 0.5px;
+      margin-bottom: 4px; color: var(--text);
+    }
+    .treino-sub { font-size: 11px; color: var(--muted); margin-bottom: 12px; }
+    .treino-list { list-style: none; }
+    .treino-list li {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px;
+    }
+    .treino-list li:last-child { border-bottom: none; }
+    .treino-list .ex-name { color: var(--text); font-weight: 500; }
+    .treino-list .ex-meta { color: var(--dim); font-size: 11px; display: flex; gap: 10px; }
+
+    /* ========== DEMO SECTION ========== */
+    .demo-link {
+      display: inline-flex; align-items: center; gap: 10px;
+      padding: 16px 32px; border-radius: var(--r-lg);
+      background: var(--accent); color: var(--bg);
+      font-family: var(--font-ui); font-size: 14px; font-weight: 700;
+      text-decoration: none; letter-spacing: 0.5px;
+      transition: transform 0.15s, box-shadow 0.15s;
+      box-shadow: 0 0 24px var(--accent-glow);
+    }
+    .demo-link:hover { transform: translateY(-2px); box-shadow: 0 0 40px var(--accent-glow); }
+    .demo-link svg { width: 20px; height: 20px; }
+
+    /* ========== RESPONSIVE ========== */
+    @media (max-width: 640px) {
+      .hero-title { font-size: 36px; }
+      .toc-list { grid-template-columns: 1fr; }
+      .persona-card { flex-direction: column; align-items: center; text-align: center; }
+      .persona-tags { justify-content: center; }
+      .flow-row { flex-direction: column; }
+      .metrics-grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    /* ========== COMMENTING SYSTEM ========== */
+    .review-toolbar {
+      position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+      display: flex; gap: 8px; align-items: center;
+    }
+    .review-toggle {
+      background: var(--accent); color: var(--bg); border: none;
+      padding: 12px 20px; border-radius: var(--r-pill); font-size: 13px; font-weight: 700;
+      cursor: pointer; box-shadow: 0 4px 20px var(--accent-glow);
+      display: flex; align-items: center; gap: 8px;
+      transition: all 0.2s; font-family: var(--font-ui); letter-spacing: 0.5px;
+    }
+    .review-toggle:hover { transform: translateY(-1px); box-shadow: 0 6px 30px var(--accent-glow); }
+    .review-toggle.active { background: var(--danger); box-shadow: 0 4px 20px rgba(255,69,58,0.3); color: #fff; }
+    .review-toggle .count {
+      background: var(--bg); color: var(--accent); width: 22px; height: 22px;
+      border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700;
+    }
+    .export-toggle {
+      display: none; background: var(--surface-2); color: var(--text); border: 1px solid var(--border);
+      padding: 12px 20px; border-radius: var(--r-pill); font-size: 13px; font-weight: 600;
+      cursor: pointer; box-shadow: var(--shadow-md);
+      transition: all 0.2s; font-family: var(--font-ui);
+    }
+    .export-toggle:hover { background: var(--border-med); transform: translateY(-1px); }
+    .export-toggle.visible { display: flex; align-items: center; gap: 6px; }
+    .review-hint {
+      position: fixed; bottom: 80px; right: 24px; z-index: 9998;
+      background: var(--surface-2); color: var(--text); padding: 16px 20px;
+      border: 1px solid var(--border); border-radius: 12px; max-width: 320px;
+      font-size: 12px; line-height: 1.5; box-shadow: var(--shadow-lg); display: none;
+      animation: hintSlideUp 0.3s ease-out;
+    }
+    .review-hint.visible { display: block; }
+    .review-hint::after {
+      content: ''; position: absolute; bottom: -8px; right: 40px;
+      width: 16px; height: 16px; background: var(--surface-2);
+      border-right: 1px solid var(--border); border-bottom: 1px solid var(--border);
+      transform: rotate(45deg);
+    }
+    .review-hint .hint-title { font-weight: 700; margin-bottom: 8px; color: var(--accent); font-size: 13px; }
+    .review-hint .hint-step { display: flex; gap: 8px; margin-bottom: 6px; }
+    .review-hint .hint-num {
+      background: var(--accent); color: var(--bg); width: 20px; height: 20px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex-shrink: 0;
+    }
+    .review-hint .hint-dismiss {
+      background: none; border: 1px solid var(--border-med); color: var(--muted);
+      padding: 6px 14px; border-radius: 6px; cursor: pointer; font-family: var(--font-ui);
+      font-size: 11px; margin-top: 10px;
+    }
+    .review-hint .hint-dismiss:hover { background: var(--surface); color: var(--text); }
+    @keyframes hintSlideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    body.review-mode [data-c] { cursor: crosshair; position: relative; transition: outline 0.15s; }
+    body.review-mode [data-c]:hover {
+      outline: 2px dashed var(--accent); outline-offset: 3px;
+      background: var(--accent-dim); border-radius: 4px;
+    }
+    .comment-pin {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 22px; height: 22px; background: var(--danger); color: white;
+      border-radius: 50%; font-size: 10px; font-weight: 700; cursor: pointer;
+      box-shadow: 0 2px 8px rgba(255,69,58,0.4);
+      border: 2px solid var(--bg); vertical-align: middle; margin-left: 6px;
+      position: relative; z-index: 100;
+    }
+    .comment-popover {
+      z-index: 10001; background: var(--surface-2); border: 1px solid var(--border-med);
+      border-radius: var(--r-md); padding: 14px; width: 340px;
+      box-shadow: var(--shadow-lg); margin-top: 4px; position: fixed;
+    }
+    .comment-popover textarea {
+      width: 100%; background: var(--surface); border: 1px solid var(--border-med);
+      color: var(--text); padding: 8px 10px; border-radius: var(--r-sm);
+      font-size: 13px; font-family: var(--font-ui); resize: vertical; min-height: 60px;
+    }
+    .comment-popover textarea:focus { outline: 2px solid var(--accent); border-color: transparent; }
+    .comment-popover-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
+    .comment-popover-actions button {
+      padding: 6px 14px; border-radius: var(--r-pill); font-size: 12px;
+      cursor: pointer; border: none; font-family: var(--font-ui); font-weight: 600;
+    }
+    .btn-save { background: var(--accent); color: var(--bg); }
+    .btn-save:hover { filter: brightness(1.1); }
+    .btn-cancel { background: var(--surface); color: var(--muted); border: 1px solid var(--border) !important; }
+    .btn-delete { background: rgba(255,69,58,0.15); color: var(--danger); }
+    .export-panel {
+      position: fixed; top: 0; right: -440px; width: 440px; height: 100vh;
+      background: var(--surface); border-left: 1px solid var(--border);
+      z-index: 10000; transition: right 0.3s ease; overflow-y: auto; padding: 24px;
+      box-shadow: -8px 0 40px rgba(0,0,0,0.5);
+    }
+    .export-panel.open { right: 0; }
+    .export-panel h3 { color: var(--text); font-size: 16px; margin-bottom: 4px; }
+    .export-panel textarea {
+      width: 100%; min-height: 300px; background: var(--surface-2); border: 1px solid var(--border);
+      color: var(--text-med); padding: 12px; border-radius: var(--r-md); font-size: 12px;
+      font-family: 'SF Mono', 'Fira Code', monospace; resize: vertical;
+    }
+    .export-panel .actions { display: flex; gap: 8px; margin-top: 12px; }
+    .export-panel .actions button {
+      flex: 1; padding: 10px; border-radius: var(--r-pill); font-size: 13px;
+      cursor: pointer; border: none; font-weight: 600; font-family: var(--font-ui);
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════ HERO ═══════════════ -->
+<header class="hero">
+  <div class="container">
+    <div class="hero-eyebrow" data-c="Hero: Eyebrow">Documento de Requisitos do Produto</div>
+    <h1 class="hero-title" data-c="Hero: Título">FORJA — RASTREADOR DE TREINOS</h1>
+    <p class="hero-subtitle" data-c="Hero: Subtítulo">App mobile pessoal para acompanhar treinos de hipertrofia. Controle de cargas, timer de descanso, e fluxo de exercícios — tudo offline e em português.</p>
+    <div class="hero-meta">
+      <span class="hero-badge badge-status">&#9679; Em Desenvolvimento</span>
+      <span class="hero-badge badge-version">v4.0</span>
+      <span class="hero-badge badge-date">20 de março de 2026</span>
+      <span class="hero-badge badge-date">Pedro Peralta</span>
+    </div>
+  </div>
+</header>
+
+<!-- ═══════════════ TOC ═══════════════ -->
+<div class="container">
+  <nav class="toc" data-c="Índice">
+    <h2>Índice</h2>
+    <ol class="toc-list">
+      <li><a href="#resumo"><span class="toc-num">01</span> Resumo Executivo</a></li>
+      <li><a href="#problema"><span class="toc-num">02</span> Declaração do Problema</a></li>
+      <li><a href="#persona"><span class="toc-num">03</span> Persona do Usuário</a></li>
+      <li><a href="#fluxo"><span class="toc-num">04</span> Fluxo do Usuário</a></li>
+      <li><a href="#funcionalidades"><span class="toc-num">05</span> Funcionalidades & Mockups</a></li>
+      <li><a href="#treinos"><span class="toc-num">06</span> Plano de Treinos</a></li>
+      <li><a href="#design"><span class="toc-num">07</span> Sistema de Design</a></li>
+      <li><a href="#fases"><span class="toc-num">08</span> Plano de Lançamento</a></li>
+      <li><a href="#metricas"><span class="toc-num">09</span> Métricas de Sucesso</a></li>
+      <li><a href="#futuro"><span class="toc-num">10</span> Roadmap Futuro</a></li>
+      <li><a href="#demo"><span class="toc-num">11</span> Demo Interativa</a></li>
+    </ol>
+  </nav>
+
+  <!-- ═══════════════ 01 RESUMO EXECUTIVO ═══════════════ -->
+  <section class="section" id="resumo">
+    <div class="section-label">01 — Resumo</div>
+    <h2 class="section-title" data-c="Resumo: Título">RESUMO EXECUTIVO</h2>
+    <div class="section-body" data-c="Resumo: Descrição">
+      <p><strong>Forja</strong> é um app mobile pessoal que resolve um problema comum de iniciantes na academia: a falta de registro estruturado dos treinos. Sem anotações, é impossível saber se houve sobrecarga progressiva — o principal motor do ganho de massa muscular.</p>
+      <p>O app segue um plano de hipertrofia ABC (3 sessões, 7 exercícios cada) prescrito pela academia Espaço Prime. A interface é 100% em português, funciona offline, e foi desenhada para ser usada <em>durante</em> o treino — com botões grandes, timer de descanso, e fluxo linear sem distrações.</p>
+    </div>
+    <div class="metrics-grid">
+      <div class="metric" data-c="Métrica: Exercícios">
+        <div class="metric-value">21</div>
+        <div class="metric-label">Exercícios</div>
+      </div>
+      <div class="metric" data-c="Métrica: Treinos">
+        <div class="metric-value">3</div>
+        <div class="metric-label">Treinos (ABC)</div>
+      </div>
+      <div class="metric" data-c="Métrica: Séries">
+        <div class="metric-value">63</div>
+        <div class="metric-label">Séries por semana</div>
+      </div>
+      <div class="metric" data-c="Métrica: Telas">
+        <div class="metric-value">5</div>
+        <div class="metric-label">Telas principais</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ 02 PROBLEMA ═══════════════ -->
+  <section class="section" id="problema">
+    <div class="section-label">02 — Problema</div>
+    <h2 class="section-title" data-c="Problema: Título">DECLARAÇÃO DO PROBLEMA</h2>
+    <div class="section-body" data-c="Problema: Contexto">
+      <p>Iniciantes na academia enfrentam barreiras que vão além do esforço físico. A falta de organização e feedback sobre o progresso leva à estagnação e desmotivação.</p>
+    </div>
+
+    <div class="card card-danger" data-c="Problema: Sem registro">
+      <h3>Sem registro de treinos</h3>
+      <p>O usuário não anota pesos ou séries. A cada sessão, precisa tentar lembrar o que fez na semana anterior — geralmente sem sucesso. Resultado: usa a mesma carga por semanas, sem progressão.</p>
+    </div>
+
+    <div class="card card-warning" data-c="Problema: Apps existentes">
+      <h3>Apps existentes são complexos demais</h3>
+      <p>Apps como Strong, Hevy e JEFIT têm dezenas de funcionalidades voltadas para intermediários/avançados. Para um iniciante com um plano fixo de 3 treinos, a complexidade é uma barreira, não uma ajuda.</p>
+    </div>
+
+    <div class="card card-warning" data-c="Problema: Anotações manuais">
+      <h3>Caderno e bloco de notas são lentos</h3>
+      <p>Anotar pesos no celular (app de notas) ou em papel é desorganizado, lento, e difícil de consultar depois. Não existe estrutura, timer, ou histórico consultável.</p>
+    </div>
+
+    <div class="card card-info" data-c="Problema: Equipamento ocupado">
+      <h3>Aparelhos ocupados quebram o fluxo</h3>
+      <p>Na academia, é comum um aparelho estar ocupado. Sem uma forma fácil de pular e voltar depois, o fluxo do treino se perde, exercícios são esquecidos.</p>
+    </div>
+  </section>
+
+  <!-- ═══════════════ 03 PERSONA ═══════════════ -->
+  <section class="section" id="persona">
+    <div class="section-label">03 — Persona</div>
+    <h2 class="section-title" data-c="Persona: Título">PERSONA DO USUÁRIO</h2>
+
+    <div class="persona-card" data-c="Persona: Card">
+      <div class="persona-avatar" style="font-size: 24px;">&#9883;</div>
+      <div class="persona-info">
+        <div class="persona-name">INICIANTE NA ACADEMIA</div>
+        <div class="persona-role">Começou a treinar recentemente · Segue um plano prescrito por instrutor · Quer construir o hábito</div>
+        <div class="persona-tags">
+          <span class="persona-tag">Hipertrofia</span>
+          <span class="persona-tag">Plano ABC</span>
+          <span class="persona-tag">Sobrecarga Progressiva</span>
+          <span class="persona-tag">Treina 3x/semana</span>
+          <span class="persona-tag">Uso pessoal</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px;">
+      <div class="card card-accent" data-c="Persona: Objetivos">
+        <h3>Objetivos</h3>
+        <p>Ganhar massa muscular visível. Implementar sobrecarga progressiva real — aumentar cargas semana a semana com base em dados, não na memória.</p>
+      </div>
+      <div class="card card-accent" data-c="Persona: Frustrações">
+        <h3>Frustrações</h3>
+        <p>Não sabe se está progredindo. Esquece os pesos anteriores. Apps do mercado são complexos demais para quem segue um plano simples. Quer algo direto e sem distrações.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ 04 FLUXO DO USUÁRIO ═══════════════ -->
+  <section class="section" id="fluxo">
+    <div class="section-label">04 — Fluxo</div>
+    <h2 class="section-title" data-c="Fluxo: Título">FLUXO DO USUÁRIO</h2>
+    <div class="section-body" data-c="Fluxo: Descrição">
+      <p>O app segue um fluxo linear durante o treino. O usuário seleciona o treino, executa séries com descanso cronometrado, e recebe um resumo ao final.</p>
+    </div>
+
+    <div class="flow-diagram" data-c="Fluxo: Diagrama principal">
+      <div class="flow-row">
+        <div class="flow-node flow-node-active">Tela Inicial</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-branch">
+          <div class="flow-node">Exercício Atual</div>
+          <div class="flow-label">seleciona treino</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-branch">
+          <div class="flow-node">Descanso (60s)</div>
+          <div class="flow-label">completa série</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-branch">
+          <div class="flow-node">Próxima Série</div>
+          <div class="flow-label">timer termina</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-branch">
+          <div class="flow-node" style="border-color: var(--warning); background: rgba(245,158,11,0.08); color: var(--warning);">Revisão de Pendentes</div>
+          <div class="flow-label">último exercício</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-branch">
+          <div class="flow-node flow-node-active">Treino Concluído</div>
+          <div class="flow-label">tudo resolvido</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" data-c="Fluxo: Loop de séries">
+      <h3>Loop de Séries</h3>
+      <p>Cada exercício tem 3 séries. Após cada série (incluindo a última), o app mostra a tela de descanso com timer de 60 segundos. Após o descanso da última série, avança para o próximo exercício.</p>
+      <p style="margin-top: 8px; font-size: 12px; color: var(--dim);"><strong style="color: var(--text);">Série 1</strong> → Descanso → <strong style="color: var(--text);">Série 2</strong> → Descanso → <strong style="color: var(--text);">Série 3</strong> → Descanso → <strong style="color: var(--text);">Próximo Exercício</strong></p>
+    </div>
+
+    <div class="card card-warning" data-c="Fluxo: Pular exercício">
+      <h3>Fluxo de Pular Exercício</h3>
+      <p>Se o aparelho está ocupado, o usuário pode pular o exercício atual. O exercício vai para o final da fila. Um indicador vermelho mostra quantos exercícios foram pulados. Na tela de descanso, um botão permite voltar aos exercícios pulados.</p>
+    </div>
+  </section>
+
+  <!-- ═══════════════ 05 FUNCIONALIDADES ═══════════════ -->
+  <section class="section" id="funcionalidades">
+    <div class="section-label">05 — Funcionalidades</div>
+    <h2 class="section-title" data-c="Funcionalidades: Título">FUNCIONALIDADES & MOCKUPS</h2>
+
+    <!-- ── 5.1 HOME ── -->
+    <h3 style="margin-top: 32px; font-family: var(--font-display); font-size: 24px; letter-spacing: 0.5px;" data-c="Feature: Home título">5.1 TELA INICIAL</h3>
+
+    <div class="story" data-c="Story: Ver treinos">
+      <div class="story-title"><span class="priority p0">P0</span> Ver treinos disponíveis</div>
+      <div class="criteria">
+        <strong>Dado</strong> que o usuário abre o app,<br>
+        <strong>Quando</strong> a tela inicial carrega,<br>
+        <strong>Então</strong> 3 cards de treino são exibidos com nome, foco muscular, e data da última execução.
+      </div>
+    </div>
+
+    <div class="story" data-c="Story: Próximo treino">
+      <div class="story-title"><span class="priority p0">P0</span> Identificar próximo treino</div>
+      <div class="criteria">
+        <strong>Dado</strong> que o usuário tem histórico de treinos,<br>
+        <strong>Quando</strong> a tela inicial carrega,<br>
+        <strong>Então</strong> o treino com a data mais antiga (ou nunca realizado) recebe o chip "Próximo".
+      </div>
+    </div>
+
+    <div class="story" data-c="Story: Iniciar treino">
+      <div class="story-title"><span class="priority p0">P0</span> Iniciar treino</div>
+      <div class="criteria">
+        <strong>Dado</strong> que o usuário toca em um card de treino,<br>
+        <strong>Quando</strong> o treino é selecionado,<br>
+        <strong>Então</strong> o app navega para o primeiro exercício e o timer de duração começa.
+      </div>
+    </div>
+
+    <div class="mockup-frame" data-c="Mockup: Home">
+      <div class="mockup-phone">
+        <div class="mockup-notch"></div>
+        <div class="mp-pad">
+          <div class="mp-eyebrow">ESPAÇO PRIME</div>
+          <div class="mp-title" style="font-size: 24px; margin-top: 2px;">Bom treino, Pedro.</div>
+          <div class="mp-card">
+            <div class="mp-card-num">01</div>
+            <div class="mp-card-label">TREINO 1</div>
+            <div class="mp-card-name">Peito / Ombros / Tríceps</div>
+            <div class="mp-card-desc">7 exercícios · Hipertrofia</div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
+              <span class="mp-muted" style="font-size: 10px;">Último: 15/03/2026</span>
+              <span class="mp-chip">PRÓXIMO</span>
+            </div>
+          </div>
+          <div class="mp-card">
+            <div class="mp-card-num">02</div>
+            <div class="mp-card-label">TREINO 2</div>
+            <div class="mp-card-name">Costas / Bíceps</div>
+            <div class="mp-card-desc">7 exercícios · Hipertrofia</div>
+            <div style="margin-top: 8px;"><span class="mp-muted" style="font-size: 10px;">Último: 17/03/2026</span></div>
+          </div>
+          <div class="mp-card">
+            <div class="mp-card-num">03</div>
+            <div class="mp-card-label">TREINO 3</div>
+            <div class="mp-card-name">Pernas</div>
+            <div class="mp-card-desc">7 exercícios · Hipertrofia</div>
+            <div style="margin-top: 8px;"><span class="mp-muted" style="font-size: 10px;">Nunca realizado</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 5.2 EXERCISE ── -->
+    <h3 style="margin-top: 40px; font-family: var(--font-display); font-size: 24px; letter-spacing: 0.5px;" data-c="Feature: Exercício título">5.2 TELA DE EXERCÍCIO</h3>
+
+    <div class="story" data-c="Story: Ver exercício atual">
+      <div class="story-title"><span class="priority p0">P0</span> Ver exercício atual</div>
+      <div class="criteria">
+        <strong>Dado</strong> que o treino está em andamento,<br>
+        <strong>Quando</strong> um exercício é exibido,<br>
+        <strong>Então</strong> o nome, categoria, equipamento, faixa de repetições, e barra de progresso são mostrados.
+      </div>
+    </div>
+
+    <div class="story" data-c="Story: Inserir carga">
+      <div class="story-title"><span class="priority p0">P0</span> Inserir e pré-preencher carga</div>
+      <div class="criteria">
+        <strong>Dado</strong> que o exercício está na tela,<br>
+        <strong>Quando</strong> o campo de peso aparece,<br>
+        <strong>Então</strong> ele vem pré-preenchido com o peso do treino anterior, e o teclado numérico abre ao tocar.
+      </div>
+    </div>
+
+    <div class="story" data-c="Story: Completar série">
+      <div class="story-title"><span class="priority p0">P0</span> Completar série</div>
+      <div class="criteria">
+        <strong>Dado</strong> que o usuário terminou uma série,<br>
+        <strong>Quando</strong> toca "Completei a Série",<br>
+        <strong>Então</strong> o dot de progresso atualiza, o peso é salvo, e a tela de descanso aparece.
+      </div>
+    </div>
+
+    <div class="story" data-c="Story: Pular exercício">
+      <div class="story-title"><span class="priority p1">P1</span> Pular exercício (aparelho ocupado)</div>
+      <div class="criteria">
+        <strong>Dado</strong> que o aparelho está ocupado,<br>
+        <strong>Quando</strong> toca "Pular — aparelho ocupado",<br>
+        <strong>Então</strong> o exercício vai para o final da fila e o próximo exercício aparece.
+      </div>
+    </div>
+
+    <div class="mockup-frame" data-c="Mockup: Exercício">
+      <div class="mockup-phone">
+        <div class="mockup-notch"></div>
+        <div class="mp-pad">
+          <div class="mp-header">
+            <span class="mp-back">← Treino 1</span>
+            <span class="mp-count">3 / 7</span>
+          </div>
+          <div class="mp-progress-bar"><div class="mp-progress-fill" style="width: 42%;"></div></div>
+          <div style="display: flex; gap: 6px; align-items: center;">
+            <span class="mp-badge">EMPH</span>
+            <span class="mp-badge" style="background: rgba(255,255,255,0.06); color: var(--muted);">Halter</span>
+            <span style="flex:1;"></span>
+            <span class="mp-skip-badge"><span class="mp-skip-dot"></span> 1 pulado</span>
+          </div>
+          <div class="mp-exercise-name">Supino 45°<br>Bilateral</div>
+          <div class="mp-reps">10–15 repetições</div>
+          <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; margin-top: 12px; display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 10px; color: var(--dim); text-transform: uppercase; letter-spacing: 1px;">Último treino</span>
+            <span style="font-family: var(--font-display); font-size: 22px; color: #fff;">12 <span style="font-size: 11px; color: var(--muted);">KG</span></span>
+          </div>
+          <div class="mp-weight-input" style="border-color: var(--accent);">
+            <span class="mp-weight-val">14</span>
+            <span class="mp-weight-unit">KG</span>
+          </div>
+          <div class="mp-dots">
+            <div class="mp-dot mp-dot-done"></div>
+            <div class="mp-dot mp-dot-current"></div>
+            <div class="mp-dot mp-dot-pending"></div>
+          </div>
+          <div style="text-align: center; font-size: 10px; color: var(--muted); margin-top: 4px;">Série 2 de 3</div>
+          <div class="mp-btn">COMPLETEI A SÉRIE</div>
+          <div class="mp-btn-secondary">Pular — aparelho ocupado</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 5.3 REST ── -->
+    <h3 style="margin-top: 40px; font-family: var(--font-display); font-size: 24px; letter-spacing: 0.5px;" data-c="Feature: Descanso título">5.3 TELA DE DESCANSO</h3>
+
+    <div class="story" data-c="Story: Timer de descanso">
+      <div class="story-title"><span class="priority p0">P0</span> Timer de descanso de 60 segundos</div>
+      <div class="criteria">
+        <strong>Dado</strong> que o usuário completou uma série,<br>
+        <strong>Quando</strong> a tela de descanso aparece,<br>
+        <strong>Então</strong> um timer circular de 60 segundos inicia com contagem regressiva animada.
+      </div>
+    </div>
+
+    <div class="story" data-c="Story: Alerta final">
+      <div class="story-title"><span class="priority p1">P1</span> Alerta visual nos últimos 10 segundos</div>
+      <div class="criteria">
+        <strong>Dado</strong> que o timer tem menos de 10 segundos,<br>
+        <strong>Quando</strong> o timer atualiza,<br>
+        <strong>Então</strong> a cor do arco e número muda para vermelho para sinalizar urgência.
+      </div>
+    </div>
+
+    <div class="story" data-c="Story: Haptic feedback">
+      <div class="story-title"><span class="priority p1">P1</span> Vibração ao terminar descanso</div>
+      <div class="criteria">
+        <strong>Dado</strong> que o timer chegou a zero,<br>
+        <strong>Quando</strong> o descanso termina,<br>
+        <strong>Então</strong> o celular vibra e o app avança automaticamente para a próxima série.
+      </div>
+    </div>
+
+    <div class="story" data-c="Story: Pular descanso">
+      <div class="story-title"><span class="priority p1">P1</span> Pular descanso</div>
+      <div class="criteria">
+        <strong>Dado</strong> que o usuário quer continuar antes do timer,<br>
+        <strong>Quando</strong> toca "Pular Descanso",<br>
+        <strong>Então</strong> o timer é cancelado e o app volta para a próxima série ou exercício.
+      </div>
+    </div>
+
+    <div class="mockup-frame" data-c="Mockup: Descanso">
+      <div class="mockup-phone">
+        <div class="mockup-notch"></div>
+        <div class="mp-pad" style="text-align: center; padding-top: 40px;">
+          <div style="font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; font-weight: 700;">Descanso</div>
+          <div class="mp-timer-circle">
+            <span class="mp-timer-num">47</span>
+          </div>
+          <div style="margin-top: 24px;">
+            <div style="font-size: 9px; color: var(--dim); text-transform: uppercase; letter-spacing: 2px; font-weight: 700;">Próximo Exercício</div>
+            <div style="font-family: var(--font-display); font-size: 22px; color: #fff; margin-top: 4px;">Elevação Frontal</div>
+          </div>
+          <div class="mp-btn-secondary" style="margin-top: 32px;">Pular Descanso</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 5.4 CHECKPOINT ── -->
+    <h3 style="margin-top: 40px; font-family: var(--font-display); font-size: 24px; letter-spacing: 0.5px;" data-c="Feature: Revisão de Pendentes título">5.4 REVISÃO DE PENDENTES</h3>
+
+    <div class="section-body" data-c="Feature: Revisão de Pendentes descrição" style="margin-bottom: 16px;">
+      <p>Antes de concluir o treino, o app verifica se existem exercícios pulados ou não realizados. Se houver, uma tela de revisão aparece para que o usuário resolva cada pendência — voltando ao exercício ou marcando-o como "não vou fazer hoje".</p>
+    </div>
+
+    <div class="story" data-c="Story: Checkpoint automático">
+      <div class="story-title"><span class="priority p0">P0</span> Checkpoint antes da conclusão</div>
+      <div class="criteria">
+        <strong>Dado</strong> que o usuário completou o último exercício da fila,<br>
+        <strong>Quando</strong> existem exercícios pulados pendentes,<br>
+        <strong>Então</strong> a tela de revisão aparece listando todos os exercícios pendentes antes de mostrar a conclusão.
+      </div>
+    </div>
+
+    <div class="story" data-c="Story: Voltar ao exercício pendente">
+      <div class="story-title"><span class="priority p0">P0</span> Voltar a um exercício pendente</div>
+      <div class="criteria">
+        <strong>Dado</strong> que a tela de revisão lista exercícios pendentes,<br>
+        <strong>Quando</strong> o usuário toca "Fazer agora" em um exercício,<br>
+        <strong>Então</strong> o app navega de volta para a tela de exercício com aquele exercício carregado.
+      </div>
+    </div>
+
+    <div class="story" data-c="Story: Não vou fazer hoje">
+      <div class="story-title"><span class="priority p0">P0</span> Marcar como "não vou fazer hoje"</div>
+      <div class="criteria">
+        <strong>Dado</strong> que a tela de revisão lista exercícios pendentes,<br>
+        <strong>Quando</strong> o usuário toca "Não vou fazer" em um exercício,<br>
+        <strong>Então</strong> o exercício é removido da fila e registrado como não realizado no resumo final.
+      </div>
+    </div>
+
+    <div class="story" data-c="Story: Sem pendentes">
+      <div class="story-title"><span class="priority p0">P0</span> Pular revisão se não houver pendentes</div>
+      <div class="criteria">
+        <strong>Dado</strong> que todos os exercícios foram completados normalmente,<br>
+        <strong>Quando</strong> o último exercício é finalizado,<br>
+        <strong>Então</strong> o app pula a tela de revisão e vai direto para a conclusão.
+      </div>
+    </div>
+
+    <!-- CHECKPOINT MOCKUP -->
+    <div class="mockup-frame" data-c="Mockup: Revisão de Pendentes">
+      <div class="mockup-phone">
+        <div class="mockup-notch"></div>
+        <div class="mp-pad" style="padding-top: 28px;">
+          <div style="text-align: center;">
+            <div style="font-size: 9px; color: var(--warning); text-transform: uppercase; letter-spacing: 3px; font-weight: 700;">Atenção</div>
+            <div class="mp-title" style="font-size: 28px; margin-top: 6px;">EXERCÍCIOS PENDENTES</div>
+            <div style="font-size: 11px; color: var(--muted); margin-top: 6px;">Resolva os exercícios abaixo antes de concluir</div>
+          </div>
+
+          <div style="margin-top: 20px;">
+            <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 10px;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <div style="font-size: 8px; color: var(--accent); font-weight: 700; letter-spacing: 1.5px;">EMPH · Máquina</div>
+                  <div style="font-family: var(--font-display); font-size: 18px; color: #fff; margin-top: 2px;">Crucifixo Articulado TS</div>
+                  <div style="font-size: 9px; color: var(--dim); margin-top: 2px;">Pulado — aparelho ocupado</div>
+                </div>
+              </div>
+              <div style="display: flex; gap: 8px; margin-top: 10px;">
+                <div style="flex: 1; padding: 8px; border-radius: 8px; background: var(--accent); color: var(--bg); font-size: 10px; font-weight: 700; text-align: center;">FAZER AGORA</div>
+                <div style="flex: 1; padding: 8px; border-radius: 8px; background: transparent; border: 1px solid var(--border-med); color: var(--muted); font-size: 10px; font-weight: 600; text-align: center;">NÃO VOU FAZER</div>
+              </div>
+            </div>
+
+            <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <div style="font-size: 8px; color: var(--accent); font-weight: 700; letter-spacing: 1.5px;">EMPV · Halter</div>
+                  <div style="font-family: var(--font-display); font-size: 18px; color: #fff; margin-top: 2px;">Elevação Lateral</div>
+                  <div style="font-size: 9px; color: var(--dim); margin-top: 2px;">Pulado — aparelho ocupado</div>
+                </div>
+              </div>
+              <div style="display: flex; gap: 8px; margin-top: 10px;">
+                <div style="flex: 1; padding: 8px; border-radius: 8px; background: var(--accent); color: var(--bg); font-size: 10px; font-weight: 700; text-align: center;">FAZER AGORA</div>
+                <div style="flex: 1; padding: 8px; border-radius: 8px; background: transparent; border: 1px solid var(--border-med); color: var(--muted); font-size: 10px; font-weight: 600; text-align: center;">NÃO VOU FAZER</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 5.5 COMPLETE ── -->
+    <h3 style="margin-top: 40px; font-family: var(--font-display); font-size: 24px; letter-spacing: 0.5px;" data-c="Feature: Conclusão título">5.5 TELA DE CONCLUSÃO</h3>
+
+    <div class="story" data-c="Story: Resumo do treino">
+      <div class="story-title"><span class="priority p0">P0</span> Resumo do treino</div>
+      <div class="criteria">
+        <strong>Dado</strong> que todos os exercícios foram completados ou resolvidos (via revisão de pendentes),<br>
+        <strong>Quando</strong> a tela de conclusão aparece,<br>
+        <strong>Então</strong> exibe total de exercícios realizados, séries, duração, lista com peso final, e exercícios marcados como "não feitos" (se houver).
+      </div>
+    </div>
+
+    <div class="story" data-c="Story: Registrar calorias">
+      <div class="story-title"><span class="priority p2">P2</span> Registrar calorias (opcional)</div>
+      <div class="criteria">
+        <strong>Dado</strong> que o treino foi concluído,<br>
+        <strong>Quando</strong> o campo de kcal é exibido,<br>
+        <strong>Então</strong> o usuário pode registrar calorias opcionalmente antes de voltar à tela inicial.
+      </div>
+    </div>
+
+    <div class="mockup-frame" data-c="Mockup: Conclusão">
+      <div class="mockup-phone">
+        <div class="mockup-notch"></div>
+        <div class="mp-pad" style="padding-top: 28px;">
+          <div style="text-align: center;">
+            <div class="mp-chip">TREINO CONCLUÍDO</div>
+            <div class="mp-title" style="font-size: 40px; margin-top: 8px;">MUITO BEM!</div>
+            <div style="display: flex; justify-content: center; gap: 24px; margin-top: 16px;">
+              <div style="text-align: center;"><div style="font-family: var(--font-display); font-size: 24px; color: #fff;">7</div><div style="font-size: 9px; color: var(--muted); text-transform: uppercase;">Exercícios</div></div>
+              <div style="text-align: center;"><div style="font-family: var(--font-display); font-size: 24px; color: #fff;">21</div><div style="font-size: 9px; color: var(--muted); text-transform: uppercase;">Séries</div></div>
+              <div style="text-align: center;"><div style="font-family: var(--font-display); font-size: 24px; color: #fff;">47:32</div><div style="font-size: 9px; color: var(--muted); text-transform: uppercase;">Duração</div></div>
+            </div>
+          </div>
+          <div style="margin-top: 20px; border-top: 1px solid var(--surface-2); padding-top: 12px;">
+            <div class="mp-summary-row"><span class="mp-summary-name">Supino Reto Vertical</span><span class="mp-summary-val">3 séries · 20 KG</span></div>
+            <div class="mp-summary-row"><span class="mp-summary-name">Crucifixo Articulado TS</span><span class="mp-summary-val">3 séries · 15 KG</span></div>
+            <div class="mp-summary-row"><span class="mp-summary-name">Supino 45° Bilateral</span><span class="mp-summary-val">3 séries · 14 KG</span></div>
+            <div class="mp-summary-row"><span class="mp-summary-name">Elevação Frontal</span><span class="mp-summary-val">3 séries · 8 KG</span></div>
+            <div class="mp-summary-row" style="border-bottom: none;"><span class="mp-summary-name">...</span><span class="mp-summary-val">+ 3 exercícios</span></div>
+          </div>
+          <div class="mp-btn" style="margin-top: 20px;">← VOLTAR AO INÍCIO</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 5.5 SKIP FLOW ── -->
+    <h3 style="margin-top: 40px; font-family: var(--font-display); font-size: 24px; letter-spacing: 0.5px;" data-c="Feature: Skip Flow título">5.6 FLUXO DE PULAR EXERCÍCIOS</h3>
+
+    <div class="story" data-c="Story: Indicador de pulados">
+      <div class="story-title"><span class="priority p1">P1</span> Indicador de exercícios pulados</div>
+      <div class="criteria">
+        <strong>Dado</strong> que exercícios foram pulados,<br>
+        <strong>Quando</strong> a tela de exercício exibe,<br>
+        <strong>Então</strong> um badge vermelho com contador aparece no header.
+      </div>
+    </div>
+
+    <div class="story" data-c="Story: Sheet de pulados">
+      <div class="story-title"><span class="priority p1">P1</span> Lista de exercícios pulados</div>
+      <div class="criteria">
+        <strong>Dado</strong> que o indicador vermelho está visível,<br>
+        <strong>Quando</strong> o usuário toca no indicador,<br>
+        <strong>Então</strong> um painel lista todos os exercícios pulados com suas categorias.
+      </div>
+    </div>
+
+    <div class="story" data-c="Story: Voltar ao pulado no descanso">
+      <div class="story-title"><span class="priority p1">P1</span> Voltar ao exercício pulado</div>
+      <div class="criteria">
+        <strong>Dado</strong> que existem exercícios pulados na fila,<br>
+        <strong>Quando</strong> a tela de descanso é exibida,<br>
+        <strong>Então</strong> um botão permite reordenar a fila para priorizar os exercícios pulados.
+      </div>
+    </div>
+
+    <!-- SKIP FLOW MOCKUPS -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 24px;">
+
+      <!-- Mockup: Skip Sheet -->
+      <div class="mockup-frame" data-c="Mockup: Sheet de Pulados" style="max-width: none; margin: 0;">
+        <div class="mockup-phone" style="min-height: 420px;">
+          <div class="mockup-notch"></div>
+          <div class="mp-pad">
+            <div class="mp-header">
+              <span class="mp-back">← Treino 1</span>
+              <span class="mp-count">5 / 7</span>
+            </div>
+            <!-- Overlay sheet -->
+            <div style="background: var(--surface-2); border: 1px solid var(--border-med); border-radius: 14px 14px 0 0; padding: 16px; margin-top: 60px; position: relative;">
+              <div style="width: 32px; height: 4px; background: var(--dim); border-radius: 2px; margin: 0 auto 14px;"></div>
+              <div style="font-size: 9px; color: var(--accent); font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px;">2 exercícios pulados</div>
+
+              <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 8px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <div>
+                    <div style="font-size: 8px; color: var(--accent); font-weight: 700; letter-spacing: 1px;">EMPH</div>
+                    <div style="font-family: var(--font-display); font-size: 16px; color: #fff; margin-top: 2px;">Crucifixo Articulado TS</div>
+                  </div>
+                  <div class="mp-skip-badge"><span class="mp-skip-dot"></span></div>
+                </div>
+              </div>
+
+              <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <div>
+                    <div style="font-size: 8px; color: var(--accent); font-weight: 700; letter-spacing: 1px;">EMPV</div>
+                    <div style="font-family: var(--font-display); font-size: 16px; color: #fff; margin-top: 2px;">Elevação Lateral</div>
+                  </div>
+                  <div class="mp-skip-badge"><span class="mp-skip-dot"></span></div>
+                </div>
+              </div>
+
+              <div style="font-size: 10px; color: var(--dim); text-align: center; margin-top: 12px;">Pode retornar após completar série atual</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mockup: Rest with "go to skipped" -->
+      <div class="mockup-frame" data-c="Mockup: Descanso com pulados" style="max-width: none; margin: 0;">
+        <div class="mockup-phone" style="min-height: 420px;">
+          <div class="mockup-notch"></div>
+          <div class="mp-pad" style="text-align: center; padding-top: 32px;">
+            <div style="font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; font-weight: 700;">Descanso</div>
+            <div class="mp-timer-circle" style="width: 140px; height: 140px; margin: 16px auto;">
+              <span class="mp-timer-num" style="font-size: 48px;">34</span>
+            </div>
+            <div style="margin-top: 16px;">
+              <div style="font-size: 9px; color: var(--danger); text-transform: uppercase; letter-spacing: 2px; font-weight: 700;">↩ Voltando ao Pulado</div>
+              <div style="font-family: var(--font-display); font-size: 18px; color: #fff; margin-top: 4px;">Crucifixo Articulado TS</div>
+            </div>
+            <div class="mp-btn-secondary" style="margin-top: 20px;">Pular Descanso</div>
+            <div style="margin-top: 8px; padding: 10px; border-radius: 10px; background: rgba(255,69,58,0.08); border: 1px solid rgba(255,69,58,0.2); color: var(--danger); font-size: 11px; font-weight: 600;">
+              Ir para exercícios pulados (2)
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+    <!-- ── 5.7 UNDO ── -->
+    <h3 style="margin-top: 40px; font-family: var(--font-display); font-size: 24px; letter-spacing: 0.5px;" data-c="Feature: Desfazer Treino título">5.7 DESFAZER TREINO</h3>
+
+    <div class="section-body" data-c="Feature: Desfazer Treino descrição" style="margin-bottom: 16px;">
+      <p>Permite apagar o registro de um treino concluído — útil para demonstrações do app ou para corrigir treinos registrados por engano. Remove a data e os pesos salvos daquela sessão.</p>
+    </div>
+
+    <div class="story" data-c="Story: Desfazer último treino">
+      <div class="story-title"><span class="priority p1">P1</span> Desfazer último treino</div>
+      <div class="criteria">
+        <strong>Dado</strong> que o usuário está na tela inicial,<br>
+        <strong>Quando</strong> pressiona e segura um card de treino que possui registro anterior,<br>
+        <strong>Então</strong> um menu aparece com a opção "Apagar último registro".
+      </div>
+    </div>
+
+    <div class="story" data-c="Story: Confirmação de exclusão">
+      <div class="story-title"><span class="priority p1">P1</span> Confirmação antes de apagar</div>
+      <div class="criteria">
+        <strong>Dado</strong> que o usuário selecionou "Apagar último registro",<br>
+        <strong>Quando</strong> a confirmação aparece,<br>
+        <strong>Então</strong> o app exibe a data e os pesos que serão removidos, e pede confirmação explícita.
+      </div>
+    </div>
+
+    <div class="story" data-c="Story: Restaurar estado anterior">
+      <div class="story-title"><span class="priority p1">P1</span> Restaurar estado anterior</div>
+      <div class="criteria">
+        <strong>Dado</strong> que o usuário confirmou a exclusão,<br>
+        <strong>Quando</strong> o app apaga o registro,<br>
+        <strong>Então</strong> a data do treino volta para a anterior (ou "Nunca realizado"), e os pesos salvos voltam ao estado pré-treino.
+      </div>
+    </div>
+
+    <!-- UNDO MOCKUP -->
+    <div class="mockup-frame" data-c="Mockup: Desfazer Treino">
+      <div class="mockup-phone" style="min-height: 400px;">
+        <div class="mockup-notch"></div>
+        <div class="mp-pad">
+          <div class="mp-eyebrow">ESPAÇO PRIME</div>
+          <div class="mp-title" style="font-size: 24px; margin-top: 2px;">Bom treino.</div>
+
+          <div class="mp-card" style="opacity: 0.5;">
+            <div class="mp-card-num">01</div>
+            <div class="mp-card-label">TREINO 1</div>
+            <div class="mp-card-name">Peito / Ombros / Tríceps</div>
+          </div>
+
+          <!-- Confirmation dialog overlay -->
+          <div style="background: var(--surface-2); border: 1px solid var(--border-med); border-radius: 14px; padding: 20px; margin-top: 12px; text-align: center;">
+            <div style="font-size: 9px; color: var(--danger); font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px;">Confirmar exclusão</div>
+            <div style="font-family: var(--font-display); font-size: 20px; color: #fff;">APAGAR TREINO 1?</div>
+            <div style="font-size: 11px; color: var(--muted); margin-top: 8px;">Registro de 18/03/2026<br>7 exercícios · Pesos salvos serão removidos</div>
+            <div style="display: flex; gap: 8px; margin-top: 16px;">
+              <div style="flex: 1; padding: 10px; border-radius: 10px; background: transparent; border: 1px solid var(--border-med); color: var(--muted); font-size: 11px; font-weight: 600; text-align: center;">CANCELAR</div>
+              <div style="flex: 1; padding: 10px; border-radius: 10px; background: rgba(255,69,58,0.15); border: 1px solid rgba(255,69,58,0.3); color: var(--danger); font-size: 11px; font-weight: 700; text-align: center;">APAGAR</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ 06 PLANO DE TREINOS ═══════════════ -->
+  <section class="section" id="treinos">
+    <div class="section-label">06 — Treinos</div>
+    <h2 class="section-title" data-c="Treinos: Título">PLANO DE TREINOS</h2>
+    <div class="section-body" data-c="Treinos: Descrição">
+      <p>Plano ABC de hipertrofia prescrito pela Espaço Prime. 3 sessões alternadas, 7 exercícios cada, 3 séries por exercício. Todos os exercícios usam equipamento da academia.</p>
+    </div>
+
+    <div class="card" data-c="Treino 1: Card" style="margin-top: 20px;">
+      <div class="treino-header">TREINO 1 — PEITO / OMBROS / TRÍCEPS</div>
+      <div class="treino-sub">7 exercícios · 21 séries · 10–15 repetições</div>
+      <ul class="treino-list">
+        <li data-c="T1: Supino Reto"><span class="ex-name">Supino Reto Vertical</span><span class="ex-meta"><span>EMPH</span><span>Máquina</span></span></li>
+        <li data-c="T1: Crucifixo"><span class="ex-name">Crucifixo Articulado TS</span><span class="ex-meta"><span>EMPH</span><span>Máquina</span></span></li>
+        <li data-c="T1: Supino 45"><span class="ex-name">Supino 45° Bilateral</span><span class="ex-meta"><span>EMPH</span><span>Halter</span></span></li>
+        <li data-c="T1: Elev Frontal"><span class="ex-name">Elevação Frontal</span><span class="ex-meta"><span>EMPV</span><span>Corda</span></span></li>
+        <li data-c="T1: Elev Lateral"><span class="ex-name">Elevação Lateral</span><span class="ex-meta"><span>EMPV</span><span>Halter</span></span></li>
+        <li data-c="T1: Tri Testa"><span class="ex-name">Tríceps Testa</span><span class="ex-meta"><span>EMPH</span><span>Halter</span></span></li>
+        <li data-c="T1: Tri Corda"><span class="ex-name">Tríceps Corda</span><span class="ex-meta"><span>EMPV</span><span>Cross Over</span></span></li>
+      </ul>
+    </div>
+
+    <div class="card" data-c="Treino 2: Card">
+      <div class="treino-header">TREINO 2 — COSTAS / BÍCEPS</div>
+      <div class="treino-sub">7 exercícios · 21 séries · 10–15 repetições</div>
+      <ul class="treino-list">
+        <li data-c="T2: Pulley"><span class="ex-name">Pulley Frente Pronada</span><span class="ex-meta"><span>PXV</span><span>Máquina</span></span></li>
+        <li data-c="T2: Remada"><span class="ex-name">Remada Baixa Neutra</span><span class="ex-meta"><span>PXH</span><span>Máquina</span></span></li>
+        <li data-c="T2: Pulldown"><span class="ex-name">Pulldown Máquina</span><span class="ex-meta"><span>PXV</span><span>Máquina</span></span></li>
+        <li data-c="T2: Crucifixo Inv"><span class="ex-name">Crucifixo Inverso</span><span class="ex-meta"><span>PXH</span><span>Máquina</span></span></li>
+        <li data-c="T2: Rosca Martelo"><span class="ex-name">Rosca Martelo</span><span class="ex-meta"><span>PXV</span><span>Barra H</span></span></li>
+        <li data-c="T2: Rosca Scott"><span class="ex-name">Rosca Scott</span><span class="ex-meta"><span>PXV</span><span>Halter</span></span></li>
+        <li data-c="T2: Rosca Direta"><span class="ex-name">Rosca Direta</span><span class="ex-meta"><span>PXV</span><span>Cross Over</span></span></li>
+      </ul>
+    </div>
+
+    <div class="card" data-c="Treino 3: Card">
+      <div class="treino-header">TREINO 3 — PERNAS</div>
+      <div class="treino-sub">7 exercícios · 21 séries · 6–10 repetições</div>
+      <ul class="treino-list">
+        <li data-c="T3: Adutor"><span class="ex-name">Banco Adutor</span><span class="ex-meta"><span>DJ</span><span>Máquina</span></span></li>
+        <li data-c="T3: Extensor"><span class="ex-name">Banco Extensor</span><span class="ex-meta"><span>DJ</span><span>Máquina</span></span></li>
+        <li data-c="T3: Leg Press"><span class="ex-name">Leg Press 45°</span><span class="ex-meta"><span>DJ</span><span>Máquina</span></span></li>
+        <li data-c="T3: Afundo"><span class="ex-name">Afundo</span><span class="ex-meta"><span>DJU</span><span>Halter</span></span></li>
+        <li data-c="T3: Flexor"><span class="ex-name">Banco Flexor Unilateral</span><span class="ex-meta"><span>DQU</span><span>Máquina</span></span></li>
+        <li data-c="T3: Elev Pélvica"><span class="ex-name">Elevação Pélvica TS</span><span class="ex-meta"><span>DQ</span><span>Máquina</span></span></li>
+        <li data-c="T3: Agach Sumô"><span class="ex-name">Agachamento Sumô</span><span class="ex-meta"><span>DJ</span><span>Kettlebell</span></span></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ═══════════════ 07 DESIGN SYSTEM ═══════════════ -->
+  <section class="section" id="design">
+    <div class="section-label">07 — Design</div>
+    <h2 class="section-title" data-c="Design: Título">SISTEMA DE DESIGN</h2>
+    <div class="section-body" data-c="Design: Descrição">
+      <p>Visual escuro, minimalista, com tom industrial. Fundo quase preto, acento verde-limão elétrico, tipografia de impacto. Desenhado para legibilidade máxima em ambientes com pouca luz.</p>
+    </div>
+
+    <h3 style="margin-top: 24px; font-family: var(--font-display); font-size: 20px;" data-c="Design: Cores">PALETA DE CORES</h3>
+    <div class="swatch-grid">
+      <div class="swatch"><div class="swatch-color" style="background: #080808;"></div><div class="swatch-info"><div class="swatch-name">Background</div><div class="swatch-hex">#080808</div></div></div>
+      <div class="swatch"><div class="swatch-color" style="background: #111111;"></div><div class="swatch-info"><div class="swatch-name">Surface</div><div class="swatch-hex">#111111</div></div></div>
+      <div class="swatch"><div class="swatch-color" style="background: #1C1C1C;"></div><div class="swatch-info"><div class="swatch-name">Surface 2</div><div class="swatch-hex">#1C1C1C</div></div></div>
+      <div class="swatch"><div class="swatch-color" style="background: #222222;"></div><div class="swatch-info"><div class="swatch-name">Border</div><div class="swatch-hex">#222222</div></div></div>
+      <div class="swatch"><div class="swatch-color" style="background: #C2F000;"></div><div class="swatch-info"><div class="swatch-name">Accent</div><div class="swatch-hex">#C2F000</div></div></div>
+      <div class="swatch"><div class="swatch-color" style="background: #FF453A;"></div><div class="swatch-info"><div class="swatch-name">Danger</div><div class="swatch-hex">#FF453A</div></div></div>
+      <div class="swatch"><div class="swatch-color" style="background: #FFFFFF;"></div><div class="swatch-info"><div class="swatch-name">Text</div><div class="swatch-hex">#FFFFFF</div></div></div>
+      <div class="swatch"><div class="swatch-color" style="background: #888888;"></div><div class="swatch-info"><div class="swatch-name">Muted</div><div class="swatch-hex">#888888</div></div></div>
+    </div>
+
+    <h3 style="margin-top: 28px; font-family: var(--font-display); font-size: 20px;" data-c="Design: Tipografia">TIPOGRAFIA</h3>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 12px;">
+      <div class="card" data-c="Design: Bebas Neue">
+        <div style="font-family: var(--font-display); font-size: 36px; color: var(--text); line-height: 1;">BEBAS NEUE</div>
+        <p style="margin-top: 8px;">Títulos, nomes de exercícios, números do timer, inputs de peso. Impacto visual alto em tamanhos grandes.</p>
+      </div>
+      <div class="card" data-c="Design: Syne">
+        <div style="font-family: var(--font-ui); font-size: 20px; font-weight: 700; color: var(--text);">Syne</div>
+        <p style="margin-top: 8px;">Corpo de texto, labels, botões, descrições. Geométrica moderna com boa legibilidade em tamanhos pequenos.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ 08 PLANO DE LANÇAMENTO ═══════════════ -->
+  <section class="section" id="fases">
+    <div class="section-label">08 — Lançamento</div>
+    <h2 class="section-title" data-c="Fases: Título">PLANO DE LANÇAMENTO</h2>
+
+    <div class="phase-grid">
+      <div class="phase-card" data-c="Fase 1: Fundação">
+        <div class="phase-num">Fase 1</div>
+        <div class="phase-title">FUNDAÇÃO</div>
+        <ul class="phase-list">
+          <li>Setup do projeto e tema visual</li>
+          <li>Definição dos dados de treinos</li>
+          <li>Carregamento de fontes custom</li>
+          <li>Tela inicial com cards de treino</li>
+        </ul>
+      </div>
+      <div class="phase-card" data-c="Fase 2: Fluxo core">
+        <div class="phase-num">Fase 2</div>
+        <div class="phase-title">FLUXO CORE</div>
+        <ul class="phase-list">
+          <li>Tela de exercício com input de peso</li>
+          <li>Timer de descanso circular</li>
+          <li>Tela de conclusão com resumo</li>
+          <li>Persistência de pesos e datas</li>
+        </ul>
+      </div>
+      <div class="phase-card" data-c="Fase 3: Polimento">
+        <div class="phase-num">Fase 3</div>
+        <div class="phase-title">POLIMENTO</div>
+        <ul class="phase-list">
+          <li>Fluxo completo de pular exercícios</li>
+          <li>Feedback háptico e animações</li>
+          <li>Teste em dispositivo real</li>
+          <li>Ajustes de UX baseados em uso</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ 09 MÉTRICAS ═══════════════ -->
+  <section class="section" id="metricas">
+    <div class="section-label">09 — Métricas</div>
+    <h2 class="section-title" data-c="Métricas: Título">MÉTRICAS DE SUCESSO</h2>
+    <div class="section-body" data-c="Métricas: Intro">
+      <p>Como app pessoal de um único usuário, as métricas são qualitativas e focadas em hábito e utilidade real.</p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 20px;">
+      <div class="card card-accent" data-c="Métrica: Uso regular">
+        <h3>Uso Regular</h3>
+        <p>O app é usado em todos os treinos da semana (3x) sem recorrer a alternativas como bloco de notas.</p>
+      </div>
+      <div class="card card-accent" data-c="Métrica: Sobrecarga">
+        <h3>Sobrecarga Progressiva</h3>
+        <p>É possível verificar se os pesos aumentaram ao longo das semanas consultando o "último peso" de cada exercício.</p>
+      </div>
+      <div class="card card-accent" data-c="Métrica: Velocidade">
+        <h3>Velocidade de Uso</h3>
+        <p>Registrar uma série (inserir peso + tocar botão) leva menos de 5 segundos durante o treino.</p>
+      </div>
+      <div class="card card-accent" data-c="Métrica: Completude">
+        <h3>Treinos Completos</h3>
+        <p>O fluxo de pular exercícios permite completar o treino inteiro mesmo quando aparelhos estão ocupados.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ 10 ROADMAP FUTURO ═══════════════ -->
+  <section class="section" id="futuro">
+    <div class="section-label">10 — Futuro</div>
+    <h2 class="section-title" data-c="Futuro: Título">ROADMAP FUTURO</h2>
+    <div class="section-body" data-c="Futuro: Intro">
+      <p>Funcionalidades planejadas para versões futuras, após a v1 estável.</p>
+    </div>
+
+    <div class="card card-info" data-c="Futuro: Gráficos" style="margin-top: 16px;">
+      <h3><span class="priority p1" style="margin-right: 8px;">P1</span> Gráficos de Progresso</h3>
+      <p>Visualizar a evolução de peso por exercício ao longo do tempo. Gráficos de linha mostrando tendência semanal.</p>
+    </div>
+
+    <div class="card card-info" data-c="Futuro: Editor">
+      <h3><span class="priority p2" style="margin-right: 8px;">P2</span> Editor de Plano</h3>
+      <p>Permitir adicionar, remover, ou reordenar exercícios. Criar novos treinos além do ABC original. Útil quando o instrutor mudar o plano.</p>
+    </div>
+  </section>
+
+  <!-- ═══════════════ 11 DEMO INTERATIVA ═══════════════ -->
+  <section class="section" id="demo">
+    <div class="section-label">11 — Demo</div>
+    <h2 class="section-title" data-c="Demo: Título">DEMO INTERATIVA</h2>
+    <div class="section-body" data-c="Demo: Descrição">
+      <p>Protótipo funcional com todas as telas e interações. Clique nos cards de treino para testar o fluxo completo: seleção de treino, registro de séries, timer de descanso, pular exercícios, e resumo final.</p>
+    </div>
+    <div style="margin-top: 24px; text-align: center;">
+      <a class="demo-link" href="../mockup.html" target="_blank">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+        ABRIR DEMO INTERATIVA
+      </a>
+      <p style="font-size: 11px; color: var(--dim); margin-top: 12px;">Abre em nova aba · Protótipo completo com dados simulados</p>
+    </div>
+  </section>
+
+  <div style="height: 100px;"></div>
+</div><!-- /container -->
+
+<!-- ═══════════════ COMMENTING SYSTEM ═══════════════ -->
+<div class="review-hint" id="reviewHint">
+  <div class="hint-title">Como Revisar</div>
+  <div class="hint-step"><span class="hint-num">1</span><span>Clique em <strong>Review Mode</strong> para começar</span></div>
+  <div class="hint-step"><span class="hint-num">2</span><span>Clique em qualquer seção destacada para comentar</span></div>
+  <div class="hint-step"><span class="hint-num">3</span><span>Clique em <strong>Export Comments</strong> para copiar</span></div>
+  <div class="hint-step"><span class="hint-num">4</span><span>Cole os comentários de volta no chat para revisões</span></div>
+  <button class="hint-dismiss" onclick="dismissHint()">Entendi</button>
+</div>
+
+<div class="review-toolbar">
+  <button class="export-toggle" id="exportToggle" onclick="openExportPanel()">Export Comments</button>
+  <button class="review-toggle" id="reviewToggle" onclick="toggleReviewMode()">
+    <span id="toggleIcon">&#9998;</span>
+    <span id="toggleLabel">Review Mode</span>
+    <span class="count" id="commentCount" style="display:none;">0</span>
+  </button>
+</div>
+
+<div class="export-panel" id="exportPanel">
+  <h3>Export Comments</h3>
+  <p style="color:var(--muted);font-size:12px;margin-bottom:12px;">
+    Copie este texto e cole de volta na conversa para revisões.
+  </p>
+  <textarea id="exportText" readonly></textarea>
+  <div class="actions">
+    <button onclick="copyExport()" style="background:var(--accent);color:var(--bg);">Copiar</button>
+    <button onclick="clearAllComments()" style="background:rgba(255,69,58,0.15);color:var(--danger);">Limpar Tudo</button>
+    <button onclick="closeExportPanel()" style="background:var(--surface-2);color:var(--muted); border: 1px solid var(--border);">Fechar</button>
+  </div>
+</div>
+
+<script>
+let reviewMode = false;
+const STORAGE_KEY = 'prd-comments-forja-gym-tracker-v4';
+let comments = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+let activePopover = null;
+
+const HINT_KEY = STORAGE_KEY + '-hint-dismissed';
+if (!localStorage.getItem(HINT_KEY)) {
+  setTimeout(() => { document.getElementById('reviewHint').classList.add('visible'); }, 1500);
+}
+function dismissHint() {
+  document.getElementById('reviewHint').classList.remove('visible');
+  localStorage.setItem(HINT_KEY, 'true');
+}
+
+function updateExportButton() {
+  const btn = document.getElementById('exportToggle');
+  btn.classList.toggle('visible', comments.length > 0);
+}
+
+function toggleReviewMode() {
+  reviewMode = !reviewMode;
+  document.body.classList.toggle('review-mode', reviewMode);
+  const btn = document.getElementById('reviewToggle');
+  const label = document.getElementById('toggleLabel');
+  const icon = document.getElementById('toggleIcon');
+  if (reviewMode) {
+    btn.classList.add('active');
+    label.textContent = 'Exit Review';
+    icon.textContent = '\u2716';
+    dismissHint();
+  } else {
+    btn.classList.remove('active');
+    label.textContent = 'Review Mode';
+    icon.textContent = '\u270E';
+    closeAllPopovers();
+  }
+}
+
+function openExportPanel() {
+  updateExport();
+  document.getElementById('exportPanel').classList.add('open');
+}
+
+function saveComments() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(comments));
+  updateCount();
+  updateExport();
+  updateExportButton();
+}
+
+function updateCount() {
+  const el = document.getElementById('commentCount');
+  el.style.display = comments.length > 0 ? 'inline-flex' : 'none';
+  el.textContent = comments.length;
+}
+
+function closeAllPopovers() {
+  document.querySelectorAll('body > .comment-popover').forEach(p => p.remove());
+  activePopover = null;
+}
+
+function getContext(el) {
+  const t = el.textContent.trim().replace(/\s+/g, ' ').substring(0, 80);
+  return t.length === 80 ? t + '...' : t;
+}
+
+function positionPopover(pop, anchor) {
+  document.body.appendChild(pop);
+  const r = anchor.getBoundingClientRect();
+  let top = r.bottom + 4;
+  let left = r.left;
+  if (top + 300 > window.innerHeight) top = r.top - 300;
+  if (left + 340 > window.innerWidth) left = window.innerWidth - 350;
+  if (left < 10) left = 10;
+  pop.style.top = top + 'px';
+  pop.style.left = left + 'px';
+}
+
+function isTableRow(el) { return el.tagName === 'TR'; }
+function isListItem(el) { return el.tagName === 'LI'; }
+
+document.addEventListener('click', function(e) {
+  if (!reviewMode) return;
+  const t = e.target.closest('[data-c]');
+  if (!t || e.target.closest('.comment-pin') || e.target.closest('.comment-popover')) return;
+  e.preventDefault();
+  e.stopPropagation();
+  closeAllPopovers();
+
+  const section = t.getAttribute('data-c');
+  const id = 'c' + Date.now();
+
+  const pop = document.createElement('div');
+  pop.className = 'comment-popover';
+  pop._target = t;
+  pop.innerHTML = `
+    <div style="color:var(--dim);font-size:10px;margin-bottom:8px;font-weight:700;text-transform:uppercase;letter-spacing:1px;">
+      Comentando: <span style="color:var(--accent);">${section}</span>
+    </div>
+    <textarea placeholder="Escreva seu feedback..." id="${id}-t" autofocus></textarea>
+    <div class="comment-popover-actions">
+      <button class="btn-cancel" onclick="closeAllPopovers()">Cancelar</button>
+      <button class="btn-save" onclick="saveComment('${id}','${section.replace(/'/g,"\\'")}',this)">Salvar</button>
+    </div>
+  `;
+  positionPopover(pop, t);
+  setTimeout(() => pop.querySelector('textarea').focus(), 50);
+  activePopover = pop;
+});
+
+function saveComment(id, section, btn) {
+  const pop = btn.closest('.comment-popover');
+  const text = pop.querySelector('textarea').value.trim();
+  if (!text) return;
+  const target = pop._target;
+  const ctx = getContext(target);
+  comments.push({ id, section, text, context: ctx, ts: new Date().toISOString() });
+  saveComments();
+
+  const pin = document.createElement('span');
+  pin.className = 'comment-pin';
+  pin.textContent = comments.length;
+  pin.setAttribute('data-cid', id);
+  pin.onclick = function(e) { e.stopPropagation(); showDetail(id, this); };
+
+  if (isTableRow(target)) {
+    const lastTd = target.querySelector('td:last-child');
+    if (lastTd) lastTd.appendChild(pin);
+  } else {
+    target.appendChild(pin);
+  }
+
+  closeAllPopovers();
+}
+
+function showDetail(id, pinEl) {
+  closeAllPopovers();
+  const c = comments.find(x => x.id === id);
+  if (!c) return;
+  const pop = document.createElement('div');
+  pop.className = 'comment-popover';
+  pop.innerHTML = `
+    <div style="color:var(--dim);font-size:10px;margin-bottom:6px;font-weight:700;letter-spacing:1px;">
+      <span style="color:var(--danger);">#${comments.indexOf(c)+1}</span> em <span style="color:var(--accent);">${c.section}</span>
+    </div>
+    <div style="color:var(--text);font-size:13px;padding:6px 0;">${c.text}</div>
+    <div class="comment-popover-actions">
+      <button class="btn-delete" onclick="deleteComment('${id}')">Excluir</button>
+      <button class="btn-cancel" onclick="closeAllPopovers()">Fechar</button>
+    </div>
+  `;
+  positionPopover(pop, pinEl);
+}
+
+function deleteComment(id) {
+  comments = comments.filter(c => c.id !== id);
+  saveComments();
+  document.querySelectorAll(`.comment-pin[data-cid="${id}"]`).forEach(el => el.remove());
+  closeAllPopovers();
+  document.querySelectorAll('.comment-pin').forEach((p, i) => { p.textContent = i + 1; });
+}
+
+function updateExport() {
+  const ta = document.getElementById('exportText');
+  if (!comments.length) { ta.value = 'Nenhum comentário ainda.'; return; }
+  let t = `# Comentários do PRD — Forja\n# ${new Date().toLocaleDateString('pt-BR')} | ${comments.length} comentário(s)\n\n`;
+  comments.forEach((c, i) => {
+    t += `## #${i+1} — ${c.section}\n`;
+    t += `${c.text}\n`;
+    t += `> Contexto: "${c.context}"\n\n`;
+  });
+  ta.value = t;
+}
+
+function copyExport() {
+  navigator.clipboard.writeText(document.getElementById('exportText').value).then(() => {
+    const b = document.querySelector('.export-panel .actions button:first-child');
+    b.textContent = 'Copiado!'; b.style.background = '#059669';
+    setTimeout(() => { b.textContent = 'Copiar'; b.style.background = ''; }, 2000);
+  });
+}
+
+function closeExportPanel() { document.getElementById('exportPanel').classList.remove('open'); }
+
+function clearAllComments() {
+  if (!confirm('Excluir todos os comentários?')) return;
+  comments = [];
+  saveComments();
+  document.querySelectorAll('.comment-pin').forEach(el => el.remove());
+  closeExportPanel();
+}
+
+function restore() {
+  comments.forEach((c, i) => {
+    const el = document.querySelector(`[data-c="${CSS.escape(c.section)}"]`);
+    if (!el) return;
+    const pin = document.createElement('span');
+    pin.className = 'comment-pin';
+    pin.textContent = i + 1;
+    pin.setAttribute('data-cid', c.id);
+    pin.onclick = function(e) { e.stopPropagation(); showDetail(c.id, this); };
+    if (isTableRow(el)) {
+      const lastTd = el.querySelector('td:last-child');
+      if (lastTd) lastTd.appendChild(pin);
+    } else {
+      el.appendChild(pin);
+    }
+  });
+}
+
+updateCount(); updateExport(); updateExportButton(); restore();
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    if (activePopover) { activePopover.remove(); activePopover = null; }
+    else if (document.getElementById('exportPanel').classList.contains('open')) closeExportPanel();
+    else if (reviewMode) toggleReviewMode();
+  }
+});
+</script>
+</body>
+</html>
