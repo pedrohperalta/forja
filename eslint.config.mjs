@@ -6,4 +6,10 @@ export default [
   {
     ignores: ['node_modules/', 'dist/', '.expo/', 'ios/', 'android/'],
   },
+  {
+    files: ['tailwind.config.ts', 'metro.config.js', 'babel.config.js', 'commitlint.config.js'],
+    rules: {
+      '@typescript-eslint/no-require-imports': 'off',
+    },
+  },
 ]
