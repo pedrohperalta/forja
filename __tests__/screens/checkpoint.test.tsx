@@ -39,16 +39,18 @@ jest.mock('@shopify/flash-list', () => {
   const React = require('react')
   const { View } = require('react-native')
   return {
-    FlashList: ({ data, renderItem }: { data: unknown[]; renderItem: (info: { item: unknown; index: number }) => React.JSX.Element }) => {
+    FlashList: ({
+      data,
+      renderItem,
+    }: {
+      data: unknown[]
+      renderItem: (info: { item: unknown; index: number }) => React.JSX.Element
+    }) => {
       return React.createElement(
         View,
         null,
         data.map((item: unknown, index: number) =>
-          React.createElement(
-            React.Fragment,
-            { key: index },
-            renderItem({ item, index }),
-          ),
+          React.createElement(React.Fragment, { key: index }, renderItem({ item, index })),
         ),
       )
     },

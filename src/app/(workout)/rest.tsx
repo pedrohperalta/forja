@@ -49,9 +49,7 @@ export default function RestScreen(): React.JSX.Element {
       {nextExercise && (
         <View className="mt-8">
           <Text className="text-center text-sm text-text-med">Próximo exercício</Text>
-          <Text className="mt-1 text-center text-lg font-bold text-text">
-            {nextExercise.name}
-          </Text>
+          <Text className="mt-1 text-center text-lg font-bold text-text">{nextExercise.name}</Text>
         </View>
       )}
 
@@ -71,9 +69,7 @@ export default function RestScreen(): React.JSX.Element {
           onPress={handleGoToCheckpoint}
           accessibilityRole="button"
         >
-          <Text className="text-warning">
-            Ir para exercícios pulados ({skippedIds.length})
-          </Text>
+          <Text className="text-warning">Ir para exercícios pulados ({skippedIds.length})</Text>
         </Pressable>
       )}
     </View>

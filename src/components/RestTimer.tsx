@@ -29,11 +29,7 @@ export function RestTimer({ secondsLeft, progress }: RestTimerProps): React.JSX.
 
     // Color interpolation: accent (#C2F000) -> danger (#FF453A) in last portion
     // We use the progress value to drive this (last ~17% = last 10s of 60s)
-    const stroke = interpolateColor(
-      progress.value,
-      [0, 0.83, 1],
-      ['#C2F000', '#C2F000', '#FF453A'],
-    )
+    const stroke = interpolateColor(progress.value, [0, 0.83, 1], ['#C2F000', '#C2F000', '#FF453A'])
 
     return {
       strokeDashoffset,

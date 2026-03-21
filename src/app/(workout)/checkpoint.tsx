@@ -54,18 +54,12 @@ export default function CheckpointScreen(): React.JSX.Element | null {
   return (
     <View className="flex-1 bg-background px-6 pt-16">
       <Text className="mb-4 text-2xl font-bold text-text">Exercícios Pulados</Text>
-      <Text className="mb-6 text-sm text-text-med">
-        Escolha fazer agora ou remover do treino
-      </Text>
+      <Text className="mb-6 text-sm text-text-med">Escolha fazer agora ou remover do treino</Text>
 
       <FlashList
         data={skippedExercises}
         renderItem={({ item }: { item: Exercise }) => (
-          <PendingExerciseCard
-            exercise={item}
-            onDoNow={handleDoNow}
-            onRemove={handleRemove}
-          />
+          <PendingExerciseCard exercise={item} onDoNow={handleDoNow} onRemove={handleRemove} />
         )}
         keyExtractor={(item: Exercise) => item.id}
       />

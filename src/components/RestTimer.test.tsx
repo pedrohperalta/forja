@@ -4,6 +4,10 @@
  * Tests SVG circle rendering, countdown display, and accessibility.
  */
 
+import { render, screen } from '@testing-library/react-native'
+import type { SharedValue } from 'react-native-reanimated'
+import { RestTimer } from './RestTimer'
+
 jest.mock('react-native-reanimated', () => {
   const React = require('react')
   const mock = {
@@ -28,10 +32,6 @@ jest.mock('react-native-svg', () => {
     default: (props: Record<string, unknown>) => React.createElement('View', props),
   }
 })
-
-import { render, screen } from '@testing-library/react-native'
-import type { SharedValue } from 'react-native-reanimated'
-import { RestTimer } from './RestTimer'
 
 // Helper to create a mock SharedValue that satisfies the type checker
 function mockSharedValue(value: number): SharedValue<number> {

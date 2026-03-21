@@ -10,9 +10,7 @@ describe('SeriesDots', () => {
   })
 
   it('renders totalSets number of dots', () => {
-    const { getAllByLabelText } = render(
-      <SeriesDots currentSet={1} totalSets={3} />,
-    )
+    const { getAllByLabelText } = render(<SeriesDots currentSet={1} totalSets={3} />)
 
     // Each dot has its own accessibility label
     const dots = getAllByLabelText(/Série \d/)

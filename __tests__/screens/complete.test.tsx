@@ -33,11 +33,7 @@ jest.mock('@shopify/flash-list', () => {
         View,
         null,
         data.map((item: unknown, index: number) =>
-          React.createElement(
-            React.Fragment,
-            { key: index },
-            renderItem({ item, index }),
-          ),
+          React.createElement(React.Fragment, { key: index }, renderItem({ item, index })),
         ),
       )
     },
@@ -80,8 +76,7 @@ jest.mock('@/stores/workoutStore', () => ({
 }))
 
 jest.mock('@/stores/appStore', () => ({
-  useAppStore: (selector: (state: typeof mockAppState) => unknown) =>
-    selector(mockAppState),
+  useAppStore: (selector: (state: typeof mockAppState) => unknown) => selector(mockAppState),
 }))
 
 const mockReplace = jest.fn()

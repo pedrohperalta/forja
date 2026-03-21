@@ -124,9 +124,7 @@ export default function CompleteScreen(): React.JSX.Element {
             <View className="mb-2 flex-row items-center justify-between rounded-md bg-surface p-3">
               <View>
                 <Text className="text-text">{item.name}</Text>
-                <Text className="text-xs text-text-med">
-                  {item.sets} séries
-                </Text>
+                <Text className="text-xs text-text-med">{item.sets} séries</Text>
               </View>
               <Text className="text-lg font-bold text-accent">{item.weight} kg</Text>
             </View>

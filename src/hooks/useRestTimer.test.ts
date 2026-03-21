@@ -6,6 +6,8 @@
 
 import { renderHook, act } from '@testing-library/react-native'
 
+import { useRestTimer } from './useRestTimer'
+
 jest.mock('react-native-reanimated', () => {
   let sharedVal = { value: 0 }
   return {
@@ -28,8 +30,6 @@ jest.mock('react-native-reanimated', () => {
     cancelAnimation: jest.fn(),
   }
 })
-
-import { useRestTimer } from './useRestTimer'
 
 describe('useRestTimer', () => {
   beforeEach(() => {

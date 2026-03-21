@@ -45,8 +45,7 @@ jest.mock('@/stores/workoutStore', () => ({
 }))
 
 jest.mock('@/stores/appStore', () => ({
-  useAppStore: (selector: (state: typeof mockAppState) => unknown) =>
-    selector(mockAppState),
+  useAppStore: (selector: (state: typeof mockAppState) => unknown) => selector(mockAppState),
 }))
 
 const mockReplace = jest.fn()

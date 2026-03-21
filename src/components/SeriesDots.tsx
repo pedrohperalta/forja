@@ -6,10 +6,7 @@ type SeriesDotsProps = {
 }
 
 /** Filled/hollow dot indicators for set progress. */
-export function SeriesDots({
-  currentSet,
-  totalSets,
-}: SeriesDotsProps): React.JSX.Element {
+export function SeriesDots({ currentSet, totalSets }: SeriesDotsProps): React.JSX.Element {
   return (
     <View
       className="flex-row items-center gap-2"

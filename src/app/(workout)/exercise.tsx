@@ -125,14 +125,10 @@ export default function ExerciseScreen(): React.JSX.Element | null {
       <ProgressBar current={log.length} total={totalExercises} />
 
       {/* Exercise name */}
-      <Text className="mt-6 text-center text-3xl font-bold text-text">
-        {currentExercise.name}
-      </Text>
+      <Text className="mt-6 text-center text-3xl font-bold text-text">{currentExercise.name}</Text>
 
       {/* Reps info */}
-      <Text className="mt-2 text-center text-lg text-text-med">
-        {currentExercise.reps} reps
-      </Text>
+      <Text className="mt-2 text-center text-lg text-text-med">{currentExercise.reps} reps</Text>
 
       {/* Series dots */}
       <View className="mt-4 items-center">
