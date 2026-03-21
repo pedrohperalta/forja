@@ -31,6 +31,6 @@ Iniciantes na academia que querem registrar seus treinos e cargas utilizadas.
 
 ## References
 
-- [PRD v8](../docs/discovery/prd.html)
-- [Solution Design v1](../docs/solution/solution-design.html)
-- [Interactive Mockup](../docs/discovery/mockup.html)
+- [PRD v8](../docs/ideas/forja-mvp/discovery/prd.html)
+- [Solution Design v4](../docs/ideas/forja-mvp/solution/solution-design.html)
+- [Interactive Mockup](../docs/ideas/forja-mvp/discovery/mockup.html)
