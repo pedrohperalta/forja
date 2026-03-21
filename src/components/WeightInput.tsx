@@ -31,13 +31,13 @@ export function WeightInput({
   return (
     <TextInput
       testID="weight-input"
-      className="h-14 rounded-md border border-border-med bg-surface px-4 text-center text-2xl text-text"
+      className="h-[72px] rounded-lg border border-border-med bg-surface px-4 text-center font-display text-[40px] text-accent"
       value={value}
       onChangeText={handleChangeText}
       keyboardType="decimal-pad"
       accessibilityLabel={`Peso para ${exerciseName}, série ${setNumber}`}
       placeholder="0"
-      placeholderTextColor="#888888"
+      placeholderTextColor="#444444"
     />
   )
 }

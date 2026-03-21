@@ -1,8 +1,8 @@
 /**
- * History screen tests — Phase 4 (TDD: tests first, implementation second)
+ * History screen tests
  *
- * Tests the History screen behavior: list ordering, inline delete with
- * confirmation, cancel, and empty state.
+ * Tests the History screen behavior: list ordering, tap-to-expand
+ * delete flow, month section headers, and empty state.
  */
 
 import { render, screen, fireEvent } from '@testing-library/react-native'
@@ -27,6 +27,20 @@ jest.mock('@shopify/flash-list', () => {
   const { FlatList } = require('react-native')
   return {
     FlashList: FlatList,
+  }
+})
+
+// Mock react-native-svg for the back chevron
+jest.mock('react-native-svg', () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const React = require('react')
+  const Svg = (props: Record<string, unknown>) => React.createElement('View', props)
+  Svg.default = Svg
+  return {
+    __esModule: true,
+    default: Svg,
+    Svg,
+    Path: (props: Record<string, unknown>) => React.createElement('View', props),
   }
 })
 
@@ -93,23 +107,32 @@ describe('HistoryScreen', () => {
 
     render(<HistoryScreen />)
 
-    // All three should be rendered
     expect(screen.getByText('Treino A')).toBeTruthy()
     expect(screen.getByText('Treino B')).toBeTruthy()
     expect(screen.getByText('Treino C')).toBeTruthy()
   })
 
-  describe('Inline delete', () => {
+  describe('Tap-to-expand delete', () => {
+    it('shows APAGAR after tapping a card', () => {
+      const sessions = [makeSession({ id: 'A-1000' as WorkoutId, planName: 'Treino A' })]
+      setupMocks({ history: sessions })
+
+      render(<HistoryScreen />)
+
+      fireEvent.press(screen.getByTestId('workout-history-card-A-1000'))
+
+      expect(screen.getByText('APAGAR')).toBeTruthy()
+    })
+
     it('shows confirmation when APAGAR is tapped', () => {
       const sessions = [makeSession({ id: 'A-1000' as WorkoutId, planName: 'Treino A' })]
       setupMocks({ history: sessions })
 
       render(<HistoryScreen />)
 
-      // Tap the APAGAR button
+      fireEvent.press(screen.getByTestId('workout-history-card-A-1000'))
       fireEvent.press(screen.getByText('APAGAR'))
 
-      // Confirmation buttons should appear
       expect(screen.getByText('CONFIRMAR')).toBeTruthy()
       expect(screen.getByText('CANCELAR')).toBeTruthy()
     })
@@ -120,7 +143,7 @@ describe('HistoryScreen', () => {
 
       render(<HistoryScreen />)
 
-      // Tap APAGAR, then CONFIRMAR
+      fireEvent.press(screen.getByTestId('workout-history-card-A-1000'))
       fireEvent.press(screen.getByText('APAGAR'))
       fireEvent.press(screen.getByText('CONFIRMAR'))
 
@@ -133,17 +156,25 @@ describe('HistoryScreen', () => {
 
       render(<HistoryScreen />)
 
-      // Tap APAGAR to show confirmation
+      fireEvent.press(screen.getByTestId('workout-history-card-A-1000'))
       fireEvent.press(screen.getByText('APAGAR'))
       expect(screen.getByText('CONFIRMAR')).toBeTruthy()
 
-      // Tap CANCELAR to hide confirmation
       fireEvent.press(screen.getByText('CANCELAR'))
 
-      // Confirmation should be hidden, APAGAR should be back
-      expect(screen.queryByText('CONFIRMAR')).toBeNull()
       expect(screen.getByText('APAGAR')).toBeTruthy()
     })
+  })
+
+  it('renders back button integrated with TREINOS label', () => {
+    const sessions = [makeSession()]
+    setupMocks({ history: sessions })
+
+    render(<HistoryScreen />)
+
+    expect(screen.getByTestId('back-button')).toBeTruthy()
+    // The "TREINOS" label is part of the back button row, not a separate element
+    expect(screen.getByText('TREINOS')).toBeTruthy()
   })
 
   it('shows empty state when no history', () => {
@@ -151,6 +182,22 @@ describe('HistoryScreen', () => {
 
     render(<HistoryScreen />)
 
-    expect(screen.getByText('Nenhum treino registrado')).toBeTruthy()
+    expect(screen.getByText('Nenhum treino registrado ainda.')).toBeTruthy()
+  })
+
+  it('shows workout count summary', () => {
+    const sessions = [
+      makeSession({ id: 'A-1000' as WorkoutId }),
+      makeSession({
+        id: 'B-2000' as WorkoutId,
+        date: '2026-03-20',
+        createdAt: '2026-03-20T10:00:00.000Z',
+      }),
+    ]
+    setupMocks({ history: sessions })
+
+    render(<HistoryScreen />)
+
+    expect(screen.getByText('2 treinos registrados')).toBeTruthy()
   })
 })

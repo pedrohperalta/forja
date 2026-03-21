@@ -53,8 +53,15 @@ export default function CheckpointScreen(): React.JSX.Element | null {
 
   return (
     <View className="flex-1 bg-background px-6 pt-16">
-      <Text className="mb-4 text-2xl font-bold text-text">Exercícios Pulados</Text>
-      <Text className="mb-6 text-sm text-text-med">Escolha fazer agora ou remover do treino</Text>
+      <Text className="mb-1 font-ui text-[11px] uppercase tracking-[3px] text-warning">
+        PENDENTES
+      </Text>
+      <Text className="mb-2 font-display text-[32px] tracking-[1px] text-text">
+        Exercicios Pulados
+      </Text>
+      <Text className="mb-8 font-ui text-[15px] text-text-med">
+        Escolha fazer agora ou remover do treino
+      </Text>
 
       <FlashList
         data={skippedExercises}

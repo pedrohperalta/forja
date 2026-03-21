@@ -94,69 +94,105 @@ export default function CompleteScreen(): React.JSX.Element {
   if (log.length === 0) {
     return (
       <View className="flex-1 items-center justify-center bg-background px-6">
-        <Text className="text-xl text-text-med">Nenhum exercício completado</Text>
+        <Text className="font-display text-[22px] tracking-[1px] text-text-med">
+          Nenhum exercício completado
+        </Text>
         <Pressable
           testID="back-to-home-button"
-          className="mt-8 rounded-md bg-accent px-8 py-4"
+          className="mt-10 h-[52px] w-full items-center justify-center rounded-pill bg-accent"
           onPress={handleGoHome}
           accessibilityRole="button"
           accessibilityLabel="Voltar ao início"
         >
-          <Text className="font-bold text-background">VOLTAR AO INÍCIO</Text>
+          <Text className="font-ui text-[13px] uppercase tracking-[1px] text-background">
+            VOLTAR AO INÍCIO
+          </Text>
         </Pressable>
       </View>
     )
   }
 
   return (
-    <View className="flex-1 bg-background px-6 pt-16">
-      {/* Title */}
-      <Text className="text-center text-3xl font-bold text-accent">Treino Completo!</Text>
+    <View className="flex-1 bg-background">
+      {/* Content area */}
+      <View className="flex-1 px-6 pt-16">
+        {/* Eyebrow chip */}
+        <View className="items-center">
+          <View className="rounded-pill bg-accent-dim px-4 py-1.5">
+            <Text className="font-ui text-[10px] uppercase tracking-[2px] text-accent">
+              TREINO CONCLUÍDO
+            </Text>
+          </View>
+        </View>
 
-      {/* Stats grid — 3 columns */}
-      <View className="mt-8 flex-row justify-around">
-        <View className="items-center">
-          <Text className="text-3xl font-bold text-text">{exerciseCount}</Text>
-          <Text className="text-sm text-text-med">Exercícios</Text>
-        </View>
-        <View className="items-center">
-          <Text className="text-3xl font-bold text-text">{totalSets}</Text>
-          <Text className="text-sm text-text-med">Séries</Text>
-        </View>
-        <View className="items-center">
-          <Text className="text-3xl font-bold text-text">{durationMinutes}</Text>
-          <Text className="text-sm text-text-med">Minutos</Text>
-        </View>
-      </View>
+        {/* Title */}
+        <Text className="mt-4 text-center font-display text-[40px] tracking-[2px] text-text">
+          MUITO BEM!
+        </Text>
 
-      {/* Exercise summary list */}
-      <View className="mt-8 flex-1">
-        <Text className="mb-4 text-lg font-bold text-text">Resumo</Text>
-        <FlashList
-          data={exercises}
-          renderItem={({ item }: { item: CompletedExercise }) => (
-            <View className="mb-2 flex-row items-center justify-between rounded-md bg-surface p-3">
-              <View>
-                <Text className="text-text">{item.name}</Text>
-                <Text className="text-xs text-text-med">{item.sets} séries</Text>
+        {/* Stats grid — 3 columns in cards */}
+        <View className="mt-8 flex-row gap-3">
+          <View className="flex-1 items-center rounded-lg bg-surface py-5">
+            <Text className="font-display text-[40px] leading-none text-accent">
+              {exerciseCount}
+            </Text>
+            <Text className="mt-2 font-ui text-[10px] uppercase tracking-[2px] text-muted">
+              Exercicios
+            </Text>
+          </View>
+          <View className="flex-1 items-center rounded-lg bg-surface py-5">
+            <Text className="font-display text-[40px] leading-none text-accent">{totalSets}</Text>
+            <Text className="mt-2 font-ui text-[10px] uppercase tracking-[2px] text-muted">
+              Series
+            </Text>
+          </View>
+          <View className="flex-1 items-center rounded-lg bg-surface py-5">
+            <Text className="font-display text-[40px] leading-none text-accent">
+              {durationMinutes}
+            </Text>
+            <Text className="mt-2 font-ui text-[10px] uppercase tracking-[2px] text-muted">
+              Minutos
+            </Text>
+          </View>
+        </View>
+
+        {/* Exercise summary list */}
+        <View className="mt-10 flex-1">
+          <Text className="mb-4 font-ui text-[11px] uppercase tracking-[3px] text-accent">
+            RESUMO
+          </Text>
+          <FlashList
+            data={exercises}
+            renderItem={({ item }: { item: CompletedExercise }) => (
+              <View className="mb-3 flex-row items-center justify-between rounded-lg border border-border bg-surface px-5 py-4">
+                <View className="flex-1">
+                  <Text className="font-ui text-[15px] text-text">{item.name}</Text>
+                  <Text className="mt-1 font-ui text-[11px] tracking-[0.5px] text-muted">
+                    {item.sets} series
+                  </Text>
+                </View>
+                <Text className="font-display text-[28px] text-accent">{item.weight} kg</Text>
               </View>
-              <Text className="text-lg font-bold text-accent">{item.weight} kg</Text>
-            </View>
-          )}
-          keyExtractor={(item: CompletedExercise, index: number) => `${item.name}-${index}`}
-        />
+            )}
+            keyExtractor={(item: CompletedExercise, index: number) => `${item.name}-${index}`}
+          />
+        </View>
       </View>
 
-      {/* Go home button */}
-      <Pressable
-        testID="back-to-home-button"
-        className="mb-12 rounded-md bg-accent py-4"
-        onPress={handleGoHome}
-        accessibilityRole="button"
-        accessibilityLabel="Voltar ao início"
-      >
-        <Text className="text-center font-bold text-background">VOLTAR AO INÍCIO</Text>
-      </Pressable>
+      {/* Sticky bottom CTA — thumb zone */}
+      <View className="border-t border-border bg-background px-6 pb-10 pt-4">
+        <Pressable
+          testID="back-to-home-button"
+          className="h-[56px] items-center justify-center rounded-pill bg-accent"
+          onPress={handleGoHome}
+          accessibilityRole="button"
+          accessibilityLabel="Voltar ao início"
+        >
+          <Text className="font-ui text-[14px] uppercase tracking-[1px] text-background">
+            VOLTAR AO INÍCIO
+          </Text>
+        </Pressable>
+      </View>
     </View>
   )
 }

@@ -13,11 +13,11 @@ export function HistoryChip({ count, onPress }: HistoryChipProps): React.JSX.Ele
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={`Historico, ${count} treinos`}
-      className="min-h-[44px] flex-row items-center rounded-pill bg-surface-2 px-4 py-2"
+      className="min-h-[44px] flex-row items-center rounded-pill border border-border bg-surface px-4 py-2"
     >
-      <Text className="font-ui text-sm text-text-med">Historico</Text>
-      <View className="ml-2 h-5 w-5 items-center justify-center rounded-full bg-accent">
-        <Text className="font-ui text-xs font-bold text-background">{count}</Text>
+      <Text className="font-ui text-[13px] tracking-[0.5px] text-text-med">Historico</Text>
+      <View className="ml-2 h-[20px] w-[20px] items-center justify-center rounded-full bg-accent">
+        <Text className="font-ui text-[10px] text-background">{count}</Text>
       </View>
     </Pressable>
   )

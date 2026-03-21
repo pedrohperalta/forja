@@ -8,8 +8,8 @@ type RestTimerProps = {
   progress: SharedValue<number>
 }
 
-const SIZE = 240
-const STROKE_WIDTH = 8
+const SIZE = 220
+const STROKE_WIDTH = 4
 const RADIUS = (SIZE - STROKE_WIDTH) / 2
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS
 
@@ -69,7 +69,7 @@ export function RestTimer({ secondsLeft, progress }: RestTimerProps): React.JSX.
       </Svg>
       {/* Countdown text overlay */}
       <View className="absolute items-center justify-center">
-        <Text className="text-6xl font-bold text-text">{secondsLeft}</Text>
+        <Text className="font-display text-[64px] tracking-[4px] text-text">{secondsLeft}</Text>
       </View>
     </View>
   )

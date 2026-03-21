@@ -86,7 +86,7 @@ describe('HomeScreen', () => {
       render(<HomeScreen />)
 
       // C has oldest date (03-19), should have PROXIMO chip
-      const proximoChips = screen.getAllByText('PROXIMO')
+      const proximoChips = screen.getAllByText('PRÓXIMO')
       expect(proximoChips).toHaveLength(1)
 
       // The PROXIMO chip should be associated with Treino C
@@ -107,7 +107,7 @@ describe('HomeScreen', () => {
 
       render(<HomeScreen />)
 
-      const proximoChips = screen.getAllByText('PROXIMO')
+      const proximoChips = screen.getAllByText('PRÓXIMO')
       expect(proximoChips).toHaveLength(1)
     })
 
@@ -117,7 +117,7 @@ describe('HomeScreen', () => {
       render(<HomeScreen />)
 
       // All undefined, tie-break should pick A first
-      const proximoChips = screen.getAllByText('PROXIMO')
+      const proximoChips = screen.getAllByText('PRÓXIMO')
       expect(proximoChips).toHaveLength(1)
     })
   })

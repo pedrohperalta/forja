@@ -59,41 +59,57 @@ export default function RestScreen(): React.JSX.Element {
   }
 
   return (
-    <View className="flex-1 items-center justify-center bg-background px-6">
-      {/* Timer */}
-      <RestTimer secondsLeft={secondsLeft} progress={progress} />
+    <View className="flex-1 bg-background px-6">
+      {/* Centered content — timer is the star */}
+      <View className="flex-1 items-center justify-center">
+        {/* Eyebrow label */}
+        <Text className="mb-8 font-ui text-[11px] uppercase tracking-[4px] text-muted">
+          DESCANSO
+        </Text>
 
-      {/* Next exercise preview */}
-      {nextExercise && (
-        <View className="mt-8">
-          <Text className="text-center text-sm text-text-med">Próximo exercício</Text>
-          <Text className="mt-1 text-center text-lg font-bold text-text">{nextExercise.name}</Text>
-        </View>
-      )}
+        {/* Timer */}
+        <RestTimer secondsLeft={secondsLeft} progress={progress} />
 
-      {/* Skip rest button */}
-      <Pressable
-        testID="skip-rest-button"
-        className="mt-8 min-h-[44px] items-center justify-center rounded-md border border-border-med px-8 py-3"
-        onPress={handleSkipRest}
-        accessibilityRole="button"
-        accessibilityLabel="Pular Descanso"
-      >
-        <Text className="text-text-med">Pular Descanso</Text>
-      </Pressable>
+        {/* Next exercise preview */}
+        {nextExercise && (
+          <View className="mt-10">
+            <Text className="text-center font-ui text-[11px] uppercase tracking-[3px] text-muted">
+              PRÓXIMO
+            </Text>
+            <Text className="mt-2 text-center font-display text-[22px] tracking-[1px] text-text">
+              {nextExercise.name}
+            </Text>
+          </View>
+        )}
+      </View>
 
-      {/* Go to skipped exercises — guarded */}
-      {canGoToCheckpoint && (
+      {/* Bottom actions — thumb zone */}
+      <View className="pb-10">
         <Pressable
-          testID="go-to-skipped-button"
-          className="mt-4 min-h-[44px] items-center justify-center rounded-md border border-warning-dim px-6 py-3"
-          onPress={handleGoToCheckpoint}
+          testID="skip-rest-button"
+          className="h-[46px] w-full items-center justify-center rounded-pill border border-border-med"
+          onPress={handleSkipRest}
           accessibilityRole="button"
-          accessibilityLabel={`Ir para exercícios pulados, ${skippedIds.length} pendentes`}
+          accessibilityLabel="Pular Descanso"
         >
-          <Text className="text-warning">Ir para exercícios pulados ({skippedIds.length})</Text>
+          <Text className="font-ui text-[13px] text-text-med">Pular Descanso</Text>
         </Pressable>
-      )}
+
+        {/* Go to skipped exercises — guarded */}
+        {canGoToCheckpoint && (
+          <Pressable
+            testID="go-to-skipped-button"
+            className="mt-3 h-[46px] w-full items-center justify-center rounded-pill border border-warning-dim"
+            onPress={handleGoToCheckpoint}
+            accessibilityRole="button"
+            accessibilityLabel={`Ir para exercícios pulados, ${skippedIds.length} pendentes`}
+          >
+            <Text className="font-ui text-[13px] text-warning">
+              Ir para pulados ({skippedIds.length})
+            </Text>
+          </Pressable>
+        )}
+      </View>
     </View>
   )
 }

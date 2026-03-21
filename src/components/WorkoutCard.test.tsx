@@ -46,13 +46,13 @@ describe('WorkoutCard', () => {
   it('renders PROXIMO chip when isNext is true', () => {
     render(<WorkoutCard {...defaultProps} isNext />)
 
-    expect(screen.getByText('PROXIMO')).toBeTruthy()
+    expect(screen.getByText('PRÓXIMO')).toBeTruthy()
   })
 
   it('does not render PROXIMO chip when isNext is false', () => {
     render(<WorkoutCard {...defaultProps} isNext={false} />)
 
-    expect(screen.queryByText('PROXIMO')).toBeNull()
+    expect(screen.queryByText('PRÓXIMO')).toBeNull()
   })
 
   it('calls onPress when pressed and not disabled', () => {

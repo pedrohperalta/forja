@@ -11,12 +11,12 @@ export function ProgressBar({ current, total }: ProgressBarProps): React.JSX.Ele
 
   return (
     <View
-      className="h-2 w-full rounded-pill bg-surface-2"
+      className="h-[2px] w-full rounded-full bg-surface-2"
       role="progressbar"
       accessibilityLabel={`Progresso: ${current} de ${total}`}
       accessibilityValue={{ min: 0, max: total, now: current }}
     >
-      <View className="h-full rounded-pill bg-accent" style={{ width: `${percentage}%` }} />
+      <View className="h-full rounded-full bg-accent" style={{ width: `${percentage}%` }} />
     </View>
   )
 }

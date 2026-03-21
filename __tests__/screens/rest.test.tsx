@@ -181,7 +181,7 @@ describe('Rest Screen', () => {
 
     render(<RestScreen />)
 
-    expect(screen.getByText(/Ir para exercícios pulados/)).toBeTruthy()
+    expect(screen.getByText(/Ir para pulados/)).toBeTruthy()
   })
 
   it('hides "Ir para exercícios pulados" when currentSets is NOT empty', () => {
@@ -190,7 +190,7 @@ describe('Rest Screen', () => {
 
     render(<RestScreen />)
 
-    expect(screen.queryByText(/Ir para exercícios pulados/)).toBeNull()
+    expect(screen.queryByText(/Ir para pulados/)).toBeNull()
   })
 
   it('hides "Ir para exercícios pulados" when no skipped exercises', () => {
@@ -199,7 +199,7 @@ describe('Rest Screen', () => {
 
     render(<RestScreen />)
 
-    expect(screen.queryByText(/Ir para exercícios pulados/)).toBeNull()
+    expect(screen.queryByText(/Ir para pulados/)).toBeNull()
   })
 
   it('"Ir para exercícios pulados" navigates to checkpoint with replace', () => {
@@ -208,7 +208,7 @@ describe('Rest Screen', () => {
 
     render(<RestScreen />)
 
-    fireEvent.press(screen.getByText(/Ir para exercícios pulados/))
+    fireEvent.press(screen.getByText(/Ir para pulados/))
 
     expect(mockReplace).toHaveBeenCalledWith('/(workout)/checkpoint')
   })

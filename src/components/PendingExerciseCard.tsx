@@ -14,40 +14,44 @@ export function PendingExerciseCard({
   onRemove,
 }: PendingExerciseCardProps): React.JSX.Element {
   return (
-    <View className="mb-3 rounded-md border border-border bg-surface p-4">
+    <View className="mb-3 rounded-lg border border-border bg-surface p-5">
       {/* Exercise name */}
-      <Text className="text-lg font-bold text-text">{exercise.name}</Text>
+      <Text className="font-display text-[22px] tracking-[1px] text-text">{exercise.name}</Text>
 
       {/* Badges */}
       <View className="mt-2 flex-row gap-2">
-        <View className="rounded-sm bg-surface-2 px-2 py-1">
-          <Text className="text-xs text-text-med">{exercise.category}</Text>
+        <View className="rounded-pill bg-surface-2 px-3 py-1">
+          <Text className="font-ui text-[10px] uppercase tracking-[1px] text-text-med">
+            {exercise.category}
+          </Text>
         </View>
-        <View className="rounded-sm bg-surface-2 px-2 py-1">
-          <Text className="text-xs text-text-med">{exercise.equipment}</Text>
+        <View className="rounded-pill bg-surface-2 px-3 py-1">
+          <Text className="font-ui text-[10px] uppercase tracking-[1px] text-text-med">
+            {exercise.equipment}
+          </Text>
         </View>
       </View>
 
       {/* Status label */}
-      <Text className="mt-2 text-sm text-warning">Pulado</Text>
+      <Text className="mt-3 font-ui text-[11px] uppercase tracking-[1px] text-warning">Pulado</Text>
 
       {/* Action buttons */}
-      <View className="mt-3 flex-row gap-3">
+      <View className="mt-4 flex-row gap-3">
         <Pressable
-          className="min-h-[44px] flex-1 items-center justify-center rounded-md bg-accent py-3"
+          className="h-[46px] flex-1 items-center justify-center rounded-pill bg-accent"
           onPress={() => onDoNow(exercise.id)}
           accessibilityRole="button"
           accessibilityLabel={`Fazer ${exercise.name} agora`}
         >
-          <Text className="font-bold text-background">FAZER AGORA</Text>
+          <Text className="font-ui text-[13px] tracking-[0.5px] text-background">FAZER AGORA</Text>
         </Pressable>
         <Pressable
-          className="min-h-[44px] flex-1 items-center justify-center rounded-md border border-danger-dim py-3"
+          className="h-[46px] flex-1 items-center justify-center rounded-pill border border-danger-dim"
           onPress={() => onRemove(exercise.id)}
           accessibilityRole="button"
           accessibilityLabel={`Não vou fazer ${exercise.name}`}
         >
-          <Text className="font-bold text-danger">NÃO VOU FAZER</Text>
+          <Text className="font-ui text-[13px] tracking-[0.5px] text-danger">NÃO VOU FAZER</Text>
         </Pressable>
       </View>
     </View>

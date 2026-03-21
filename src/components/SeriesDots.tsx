@@ -20,8 +20,8 @@ export function SeriesDots({ currentSet, totalSets }: SeriesDotsProps): React.JS
         return (
           <View
             key={setNumber}
-            className={`h-3 w-3 rounded-full ${
-              isCompleted || isCurrent ? 'bg-accent' : 'border border-muted bg-transparent'
+            className={`h-[6px] w-[32px] rounded-pill ${
+              isCompleted ? 'bg-accent' : isCurrent ? 'bg-accent' : 'bg-surface-2'
             }`}
           />
         )

@@ -1,8 +1,8 @@
 /**
- * WorkoutHistoryCard component tests — TDD Phase 5
+ * WorkoutHistoryCard component tests
  *
- * Tests rendering of plan info, metadata, exercise summary,
- * delete button, and inline confirmation.
+ * Tests rendering of plan info, metadata, tap-to-expand exercise detail,
+ * and delete action with confirmation step.
  */
 
 import { render, screen, fireEvent } from '@testing-library/react-native'
@@ -23,94 +23,105 @@ describe('WorkoutHistoryCard', () => {
     date: '2026-03-21',
     durationMinutes: 45,
     exercises,
-    isDeleting: false,
     onDelete: jest.fn(),
-    onConfirmDelete: jest.fn(),
-    onCancelDelete: jest.fn(),
   }
 
   beforeEach(() => {
     jest.clearAllMocks()
   })
 
-  it('renders plan name and focus', () => {
+  it('renders plan name, focus, date, and metadata', () => {
     render(<WorkoutHistoryCard {...defaultProps} />)
 
     expect(screen.getByText('Treino A')).toBeTruthy()
     expect(screen.getByText('Peito / Ombros / Triceps')).toBeTruthy()
-  })
-
-  it('renders date and duration metadata', () => {
-    render(<WorkoutHistoryCard {...defaultProps} />)
-
     expect(screen.getByText('2026-03-21')).toBeTruthy()
     expect(screen.getByText(/45 min/)).toBeTruthy()
+    expect(screen.getByText(/2 exerc/)).toBeTruthy()
   })
 
-  it('renders exercise count', () => {
+  it('renders top exercise weight in accent', () => {
     render(<WorkoutHistoryCard {...defaultProps} />)
 
-    expect(screen.getByText(/2 exerc/i)).toBeTruthy()
+    expect(screen.getByText('60kg')).toBeTruthy()
   })
 
-  it('renders exercise summary with weights', () => {
+  it('does not show exercise list when collapsed', () => {
     render(<WorkoutHistoryCard {...defaultProps} />)
 
-    expect(screen.getByText(/Supino Reto/)).toBeTruthy()
-    expect(screen.getByText(/60/)).toBeTruthy()
+    expect(screen.queryByText('Supino Reto')).toBeNull()
+    expect(screen.queryByText('Crucifixo')).toBeNull()
   })
 
-  it('shows APAGAR button in default state', () => {
-    render(<WorkoutHistoryCard {...defaultProps} isDeleting={false} />)
+  it('shows exercise list when tapped (expanded)', () => {
+    render(<WorkoutHistoryCard {...defaultProps} />)
+
+    fireEvent.press(screen.getByTestId('workout-history-card-A-1000'))
+
+    expect(screen.getByText('Supino Reto')).toBeTruthy()
+    expect(screen.getByText('Crucifixo')).toBeTruthy()
+    expect(screen.getByText('3x 60kg')).toBeTruthy()
+    expect(screen.getByText('3x 20kg')).toBeTruthy()
+  })
+
+  it('shows APAGAR button when expanded', () => {
+    render(<WorkoutHistoryCard {...defaultProps} />)
+
+    fireEvent.press(screen.getByTestId('workout-history-card-A-1000'))
 
     expect(screen.getByText('APAGAR')).toBeTruthy()
-    expect(screen.queryByText('CONFIRMAR')).toBeNull()
   })
 
-  it('calls onDelete when APAGAR is pressed', () => {
+  it('shows confirmation when APAGAR is pressed', () => {
+    render(<WorkoutHistoryCard {...defaultProps} />)
+
+    fireEvent.press(screen.getByTestId('workout-history-card-A-1000'))
+    fireEvent.press(screen.getByText('APAGAR'))
+
+    expect(screen.getByText('CONFIRMAR')).toBeTruthy()
+    expect(screen.getByText('CANCELAR')).toBeTruthy()
+  })
+
+  it('calls onDelete when CONFIRMAR is pressed', () => {
     const onDelete = jest.fn()
     render(<WorkoutHistoryCard {...defaultProps} onDelete={onDelete} />)
 
+    fireEvent.press(screen.getByTestId('workout-history-card-A-1000'))
     fireEvent.press(screen.getByText('APAGAR'))
+    fireEvent.press(screen.getByText('CONFIRMAR'))
 
     expect(onDelete).toHaveBeenCalledTimes(1)
   })
 
-  it('shows confirmation buttons when isDeleting is true', () => {
-    render(<WorkoutHistoryCard {...defaultProps} isDeleting />)
+  it('hides confirmation when CANCELAR is pressed', () => {
+    render(<WorkoutHistoryCard {...defaultProps} />)
 
+    fireEvent.press(screen.getByTestId('workout-history-card-A-1000'))
+    fireEvent.press(screen.getByText('APAGAR'))
     expect(screen.getByText('CONFIRMAR')).toBeTruthy()
-    expect(screen.getByText('CANCELAR')).toBeTruthy()
-    expect(screen.queryByText('APAGAR')).toBeNull()
-  })
-
-  it('calls onConfirmDelete when CONFIRMAR is pressed', () => {
-    const onConfirmDelete = jest.fn()
-    render(
-      <WorkoutHistoryCard
-        {...defaultProps}
-        isDeleting
-        onConfirmDelete={onConfirmDelete}
-      />,
-    )
-
-    fireEvent.press(screen.getByText('CONFIRMAR'))
-
-    expect(onConfirmDelete).toHaveBeenCalledTimes(1)
-  })
-
-  it('calls onCancelDelete when CANCELAR is pressed', () => {
-    const onCancelDelete = jest.fn()
-    render(
-      <WorkoutHistoryCard
-        {...defaultProps}
-        isDeleting
-        onCancelDelete={onCancelDelete}
-      />,
-    )
 
     fireEvent.press(screen.getByText('CANCELAR'))
 
-    expect(onCancelDelete).toHaveBeenCalledTimes(1)
+    expect(screen.getByText('APAGAR')).toBeTruthy()
+  })
+
+  it('collapses and resets confirmation on second tap', () => {
+    render(<WorkoutHistoryCard {...defaultProps} />)
+
+    // Expand
+    fireEvent.press(screen.getByTestId('workout-history-card-A-1000'))
+    expect(screen.getByText('Supino Reto')).toBeTruthy()
+
+    // Collapse
+    fireEvent.press(screen.getByTestId('workout-history-card-A-1000'))
+    expect(screen.queryByText('Supino Reto')).toBeNull()
+  })
+
+  it('sets accessibility label with workout summary', () => {
+    render(<WorkoutHistoryCard {...defaultProps} />)
+
+    expect(
+      screen.getByLabelText('Treino A, Peito / Ombros / Triceps, 45 minutos, 2 exercícios'),
+    ).toBeTruthy()
   })
 })

@@ -58,6 +58,7 @@ jest.mock('expo-router', () => ({
     replace: mockReplace,
     back: mockBack,
   }),
+  useFocusEffect: (cb: () => void) => cb(),
 }))
 
 // -- Test data factories --
@@ -248,8 +249,9 @@ describe('Exercise Screen', () => {
       expect(mockReplace).toHaveBeenCalledWith('/(workout)/complete')
     })
 
-    it('redirects to complete when no current exercise and log has entries', () => {
+    it('redirects to checkpoint when no current exercise, log has entries, and skipped remain', () => {
       // All exercises in queue are skipped, but we have log entries
+      // Should go to checkpoint so user can handle skipped exercises
       mockWorkoutState.skippedIds = [
         'ex-1' as ExerciseId,
         'ex-2' as ExerciseId,
@@ -265,7 +267,7 @@ describe('Exercise Screen', () => {
 
       render(<ExerciseScreen />)
 
-      expect(mockReplace).toHaveBeenCalledWith('/(workout)/complete')
+      expect(mockReplace).toHaveBeenCalledWith('/(workout)/checkpoint')
     })
 
     it('redirects to checkpoint when all skipped, empty log, queue > 0', () => {

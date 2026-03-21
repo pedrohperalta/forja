@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from 'react'
-import { View, Text, Pressable } from 'react-native'
-import { useRouter } from 'expo-router'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { View, Text, Pressable, ScrollView } from 'react-native'
+import { useRouter, useFocusEffect } from 'expo-router'
 import { useWorkoutStore } from '@/stores/workoutStore'
 import { useAppStore } from '@/stores/appStore'
 import { useHaptics } from '@/hooks/useHaptics'
@@ -38,6 +38,13 @@ export default function ExerciseScreen(): React.JSX.Element | null {
   const [weight, setWeight] = useState('')
   const isNavigating = useRef(false)
 
+  // Reset navigation guard when screen regains focus (e.g. returning from rest)
+  useFocusEffect(
+    useCallback(() => {
+      isNavigating.current = false
+    }, []),
+  )
+
   // Pre-fill weight on exercise change
   useEffect(() => {
     if (!currentExercise) return
@@ -63,11 +70,12 @@ export default function ExerciseScreen(): React.JSX.Element | null {
     }
 
     if (!currentExercise) {
-      if (log.length > 0) {
-        router.replace('/(workout)/complete')
-      } else if (queue.length > 0) {
-        // All exercises are skipped, nothing logged
+      if (queue.length > 0) {
+        // Exercises still in queue (all skipped) — checkpoint first
         router.replace('/(workout)/checkpoint')
+      } else if (log.length > 0) {
+        // Queue empty, exercises were completed — done
+        router.replace('/(workout)/complete')
       } else {
         // Truly empty — no queue, no log
         router.replace('/')
@@ -125,71 +133,109 @@ export default function ExerciseScreen(): React.JSX.Element | null {
   const isWeightValid = weight !== '' && !isNaN(parseFloat(weight)) && parseFloat(weight) >= 0
 
   return (
-    <View className="flex-1 bg-background px-6 pt-16">
-      {/* Progress bar */}
-      <ProgressBar current={log.length} total={totalExercises} />
-
-      {/* Exercise name */}
-      <Text className="mt-6 text-center text-3xl font-bold text-text">{currentExercise.name}</Text>
-
-      {/* Reps info */}
-      <Text className="mt-2 text-center text-lg text-text-med">{currentExercise.reps} reps</Text>
-
-      {/* Series dots */}
-      <View className="mt-4 items-center">
-        <SeriesDots currentSet={currentSet} totalSets={currentExercise.sets} />
-      </View>
-
-      {/* Weight input — key forces remount on exercise change */}
-      <View className="mt-8">
-        <Text className="mb-2 text-center text-sm text-text-med">Peso (kg)</Text>
-        <WeightInput
-          key={currentExercise.id}
-          value={weight}
-          onChange={setWeight}
-          exerciseName={currentExercise.name}
-          setNumber={currentSet}
-        />
-      </View>
-
-      {/* Complete set button */}
-      <Pressable
-        testID="complete-set-button"
-        className={`mt-8 h-14 items-center justify-center rounded-md ${
-          isWeightValid && !isNavigating.current ? 'bg-accent' : 'bg-dim'
-        }`}
-        onPress={handleCompleteSet}
-        disabled={!isWeightValid}
-        accessibilityRole="button"
-        accessibilityLabel="Completei a série"
-        accessibilityState={{ disabled: !isWeightValid }}
+    <View className="flex-1 bg-background">
+      {/* Scrollable content area */}
+      <ScrollView
+        className="flex-1 px-6 pt-14"
+        contentContainerStyle={{ paddingBottom: 16 }}
+        showsVerticalScrollIndicator={false}
       >
-        <Text className="text-lg font-bold text-background">COMPLETEI A SÉRIE</Text>
-      </Pressable>
+        {/* Progress bar */}
+        <ProgressBar current={log.length} total={totalExercises} />
 
-      {/* Skip/Remove buttons — only on set 1 */}
-      {currentSet === 1 && (
-        <View className="mt-4 flex-row justify-center gap-4">
-          <Pressable
-            testID="skip-button"
-            className="min-h-[44px] items-center justify-center rounded-md border border-border-med px-6 py-3"
-            onPress={handleSkip}
-            accessibilityRole="button"
-            accessibilityLabel="Pular exercício"
-          >
-            <Text className="text-text-med">Pular</Text>
-          </Pressable>
-          <Pressable
-            testID="not-doing-button"
-            className="min-h-[44px] items-center justify-center rounded-md border border-danger-dim px-6 py-3"
-            onPress={handleRemove}
-            accessibilityRole="button"
-            accessibilityLabel="Não vou fazer este exercício"
-          >
-            <Text className="text-danger">Não vou fazer</Text>
-          </Pressable>
+        {/* Progress counter */}
+        <Text className="mt-4 text-center font-ui text-[11px] tracking-[2px] text-muted">
+          {log.length + 1} de {totalExercises}
+        </Text>
+
+        {/* Exercise name — the HERO */}
+        <Text className="mt-3 text-center font-display text-[36px] tracking-[1px] text-text">
+          {currentExercise.name}
+        </Text>
+
+        {/* Exercise badges */}
+        <View className="mt-3 flex-row items-center justify-center gap-2">
+          <View className="rounded-pill bg-surface-2 px-3 py-1">
+            <Text className="font-ui text-[10px] uppercase tracking-[1px] text-text-med">
+              {currentExercise.category}
+            </Text>
+          </View>
+          <View className="rounded-pill bg-surface-2 px-3 py-1">
+            <Text className="font-ui text-[10px] uppercase tracking-[1px] text-text-med">
+              {currentExercise.equipment}
+            </Text>
+          </View>
         </View>
-      )}
+
+        {/* Reps info */}
+        <Text className="mt-4 text-center font-ui text-[15px] text-text-med">
+          {currentExercise.reps} reps
+        </Text>
+
+        {/* Series dots */}
+        <View className="mt-6 items-center">
+          <SeriesDots currentSet={currentSet} totalSets={currentExercise.sets} />
+        </View>
+
+        {/* Weight input — key forces remount on exercise change */}
+        <View className="mt-10">
+          <Text className="mb-3 text-center font-ui text-[11px] uppercase tracking-[3px] text-muted">
+            PESO (KG)
+          </Text>
+          <WeightInput
+            key={currentExercise.id}
+            value={weight}
+            onChange={setWeight}
+            exerciseName={currentExercise.name}
+            setNumber={currentSet}
+          />
+        </View>
+      </ScrollView>
+
+      {/* Sticky bottom actions — thumb zone */}
+      <View className="border-t border-border bg-background px-6 pb-8 pt-4">
+        <Pressable
+          testID="complete-set-button"
+          className={`h-[56px] items-center justify-center rounded-pill ${
+            isWeightValid ? 'bg-accent' : 'bg-surface-2'
+          }`}
+          onPress={handleCompleteSet}
+          disabled={!isWeightValid}
+          accessibilityRole="button"
+          accessibilityLabel="Completei a série"
+          accessibilityState={{ disabled: !isWeightValid }}
+        >
+          <Text
+            className={`font-ui text-[14px] uppercase tracking-[1px] ${isWeightValid ? 'text-background' : 'text-dim'}`}
+          >
+            COMPLETEI A SÉRIE
+          </Text>
+        </Pressable>
+
+        {/* Skip/Remove buttons — only on set 1 */}
+        {currentSet === 1 && (
+          <View className="mt-3 flex-row gap-3">
+            <Pressable
+              testID="skip-button"
+              className="h-[46px] flex-1 items-center justify-center rounded-pill border border-border-med"
+              onPress={handleSkip}
+              accessibilityRole="button"
+              accessibilityLabel="Pular exercício"
+            >
+              <Text className="font-ui text-[13px] text-text-med">Pular</Text>
+            </Pressable>
+            <Pressable
+              testID="not-doing-button"
+              className="h-[46px] flex-1 items-center justify-center rounded-pill border border-danger-dim"
+              onPress={handleRemove}
+              accessibilityRole="button"
+              accessibilityLabel="Não vou fazer este exercício"
+            >
+              <Text className="font-ui text-[13px] text-danger">Não vou fazer</Text>
+            </Pressable>
+          </View>
+        )}
+      </View>
     </View>
   )
 }
