@@ -1,0 +1,38 @@
+{
+  "status": "complete",
+  "project_type": "greenfield",
+  "current_section": "done",
+  "current_question": 0,
+  "completed_sections": ["product", "guidelines", "tech_stack", "workflow", "styleguides"],
+  "answers": {
+    "project_name": "Forja",
+    "project_description": "App mobile pessoal para registrar treinos de hipertrofia na academia, com controle de cargas, timer de descanso e fluxo offline-first em português",
+    "problem_statement": "Iniciantes na academia não registram treinos de forma estruturada, impossibilitando sobrecarga progressiva. Apps existentes são complexos demais para quem segue um plano fixo simples",
+    "target_users": "Iniciantes na academia que querem registrar seus treinos e cargas utilizadas",
+    "key_goals": "Registrar pesos e séries de cada treino para viabilizar sobrecarga progressiva; Oferecer fluxo linear e simples usável durante o treino; Funcionar 100% offline",
+    "voice_tone": "Friendly and approachable",
+    "design_principles": "Simplicity over features",
+    "primary_language": "TypeScript",
+    "frontend_framework": "React Native with Expo SDK 55 + Expo Router",
+    "jade_design_system": false,
+    "backend_framework": "None / Frontend only",
+    "database": "AsyncStorage (local JSON key-value) via Zustand persist middleware",
+    "infrastructure": "Expo Go (development) + EAS Build (production)",
+    "tdd_strictness": "Strict - tests required before implementation",
+    "jira_project_key": null,
+    "jira_board_id": null,
+    "styleguides": ["TypeScript/JavaScript"],
+    "existing_configs": false
+  },
+  "files_created": [
+    "conductor/index.md",
+    "conductor/product.md",
+    "conductor/product-guidelines.md",
+    "conductor/tech-stack.md",
+    "conductor/workflow.md",
+    "conductor/tracks.md",
+    "conductor/code_styleguides/typescript.md"
+  ],
+  "started_at": "2026-03-20T00:00:00Z",
+  "last_updated": "2026-03-20T00:00:00Z"
+}
