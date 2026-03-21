@@ -1,0 +1,1252 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Forja — Solution Design v1</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({ startOnLoad: true, theme: 'dark', themeVariables: { primaryColor: '#1C1C1C', primaryTextColor: '#FFFFFF', primaryBorderColor: '#C2F000', lineColor: '#444444', secondaryColor: '#111111', tertiaryColor: '#222222', fontFamily: 'Syne, sans-serif' }});</script>
+  <style>
+    /* ========== FORJA DESIGN TOKENS ========== */
+    :root {
+      --bg:         #080808;
+      --surface:    #111111;
+      --surface-2:  #1C1C1C;
+      --border:     #222222;
+      --border-med: #333333;
+      --accent:     #C2F000;
+      --accent-dim: rgba(194,240,0,0.10);
+      --accent-glow:rgba(194,240,0,0.25);
+      --text:       #FFFFFF;
+      --text-med:   #AAAAAA;
+      --muted:      #888888;
+      --dim:        #444444;
+      --danger:     #FF453A;
+      --warning:    #F59E0B;
+      --info:       #3B82F6;
+      --r-sm: 8px;
+      --r-md: 12px;
+      --r-lg: 16px;
+      --r-pill: 100px;
+      --shadow-sm: 0 2px 6px rgba(0,0,0,0.4);
+      --shadow-md: 0 6px 24px rgba(0,0,0,0.5);
+      --shadow-lg: 0 16px 48px rgba(0,0,0,0.6);
+      --font-display: 'Bebas Neue', sans-serif;
+      --font-ui:      'Syne', sans-serif;
+    }
+
+    /* ========== BASE ========== */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: var(--font-ui);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ========== LAYOUT ========== */
+    .container { max-width: 920px; margin: 0 auto; padding: 0 24px; }
+
+    /* ========== HERO ========== */
+    .hero {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 56px 0 44px;
+    }
+    .hero-eyebrow {
+      font-family: var(--font-ui); font-size: 12px; font-weight: 700;
+      letter-spacing: 3.5px; text-transform: uppercase;
+      color: var(--accent); margin-bottom: 12px;
+    }
+    .hero-title {
+      font-family: var(--font-display); font-size: 64px; line-height: 0.95;
+      letter-spacing: 1px; color: var(--text); margin-bottom: 14px;
+    }
+    .hero-subtitle {
+      font-size: 17px; color: var(--muted); font-weight: 400;
+      max-width: 640px; line-height: 1.7; margin-bottom: 28px;
+    }
+    .hero-meta { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 16px; border-radius: var(--r-pill);
+      font-size: 13px; font-weight: 600; letter-spacing: 0.5px;
+    }
+    .badge-status { background: rgba(194,240,0,0.12); color: var(--accent); }
+    .badge-version { background: var(--surface-2); color: var(--text-med); border: 1px solid var(--border); }
+    .badge-date { background: var(--surface-2); color: var(--muted); border: 1px solid var(--border); }
+
+    /* ========== TOC ========== */
+    .toc {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--r-lg); padding: 24px 28px; margin: 36px 0;
+    }
+    .toc h2 {
+      font-family: var(--font-ui); font-size: 12px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 3px; color: var(--dim); margin-bottom: 16px;
+    }
+    .toc-list { list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 8px 28px; }
+    .toc-list a {
+      color: var(--text-med); text-decoration: none; font-size: 15px;
+      font-weight: 500; padding: 6px 0; display: flex; align-items: center; gap: 10px;
+      transition: color 0.15s;
+    }
+    .toc-list a:hover { color: var(--accent); }
+    .toc-num {
+      font-family: var(--font-display); color: var(--accent);
+      font-size: 16px; min-width: 24px; letter-spacing: 0.5px;
+    }
+
+    /* ========== SECTIONS ========== */
+    .section { margin: 48px 0; }
+    .section-label {
+      font-family: var(--font-ui); font-size: 12px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 3px; color: var(--accent); margin-bottom: 8px;
+    }
+    .section-title {
+      font-family: var(--font-display); font-size: 42px;
+      letter-spacing: 0.5px; color: var(--text);
+      margin-bottom: 16px; line-height: 1;
+    }
+    .section-body { font-size: 16px; color: var(--muted); line-height: 1.7; }
+    .section-body p + p { margin-top: 12px; }
+    .section-body strong { color: var(--text); }
+    .section-body em { color: var(--text-med); }
+
+    /* ========== CARDS ========== */
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--r-lg); padding: 24px; margin-bottom: 16px;
+    }
+    .card-accent { border-top: 3px solid var(--accent); }
+    .card-warning { border-top: 3px solid var(--warning); }
+    .card-danger { border-top: 3px solid var(--danger); }
+    .card-info { border-top: 3px solid var(--info); }
+    .card h3 { font-size: 17px; font-weight: 700; margin-bottom: 8px; color: var(--text); }
+    .card p { font-size: 15px; color: var(--muted); line-height: 1.6; }
+    .card ul { list-style: none; margin-top: 8px; }
+    .card ul li {
+      font-size: 14px; color: var(--muted); padding: 4px 0 4px 18px; position: relative;
+    }
+    .card ul li::before {
+      content: ''; position: absolute; left: 0; top: 11px;
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--accent-dim); border: 1.5px solid var(--accent);
+    }
+
+    /* ========== METRICS ========== */
+    .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin: 24px 0; }
+    .metric {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--r-md); padding: 20px; text-align: center;
+    }
+    .metric-value {
+      font-family: var(--font-display); font-size: 40px;
+      color: var(--accent); line-height: 1; letter-spacing: 1px;
+    }
+    .metric-label {
+      font-size: 12px; color: var(--muted); font-weight: 700; margin-top: 6px;
+      text-transform: uppercase; letter-spacing: 2px;
+    }
+
+    /* ========== TABLES ========== */
+    .data-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 15px; }
+    .data-table th {
+      background: var(--surface-2); text-align: left; padding: 12px 14px;
+      font-size: 12px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 1.5px; color: var(--dim); border-bottom: 1px solid var(--border-med);
+    }
+    .data-table td {
+      padding: 10px 14px; border-bottom: 1px solid var(--border);
+      color: var(--text-med); vertical-align: top;
+    }
+    .data-table tr:hover td { background: var(--accent-dim); }
+
+    /* ========== PRIORITY BADGES ========== */
+    .priority {
+      display: inline-flex; padding: 4px 12px; border-radius: var(--r-pill);
+      font-size: 12px; font-weight: 700; letter-spacing: 0.5px;
+    }
+    .p0 { background: rgba(255,69,58,0.15); color: #FF453A; }
+    .p1 { background: rgba(245,158,11,0.15); color: #F59E0B; }
+    .p2 { background: rgba(59,130,246,0.15); color: #3B82F6; }
+
+    /* ========== CODE BLOCK ========== */
+    .code-block {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--r-md); padding: 18px 20px; margin: 16px 0;
+      font-family: 'SF Mono', 'Fira Code', monospace; font-size: 13px;
+      color: var(--text-med); line-height: 1.7; overflow-x: auto;
+      white-space: pre;
+    }
+    .code-block .kw { color: var(--accent); }
+    .code-block .str { color: #F59E0B; }
+    .code-block .cmt { color: var(--dim); font-style: italic; }
+    .code-block .fn { color: #3B82F6; }
+
+    /* ========== SCOPE GRID ========== */
+    .scope-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 16px 0; }
+
+    /* ========== MERMAID ========== */
+    .mermaid-wrap {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--r-lg); padding: 32px; margin: 20px 0;
+      text-align: center; overflow-x: auto;
+    }
+
+    /* ========== TASK CHECKLIST ========== */
+    .task-list { list-style: none; margin: 16px 0; }
+    .task-list li {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 10px 0; border-bottom: 1px solid var(--border);
+      font-size: 15px; color: var(--text-med);
+    }
+    .task-list li:last-child { border-bottom: none; }
+    .task-check {
+      width: 18px; height: 18px; border-radius: 4px; border: 2px solid var(--border-med);
+      flex-shrink: 0; margin-top: 2px;
+    }
+    .task-title { font-weight: 600; color: var(--text); }
+    .task-desc { font-size: 13px; color: var(--muted); margin-top: 2px; }
+
+    /* ========== PHASE CARDS ========== */
+    .phase-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; margin: 24px 0; }
+    .phase-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--r-lg); padding: 24px;
+    }
+    .phase-num { font-size: 12px; font-weight: 700; color: var(--accent); letter-spacing: 2px; text-transform: uppercase; }
+    .phase-title { font-family: var(--font-display); font-size: 28px; letter-spacing: 0.5px; margin: 6px 0; }
+    .phase-list { list-style: none; margin-top: 12px; }
+    .phase-list li {
+      font-size: 14px; color: var(--muted); padding: 5px 0 5px 20px; position: relative;
+    }
+    .phase-list li::before {
+      content: ''; position: absolute; left: 0; top: 11px;
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--accent-dim); border: 1.5px solid var(--accent);
+    }
+
+    /* ========== RESPONSIVE ========== */
+    @media (max-width: 640px) {
+      .hero-title { font-size: 36px; }
+      .toc-list { grid-template-columns: 1fr; }
+      .scope-grid { grid-template-columns: 1fr; }
+      .metrics-grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    /* ========== COMMENTING SYSTEM ========== */
+    .review-toolbar {
+      position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+      display: flex; gap: 8px; align-items: center;
+    }
+    .review-toggle {
+      background: var(--accent); color: var(--bg); border: none;
+      padding: 12px 20px; border-radius: var(--r-pill); font-size: 13px; font-weight: 700;
+      cursor: pointer; box-shadow: 0 4px 20px var(--accent-glow);
+      display: flex; align-items: center; gap: 8px;
+      transition: all 0.2s; font-family: var(--font-ui); letter-spacing: 0.5px;
+    }
+    .review-toggle:hover { transform: translateY(-1px); box-shadow: 0 6px 30px var(--accent-glow); }
+    .review-toggle.active { background: var(--danger); box-shadow: 0 4px 20px rgba(255,69,58,0.3); color: #fff; }
+    .review-toggle .count {
+      background: var(--bg); color: var(--accent); width: 22px; height: 22px;
+      border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700;
+    }
+    .export-toggle {
+      display: none; background: var(--surface-2); color: var(--text); border: 1px solid var(--border);
+      padding: 12px 20px; border-radius: var(--r-pill); font-size: 13px; font-weight: 600;
+      cursor: pointer; box-shadow: var(--shadow-md);
+      transition: all 0.2s; font-family: var(--font-ui);
+    }
+    .export-toggle:hover { background: var(--border-med); transform: translateY(-1px); }
+    .export-toggle.visible { display: flex; align-items: center; gap: 6px; }
+    .review-hint {
+      position: fixed; bottom: 80px; right: 24px; z-index: 9998;
+      background: var(--surface-2); color: var(--text); padding: 16px 20px;
+      border: 1px solid var(--border); border-radius: 12px; max-width: 320px;
+      font-size: 12px; line-height: 1.5; box-shadow: var(--shadow-lg); display: none;
+      animation: hintSlideUp 0.3s ease-out;
+    }
+    .review-hint.visible { display: block; }
+    .review-hint::after {
+      content: ''; position: absolute; bottom: -8px; right: 40px;
+      width: 16px; height: 16px; background: var(--surface-2);
+      border-right: 1px solid var(--border); border-bottom: 1px solid var(--border);
+      transform: rotate(45deg);
+    }
+    .review-hint .hint-title { font-weight: 700; margin-bottom: 8px; color: var(--accent); font-size: 13px; }
+    .review-hint .hint-step { display: flex; gap: 8px; margin-bottom: 6px; }
+    .review-hint .hint-num {
+      background: var(--accent); color: var(--bg); width: 20px; height: 20px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; flex-shrink: 0;
+    }
+    .review-hint .hint-dismiss {
+      background: none; border: 1px solid var(--border-med); color: var(--muted);
+      padding: 6px 14px; border-radius: 6px; cursor: pointer; font-family: var(--font-ui);
+      font-size: 11px; margin-top: 10px;
+    }
+    .review-hint .hint-dismiss:hover { background: var(--surface); color: var(--text); }
+    @keyframes hintSlideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    body.review-mode [data-c] { cursor: crosshair; position: relative; transition: outline 0.15s; }
+    body.review-mode [data-c]:hover {
+      outline: 2px dashed var(--accent); outline-offset: 3px;
+      background: var(--accent-dim); border-radius: 4px;
+    }
+    .comment-pin {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 22px; height: 22px; background: var(--danger); color: white;
+      border-radius: 50%; font-size: 10px; font-weight: 700; cursor: pointer;
+      box-shadow: 0 2px 8px rgba(255,69,58,0.4);
+      border: 2px solid var(--bg); vertical-align: middle; margin-left: 6px;
+      position: relative; z-index: 100;
+    }
+    .comment-popover {
+      z-index: 10001; background: var(--surface-2); border: 1px solid var(--border-med);
+      border-radius: var(--r-md); padding: 14px; width: 340px;
+      box-shadow: var(--shadow-lg); margin-top: 4px; position: fixed;
+    }
+    .comment-popover textarea {
+      width: 100%; background: var(--surface); border: 1px solid var(--border-med);
+      color: var(--text); padding: 8px 10px; border-radius: var(--r-sm);
+      font-size: 13px; font-family: var(--font-ui); resize: vertical; min-height: 60px;
+    }
+    .comment-popover textarea:focus { outline: 2px solid var(--accent); border-color: transparent; }
+    .comment-popover-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
+    .comment-popover-actions button {
+      padding: 6px 14px; border-radius: var(--r-pill); font-size: 12px;
+      cursor: pointer; border: none; font-family: var(--font-ui); font-weight: 600;
+    }
+    .btn-save { background: var(--accent); color: var(--bg); }
+    .btn-save:hover { filter: brightness(1.1); }
+    .btn-cancel { background: var(--surface); color: var(--muted); border: 1px solid var(--border) !important; }
+    .btn-delete { background: rgba(255,69,58,0.15); color: var(--danger); }
+    .export-panel {
+      position: fixed; top: 0; right: -440px; width: 440px; height: 100vh;
+      background: var(--surface); border-left: 1px solid var(--border);
+      z-index: 10000; transition: right 0.3s ease; overflow-y: auto; padding: 24px;
+      box-shadow: -8px 0 40px rgba(0,0,0,0.5);
+    }
+    .export-panel.open { right: 0; }
+    .export-panel h3 { color: var(--text); font-size: 16px; margin-bottom: 4px; }
+    .export-panel textarea {
+      width: 100%; min-height: 300px; background: var(--surface-2); border: 1px solid var(--border);
+      color: var(--text-med); padding: 12px; border-radius: var(--r-md); font-size: 12px;
+      font-family: 'SF Mono', 'Fira Code', monospace; resize: vertical;
+    }
+    .export-panel .actions { display: flex; gap: 8px; margin-top: 12px; }
+    .export-panel .actions button {
+      flex: 1; padding: 10px; border-radius: var(--r-pill); font-size: 13px;
+      cursor: pointer; border: none; font-weight: 600; font-family: var(--font-ui);
+    }
+    .popover-section-label {
+      color: var(--dim); font-size: 11px; margin-bottom: 8px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .popover-section-name { color: var(--accent); }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════ HERO ═══════════════ -->
+<header class="hero">
+  <div class="container">
+    <div class="hero-eyebrow" data-c="Hero: Eyebrow">Desenho de Solução</div>
+    <h1 class="hero-title" data-c="Hero: Título">FORJA — SOLUTION DESIGN</h1>
+    <p class="hero-subtitle" data-c="Hero: Subtítulo">Arquitetura técnica do app mobile para registro de treinos na academia. Expo Router, Zustand, AsyncStorage, react-native-svg — tudo offline-first com estrutura preparada para sync futuro.</p>
+    <div class="hero-meta">
+      <span class="hero-badge badge-status">&#9679; Em Desenvolvimento</span>
+      <span class="hero-badge badge-version">v1.0</span>
+      <span class="hero-badge badge-date">20 de março de 2026</span>
+      <span class="hero-badge badge-date">Pedro Peralta</span>
+    </div>
+  </div>
+</header>
+
+<!-- ═══════════════ TOC ═══════════════ -->
+<div class="container">
+  <nav class="toc" data-c="Índice">
+    <h2>Índice</h2>
+    <ol class="toc-list">
+      <li><a href="#problema"><span class="toc-num">01</span> Problema</a></li>
+      <li><a href="#objetivo"><span class="toc-num">02</span> Objetivo</a></li>
+      <li><a href="#solucao"><span class="toc-num">03</span> Solução Proposta</a></li>
+      <li><a href="#dados"><span class="toc-num">04</span> Modelo de Dados</a></li>
+      <li><a href="#navegacao"><span class="toc-num">05</span> Navegação & Telas</a></li>
+      <li><a href="#estado"><span class="toc-num">06</span> Gerenciamento de Estado</a></li>
+      <li><a href="#timer"><span class="toc-num">07</span> Timer SVG</a></li>
+      <li><a href="#testes"><span class="toc-num">08</span> Estratégia de Testes</a></li>
+      <li><a href="#divida"><span class="toc-num">09</span> Dívida Técnica</a></li>
+      <li><a href="#tarefas"><span class="toc-num">10</span> Tarefas</a></li>
+      <li><a href="#autores"><span class="toc-num">11</span> Autores</a></li>
+    </ol>
+  </nav>
+
+  <!-- ═══════════════ 01 PROBLEMA ═══════════════ -->
+  <section class="section" id="problema">
+    <div class="section-label">01 — Problema</div>
+    <h2 class="section-title" data-c="Problema: Título">PROBLEMA</h2>
+
+    <div class="card card-accent" data-c="Problema: Contexto">
+      <h3>Contexto Atual</h3>
+      <p>O usuário treina 3x/semana seguindo um plano ABC de hipertrofia prescrito pelo instrutor. Hoje não existe nenhum registro digital dos treinos — pesos, séries e progresso ficam na memória ou em anotações desorganizadas.</p>
+    </div>
+
+    <div class="card card-danger" data-c="Problema: Dor">
+      <h3>Dor / Limitação Existente</h3>
+      <p>Sem dados estruturados, é impossível implementar sobrecarga progressiva. O usuário repete os mesmos pesos semana após semana sem perceber. Apps existentes (Strong, Hevy, JEFIT) são complexos demais para quem segue um plano fixo simples.</p>
+    </div>
+
+    <div class="card card-info" data-c="Problema: Evidências">
+      <h3>Evidências</h3>
+      <p>Validação direta com o usuário durante a discovery (9 sessões de Q&A documentadas). O problema foi confirmado como real e recorrente — a falta de registro é o principal obstáculo para progressão.</p>
+    </div>
+  </section>
+
+  <!-- ═══════════════ 02 OBJETIVO ═══════════════ -->
+  <section class="section" id="objetivo">
+    <div class="section-label">02 — Objetivo</div>
+    <h2 class="section-title" data-c="Objetivo: Título">OBJETIVO</h2>
+
+    <div class="section-body" data-c="Objetivo: Descrição">
+      <p>Construir um app mobile pessoal em <strong>Expo (React Native)</strong> que permita registrar treinos de hipertrofia durante a sessão na academia. O app funciona <strong>100% offline</strong>, com interface em português, e foi projetado para ser usado com uma mão entre séries.</p>
+    </div>
+
+    <div class="metrics-grid">
+      <div class="metric" data-c="Objetivo: Métrica Telas">
+        <div class="metric-value">6</div>
+        <div class="metric-label">Telas</div>
+      </div>
+      <div class="metric" data-c="Objetivo: Métrica Stores">
+        <div class="metric-value">2</div>
+        <div class="metric-label">Zustand Stores</div>
+      </div>
+      <div class="metric" data-c="Objetivo: Métrica Deps">
+        <div class="metric-value">~8</div>
+        <div class="metric-label">Dependências</div>
+      </div>
+      <div class="metric" data-c="Objetivo: Métrica Offline">
+        <div class="metric-value">100%</div>
+        <div class="metric-label">Offline</div>
+      </div>
+    </div>
+
+    <div class="scope-grid">
+      <div class="card card-accent" data-c="Objetivo: In-scope">
+        <h3>In-scope (v1)</h3>
+        <ul>
+          <li>Home com cards de treinos A/B/C + histórico</li>
+          <li>Tela de exercício com input de peso e séries</li>
+          <li>Timer de descanso com arco SVG animado (60s)</li>
+          <li>Pular exercício (aparelho ocupado) e "Não vou fazer hoje"</li>
+          <li>Revisão de exercícios pendentes (checkpoint)</li>
+          <li>Tela de conclusão com resumo</li>
+          <li>Histórico de treinos com opção de apagar</li>
+          <li>Persistência local via AsyncStorage</li>
+        </ul>
+      </div>
+      <div class="card card-warning" data-c="Objetivo: Out-of-scope">
+        <h3>Out-of-scope (futuro)</h3>
+        <ul>
+          <li>Sync com nuvem (planejado para v2)</li>
+          <li>Notificações push locais em background</li>
+          <li>Gráficos de progresso / tendência de peso</li>
+          <li>Editor de plano (criar/modificar treinos)</li>
+          <li>Foto do equipamento (câmera)</li>
+          <li>Autenticação / multi-usuário</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ 03 SOLUÇÃO PROPOSTA ═══════════════ -->
+  <section class="section" id="solucao">
+    <div class="section-label">03 — Solução Proposta</div>
+    <h2 class="section-title" data-c="Solução: Título">SOLUÇÃO PROPOSTA</h2>
+
+    <div class="section-body" data-c="Solução: Descrição">
+      <p>App mobile construído com <strong>Expo SDK 55</strong> (React Native 0.83) usando <strong>Expo Router</strong> para navegação file-based, <strong>Zustand v5</strong> para gerenciamento de estado com persistência via <strong>AsyncStorage</strong>, e <strong>react-native-svg</strong> para o timer de descanso.</p>
+      <p>A arquitetura é propositalmente simples: um único repositório, sem backend, sem banco de dados externo. Toda a lógica vive no cliente. A camada de storage é abstraída para facilitar migração futura para sync com nuvem.</p>
+    </div>
+
+    <div class="card card-accent" data-c="Solução: Stack Tecnológico">
+      <h3>Stack Tecnológico</h3>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Camada</th>
+            <th>Tecnologia</th>
+            <th>Versão</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr data-c="Stack: Runtime">
+            <td><strong>Runtime</strong></td>
+            <td>Expo SDK (managed workflow)</td>
+            <td>55</td>
+          </tr>
+          <tr data-c="Stack: Framework">
+            <td><strong>Framework</strong></td>
+            <td>React Native</td>
+            <td>0.83</td>
+          </tr>
+          <tr data-c="Stack: Navegação">
+            <td><strong>Navegação</strong></td>
+            <td>Expo Router (file-based)</td>
+            <td>~4.x</td>
+          </tr>
+          <tr data-c="Stack: Estado">
+            <td><strong>Estado</strong></td>
+            <td>Zustand + persist middleware</td>
+            <td>5.x</td>
+          </tr>
+          <tr data-c="Stack: Storage">
+            <td><strong>Storage</strong></td>
+            <td>@react-native-async-storage/async-storage</td>
+            <td>latest</td>
+          </tr>
+          <tr data-c="Stack: SVG">
+            <td><strong>SVG</strong></td>
+            <td>react-native-svg</td>
+            <td>~15.x</td>
+          </tr>
+          <tr data-c="Stack: Animação">
+            <td><strong>Animação</strong></td>
+            <td>react-native-reanimated</td>
+            <td>~3.x</td>
+          </tr>
+          <tr data-c="Stack: Linguagem">
+            <td><strong>Linguagem</strong></td>
+            <td>TypeScript</td>
+            <td>5.x</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 style="font-family:var(--font-display);font-size:28px;letter-spacing:0.5px;margin:28px 0 16px;" data-c="Solução: Diagrama Título">DIAGRAMA DE ARQUITETURA</h3>
+
+    <div class="mermaid-wrap" data-c="Solução: Diagrama">
+      <pre class="mermaid">
+flowchart TB
+    subgraph UI["Camada UI (React Native)"]
+        HOME["Home Screen"]
+        WORKOUT["Workout Screen"]
+        REST["Rest Timer Screen"]
+        CHECK["Checkpoint Screen"]
+        COMPLETE["Complete Screen"]
+        HISTORY["History Screen"]
+    end
+
+    subgraph STATE["Camada de Estado (Zustand)"]
+        WS["workoutStore<br/>treino ativo, fila, séries,<br/>timer, exercícios pulados"]
+        AS["appStore<br/>últimos pesos, últimas datas,<br/>histórico de treinos"]
+    end
+
+    subgraph STORAGE["Camada de Persistência"]
+        ASYNC["AsyncStorage<br/>(JSON key-value)"]
+    end
+
+    HOME --> WS
+    WORKOUT --> WS
+    REST --> WS
+    CHECK --> WS
+    COMPLETE --> WS
+    COMPLETE --> AS
+    HISTORY --> AS
+    HOME --> AS
+
+    WS -- "persist middleware" --> ASYNC
+    AS -- "persist middleware" --> ASYNC
+      </pre>
+    </div>
+  </section>
+
+  <!-- ═══════════════ 04 MODELO DE DADOS ═══════════════ -->
+  <section class="section" id="dados">
+    <div class="section-label">04 — Modelo de Dados</div>
+    <h2 class="section-title" data-c="Dados: Título">MODELO DE DADOS</h2>
+
+    <div class="section-body" data-c="Dados: Descrição">
+      <p>O app trabalha com dados estáticos (planos de treino) e dados dinâmicos (registros do usuário). Os planos são hardcoded na v1. Os registros são persistidos via Zustand + AsyncStorage.</p>
+    </div>
+
+    <div class="card card-accent" data-c="Dados: Plano de Treino">
+      <h3>Plan (Plano de Treino) — Estático</h3>
+      <div class="code-block"><span class="kw">type</span> Plan = {
+  id: <span class="str">'A'</span> | <span class="str">'B'</span> | <span class="str">'C'</span>
+  name: <span class="fn">string</span>          <span class="cmt">// "Peito / Ombros / Tríceps"</span>
+  focus: <span class="fn">string</span>         <span class="cmt">// "7 exercícios · Hipertrofia"</span>
+  exercises: Exercise[]
+}
+
+<span class="kw">type</span> Exercise = {
+  id: <span class="fn">string</span>             <span class="cmt">// "supino-45-bilateral"</span>
+  name: <span class="fn">string</span>           <span class="cmt">// "Supino 45° Bilateral"</span>
+  category: <span class="fn">string</span>       <span class="cmt">// "EMPH" | "COMP" | "ISO"</span>
+  equipment: <span class="fn">string</span>      <span class="cmt">// "Halter" | "Máquina" | "Barra"</span>
+  reps: <span class="fn">string</span>           <span class="cmt">// "10-15"</span>
+  sets: <span class="fn">number</span>           <span class="cmt">// 3</span>
+}</div>
+    </div>
+
+    <div class="card card-accent" data-c="Dados: Workout Session">
+      <h3>WorkoutSession — Dinâmico (histórico)</h3>
+      <div class="code-block"><span class="kw">type</span> WorkoutSession = {
+  id: <span class="fn">number</span>             <span class="cmt">// Date.now() timestamp</span>
+  planId: <span class="fn">string</span>         <span class="cmt">// 'A' | 'B' | 'C'</span>
+  planName: <span class="fn">string</span>       <span class="cmt">// "Peito / Ombros / Tríceps"</span>
+  focus: <span class="fn">string</span>
+  date: <span class="fn">string</span>           <span class="cmt">// "2026-03-20"</span>
+  durationMinutes: <span class="fn">number</span>
+  exercises: CompletedExercise[]
+}
+
+<span class="kw">type</span> CompletedExercise = {
+  name: <span class="fn">string</span>
+  sets: <span class="fn">number</span>           <span class="cmt">// quantas séries completou</span>
+  weight: <span class="fn">number</span>         <span class="cmt">// último peso registrado (kg)</span>
+}</div>
+    </div>
+
+    <div class="card card-accent" data-c="Dados: Chaves AsyncStorage">
+      <h3>Chaves AsyncStorage</h3>
+      <table class="data-table">
+        <thead>
+          <tr><th>Chave</th><th>Tipo</th><th>Descrição</th></tr>
+        </thead>
+        <tbody>
+          <tr data-c="Storage: workout-store"><td><code>workout-store</code></td><td>JSON</td><td>Estado do treino ativo (Zustand persist automático)</td></tr>
+          <tr data-c="Storage: app-store"><td><code>app-store</code></td><td>JSON</td><td>Últimos pesos, últimas datas, histórico (Zustand persist automático)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 style="font-family:var(--font-display);font-size:28px;letter-spacing:0.5px;margin:28px 0 16px;" data-c="Dados: ER Título">DIAGRAMA ENTIDADE-RELACIONAMENTO</h3>
+
+    <div class="mermaid-wrap" data-c="Dados: ER Diagrama">
+      <pre class="mermaid">
+erDiagram
+    PLAN ||--o{ EXERCISE : contains
+    PLAN {
+        string id PK
+        string name
+        string focus
+    }
+    EXERCISE {
+        string id PK
+        string name
+        string category
+        string equipment
+        string reps
+        number sets
+    }
+    WORKOUT_SESSION ||--o{ COMPLETED_EXERCISE : logs
+    WORKOUT_SESSION {
+        number id PK
+        string planId FK
+        string date
+        number durationMinutes
+    }
+    COMPLETED_EXERCISE {
+        string name
+        number sets
+        number weight
+    }
+    PLAN ||--o{ WORKOUT_SESSION : generates
+      </pre>
+    </div>
+  </section>
+
+  <!-- ═══════════════ 05 NAVEGAÇÃO ═══════════════ -->
+  <section class="section" id="navegacao">
+    <div class="section-label">05 — Navegação & Telas</div>
+    <h2 class="section-title" data-c="Navegação: Título">NAVEGAÇÃO & TELAS</h2>
+
+    <div class="section-body" data-c="Navegação: Descrição">
+      <p>Navegação via <strong>Expo Router</strong> com file-based routing. A estrutura é um stack simples — sem tabs, sem drawer. Todas as telas de treino ativo ficam em um grupo <code>(workout)</code> que compartilha o mesmo layout sem header nativo.</p>
+    </div>
+
+    <div class="card card-accent" data-c="Navegação: Estrutura de Pastas">
+      <h3>Estrutura do Diretório <code>app/</code></h3>
+      <div class="code-block">app/
+├── _layout.tsx              <span class="cmt">// Root Stack (headerShown: false)</span>
+├── index.tsx                <span class="cmt">// Home — lista de treinos + histórico</span>
+├── history.tsx              <span class="cmt">// Histórico completo de treinos</span>
+└── (workout)/
+    ├── _layout.tsx          <span class="cmt">// Workout Stack (headerShown: false, gestureEnabled: false)</span>
+    ├── exercise.tsx         <span class="cmt">// Tela de exercício — input de peso, séries</span>
+    ├── rest.tsx             <span class="cmt">// Timer de descanso (60s)</span>
+    ├── checkpoint.tsx       <span class="cmt">// Revisão de exercícios pulados</span>
+    └── complete.tsx         <span class="cmt">// Resumo final do treino</span></div>
+    </div>
+
+    <h3 style="font-family:var(--font-display);font-size:28px;letter-spacing:0.5px;margin:28px 0 16px;" data-c="Navegação: Fluxo Título">FLUXO DE NAVEGAÇÃO</h3>
+
+    <div class="mermaid-wrap" data-c="Navegação: Fluxo Diagrama">
+      <pre class="mermaid">
+flowchart TD
+    HOME["/ (Home)"] -- "tap treino card" --> EX["/(workout)/exercise"]
+    EX -- "completar série<br/>(não é última)" --> REST["/(workout)/rest"]
+    REST -- "timer 0 ou pular" --> EX
+    EX -- "completar última série<br/>(próximo exercício existe)" --> REST
+    EX -- "completar última série<br/>(fila vazia)" --> COMP["/(workout)/complete"]
+    EX -- "todos restantes pulados" --> CHECK["/(workout)/checkpoint"]
+    CHECK -- "fazer exercício" --> EX
+    CHECK -- "pular todos" --> COMP
+    EX -- "pular exercício" --> EX2["/(workout)/exercise<br/>(próximo)"]
+    HOME -- "tap histórico" --> HIST["/history"]
+    HIST -- "voltar" --> HOME
+    COMP -- "voltar à home" --> HOME
+      </pre>
+    </div>
+
+    <div class="card card-info" data-c="Navegação: Gestos">
+      <h3>Nota: Bloqueio de Gestos</h3>
+      <p>O grupo <code>(workout)</code> desabilita <strong>gestureEnabled</strong> para impedir que o usuário saia do treino acidentalmente com swipe back. A única forma de sair é pelo botão de voltar na tela de exercício (com confirmação) ou completando o treino.</p>
+    </div>
+  </section>
+
+  <!-- ═══════════════ 06 ESTADO ═══════════════ -->
+  <section class="section" id="estado">
+    <div class="section-label">06 — Gerenciamento de Estado</div>
+    <h2 class="section-title" data-c="Estado: Título">GERENCIAMENTO DE ESTADO</h2>
+
+    <div class="section-body" data-c="Estado: Descrição">
+      <p>Dois Zustand stores separados por responsabilidade. Ambos usam o <strong>persist middleware</strong> com <code>createJSONStorage(() => AsyncStorage)</code> para persistência automática. A separação permite que o <code>workoutStore</code> seja resetado ao final de cada treino sem afetar os dados de longo prazo do <code>appStore</code>.</p>
+    </div>
+
+    <div class="card card-accent" data-c="Estado: workoutStore">
+      <h3>workoutStore — Treino Ativo</h3>
+      <p>Gerencia todo o estado transitório de um treino em andamento. Resetado ao concluir.</p>
+      <div class="code-block"><span class="kw">interface</span> WorkoutState {
+  <span class="cmt">// Estado</span>
+  activePlan: Plan | <span class="fn">null</span>
+  queue: Exercise[]           <span class="cmt">// fila de exercícios restantes</span>
+  skippedIds: <span class="fn">Set</span>&lt;string&gt;     <span class="cmt">// IDs de exercícios pulados</span>
+  currentSet: <span class="fn">number</span>          <span class="cmt">// série atual (1, 2 ou 3)</span>
+  currentSets: SetRecord[]    <span class="cmt">// séries já feitas do exercício atual</span>
+  log: ExerciseLog[]          <span class="cmt">// exercícios já concluídos</span>
+  startedAt: <span class="fn">number</span> | <span class="fn">null</span>   <span class="cmt">// timestamp de início</span>
+
+  <span class="cmt">// Ações</span>
+  <span class="fn">startWorkout</span>(plan: Plan): <span class="fn">void</span>
+  <span class="fn">completeSet</span>(weight: <span class="fn">number</span>): <span class="fn">void</span>
+  <span class="fn">skipExercise</span>(): <span class="fn">void</span>
+  <span class="fn">removeExercise</span>(): <span class="fn">void</span>    <span class="cmt">// "não vou fazer hoje"</span>
+  <span class="fn">returnToSkipped</span>(id: <span class="fn">string</span>): <span class="fn">void</span>
+  <span class="fn">skipAllPending</span>(): <span class="fn">void</span>
+  <span class="fn">reset</span>(): <span class="fn">void</span>
+}</div>
+    </div>
+
+    <div class="card card-accent" data-c="Estado: appStore">
+      <h3>appStore — Dados Persistentes</h3>
+      <p>Gerencia dados de longo prazo: últimos pesos por exercício, datas dos treinos, e histórico completo.</p>
+      <div class="code-block"><span class="kw">interface</span> AppState {
+  <span class="cmt">// Estado</span>
+  lastWeights: Record&lt;string, <span class="fn">number</span>&gt;  <span class="cmt">// exerciseId → último peso (kg)</span>
+  lastDates: Record&lt;string, <span class="fn">string</span>&gt;    <span class="cmt">// planId → última data ISO</span>
+  history: WorkoutSession[]            <span class="cmt">// treinos concluídos</span>
+
+  <span class="cmt">// Ações</span>
+  <span class="fn">saveWorkout</span>(session: WorkoutSession): <span class="fn">void</span>
+  <span class="fn">updateLastWeights</span>(weights: Record&lt;string, <span class="fn">number</span>&gt;): <span class="fn">void</span>
+  <span class="fn">deleteWorkout</span>(id: <span class="fn">number</span>): <span class="fn">void</span>
+}</div>
+    </div>
+
+    <div class="card card-info" data-c="Estado: Hydration">
+      <h3>Nota: Hydration Assíncrona</h3>
+      <p>Como AsyncStorage é assíncrono, o store não estará hidratado no primeiro render. Usamos o hook <code>onRehydrateStorage</code> do Zustand persist para exibir um splash/loading até a hidratação completar. O <code>workoutStore</code> também permite recuperar um treino interrompido (crash ou kill do app).</p>
+    </div>
+  </section>
+
+  <!-- ═══════════════ 07 TIMER SVG ═══════════════ -->
+  <section class="section" id="timer">
+    <div class="section-label">07 — Timer SVG</div>
+    <h2 class="section-title" data-c="Timer: Título">TIMER DE DESCANSO</h2>
+
+    <div class="section-body" data-c="Timer: Descrição">
+      <p>O timer de descanso usa um arco circular SVG animado via <strong>react-native-svg</strong> + <strong>react-native-reanimated</strong>. A técnica usa <code>strokeDasharray</code> e <code>strokeDashoffset</code> para controlar o preenchimento do arco.</p>
+    </div>
+
+    <div class="card card-accent" data-c="Timer: Implementação">
+      <h3>Implementação</h3>
+      <ul>
+        <li>Componente <code>RestTimer</code> recebe <code>duration</code> (60s padrão) e callback <code>onComplete</code></li>
+        <li>Arco SVG: círculo com <code>r=45</code>, <code>circumference = 2π×45 ≈ 282.74</code></li>
+        <li><code>strokeDashoffset</code> animado de 0 → circumference via <code>useSharedValue</code> + <code>withTiming</code></li>
+        <li>Últimos 10s: cor muda de <code>#C2F000</code> (accent) para <code>#FF453A</code> (danger)</li>
+        <li>Ao chegar a 0: vibração via <code>expo-haptics</code> (foreground only na v1)</li>
+        <li>Botão "Pular Descanso" cancela o timer e navega para o próximo exercício</li>
+      </ul>
+    </div>
+
+    <div class="card card-warning" data-c="Timer: Background">
+      <h3>Comportamento em Background (v1)</h3>
+      <p>Na v1, o timer usa <code>Date.now()</code> para calcular o tempo restante ao retornar do background. Se o timer expirou enquanto o app estava em background, o app navega diretamente para o próximo exercício. Notificações push locais estão planejadas para v2.</p>
+    </div>
+  </section>
+
+  <!-- ═══════════════ 08 TESTES ═══════════════ -->
+  <section class="section" id="testes">
+    <div class="section-label">08 — Estratégia de Testes</div>
+    <h2 class="section-title" data-c="Testes: Título">ESTRATÉGIA DE TESTES E PUBLICAÇÃO</h2>
+
+    <div class="card card-accent" data-c="Testes: Unitários">
+      <h3>Testes Unitários</h3>
+      <ul>
+        <li><strong>Zustand stores:</strong> testar todas as ações do <code>workoutStore</code> e <code>appStore</code> isoladamente (completeSet, skipExercise, removeExercise, saveWorkout, deleteWorkout)</li>
+        <li><strong>Lógica de fila:</strong> testar cenários de skip + checkpoint (todos pulados → checkpoint, último exercício completo com pulados restantes)</li>
+        <li><strong>Timer:</strong> testar cálculo de offset e comportamento de retorno de background</li>
+      </ul>
+    </div>
+
+    <div class="card card-accent" data-c="Testes: E2E">
+      <h3>Testes End-to-End</h3>
+      <ul>
+        <li>Fluxo completo: Home → selecionar treino → completar 3 séries × 7 exercícios → resumo → home</li>
+        <li>Fluxo com skip: pular 2 exercícios → completar restantes → checkpoint → decidir sobre pendentes</li>
+        <li>Histórico: completar treino → verificar no histórico → apagar → confirmar exclusão</li>
+      </ul>
+    </div>
+
+    <div class="card card-accent" data-c="Testes: Publicação">
+      <h3>Publicação</h3>
+      <ul>
+        <li><strong>Desenvolvimento:</strong> Expo Go para testes rápidos em device físico</li>
+        <li><strong>Build:</strong> EAS Build (managed) para gerar binários iOS/Android</li>
+        <li><strong>Distribuição:</strong> EAS Update para OTA updates, TestFlight (iOS) e internal testing track (Android) para beta</li>
+      </ul>
+    </div>
+
+    <div class="card card-info" data-c="Testes: Rollback">
+      <h3>Plano de Rollback</h3>
+      <p>Como o app é pessoal (um único usuário), rollback é simples: reverter o update via EAS ou reinstalar a versão anterior. Dados em AsyncStorage são preservados entre versões.</p>
+    </div>
+  </section>
+
+  <!-- ═══════════════ 09 DÍVIDA TÉCNICA ═══════════════ -->
+  <section class="section" id="divida">
+    <div class="section-label">09 — Dívida Técnica</div>
+    <h2 class="section-title" data-c="Dívida: Título">DÍVIDA TÉCNICA</h2>
+
+    <div class="card card-warning" data-c="Dívida: Planos Hardcoded">
+      <h3>Planos de treino hardcoded</h3>
+      <p>Na v1, os 3 planos ABC são definidos em um arquivo <code>data/plans.ts</code>. Não há editor de planos. Quando o instrutor mudar o plano, será necessário alterar o código e fazer deploy. <strong>Migração planejada:</strong> editor de plano com persistência local (v2) e posteriormente sync com backend (v3).</p>
+    </div>
+
+    <div class="card card-warning" data-c="Dívida: Set no Zustand">
+      <h3>Set&lt;string&gt; no Zustand persist</h3>
+      <p>Zustand persist serializa estado como JSON, que não suporta <code>Set</code> nativamente. O <code>skippedIds</code> precisa de um <strong>custom serializer</strong> (Set → Array na serialização, Array → Set na hidratação) ou ser armazenado como array. Recomendação: usar array com helper <code>isSkipped(id)</code>.</p>
+    </div>
+
+    <div class="card card-warning" data-c="Dívida: Timer Background">
+      <h3>Timer sem notificação em background</h3>
+      <p>Na v1, o timer não notifica o usuário em background. Se o usuário abrir outra app durante o descanso, não receberá alerta. <strong>Migração planejada:</strong> <code>expo-notifications</code> com scheduled notification local (v2).</p>
+    </div>
+
+    <div class="card card-info" data-c="Dívida: Abstração Storage">
+      <h3>Preparação para sync futuro</h3>
+      <p>A decisão de usar Zustand persist + AsyncStorage na v1 foi consciente. Para facilitar a migração futura para sync com nuvem, a camada de dados está isolada em stores bem definidos. Na v2, um adapter pode substituir AsyncStorage por uma solução que faz sync (ex: Supabase, Firebase, ou API custom) sem alterar os componentes UI.</p>
+    </div>
+  </section>
+
+  <!-- ═══════════════ 10 TAREFAS ═══════════════ -->
+  <section class="section" id="tarefas">
+    <div class="section-label">10 — Tarefas</div>
+    <h2 class="section-title" data-c="Tarefas: Título">TAREFAS</h2>
+
+    <div class="section-body" data-c="Tarefas: Descrição">
+      <p>Breakdown técnico ordenado por dependência. Cada tarefa é implementável de forma independente e testável isoladamente.</p>
+    </div>
+
+    <div class="card card-accent" data-c="Tarefas: Setup">
+      <h3>Fase 1 — Setup do Projeto</h3>
+      <ul class="task-list">
+        <li data-c="Task: Criar projeto Expo">
+          <div class="task-check"></div>
+          <div><div class="task-title">Criar projeto Expo com template TypeScript</div>
+          <div class="task-desc"><code>npx create-expo-app forja --template expo-template-blank-typescript</code></div></div>
+        </li>
+        <li data-c="Task: Instalar dependências">
+          <div class="task-check"></div>
+          <div><div class="task-title">Instalar dependências</div>
+          <div class="task-desc">zustand, @react-native-async-storage/async-storage, react-native-svg, react-native-reanimated, expo-haptics, expo-router</div></div>
+        </li>
+        <li data-c="Task: Estrutura de pastas">
+          <div class="task-check"></div>
+          <div><div class="task-title">Criar estrutura de pastas (app/, stores/, components/, data/, utils/)</div>
+          <div class="task-desc">Seguir a estrutura definida na seção de Navegação</div></div>
+        </li>
+        <li data-c="Task: Design tokens">
+          <div class="task-check"></div>
+          <div><div class="task-title">Configurar design tokens e tema global</div>
+          <div class="task-desc">Arquivo theme.ts com todas as cores, fontes e espaçamentos do sistema de design Forja</div></div>
+        </li>
+        <li data-c="Task: Dados estáticos">
+          <div class="task-check"></div>
+          <div><div class="task-title">Criar data/plans.ts com os 3 planos ABC</div>
+          <div class="task-desc">21 exercícios (7 por plano) com nome, categoria, equipamento, reps e sets</div></div>
+        </li>
+      </ul>
+    </div>
+
+    <div class="card card-accent" data-c="Tarefas: Stores">
+      <h3>Fase 2 — Stores Zustand</h3>
+      <ul class="task-list">
+        <li data-c="Task: appStore">
+          <div class="task-check"></div>
+          <div><div class="task-title">Implementar appStore</div>
+          <div class="task-desc">lastWeights, lastDates, history, saveWorkout, deleteWorkout com persist middleware</div></div>
+        </li>
+        <li data-c="Task: workoutStore">
+          <div class="task-check"></div>
+          <div><div class="task-title">Implementar workoutStore</div>
+          <div class="task-desc">Toda a máquina de estados do treino: startWorkout, completeSet, skipExercise, removeExercise, returnToSkipped, skipAllPending, reset</div></div>
+        </li>
+        <li data-c="Task: Testes stores">
+          <div class="task-check"></div>
+          <div><div class="task-title">Testes unitários dos stores</div>
+          <div class="task-desc">Cenários: treino normal, skip + checkpoint, não vou fazer, histórico CRUD</div></div>
+        </li>
+      </ul>
+    </div>
+
+    <div class="card card-accent" data-c="Tarefas: Telas">
+      <h3>Fase 3 — Telas</h3>
+      <ul class="task-list">
+        <li data-c="Task: Home Screen">
+          <div class="task-check"></div>
+          <div><div class="task-title">Home Screen (index.tsx)</div>
+          <div class="task-desc">Cards de treino com "Próximo" chip, último treino, card de histórico</div></div>
+        </li>
+        <li data-c="Task: Exercise Screen">
+          <div class="task-check"></div>
+          <div><div class="task-title">Exercise Screen</div>
+          <div class="task-desc">Input de peso, indicador de séries, botões pular/não fazer, indicador de exercícios pulados</div></div>
+        </li>
+        <li data-c="Task: Rest Timer Screen">
+          <div class="task-check"></div>
+          <div><div class="task-title">Rest Timer Screen + componente SVG</div>
+          <div class="task-desc">Arco animado com Reanimated, contagem regressiva, pular descanso, "ir ao pulado"</div></div>
+        </li>
+        <li data-c="Task: Checkpoint Screen">
+          <div class="task-check"></div>
+          <div><div class="task-title">Checkpoint Screen</div>
+          <div class="task-desc">Lista de exercícios pulados, opção de fazer ou pular todos definitivamente</div></div>
+        </li>
+        <li data-c="Task: Complete Screen">
+          <div class="task-check"></div>
+          <div><div class="task-title">Complete Screen</div>
+          <div class="task-desc">Resumo com duração, exercícios, pesos, botão voltar à home</div></div>
+        </li>
+        <li data-c="Task: History Screen">
+          <div class="task-check"></div>
+          <div><div class="task-title">History Screen</div>
+          <div class="task-desc">Lista de treinos com data e duração, expandir detalhes, apagar com confirmação inline</div></div>
+        </li>
+      </ul>
+    </div>
+
+    <div class="card card-accent" data-c="Tarefas: Polish">
+      <h3>Fase 4 — Polish & Deploy</h3>
+      <ul class="task-list">
+        <li data-c="Task: Fontes custom">
+          <div class="task-check"></div>
+          <div><div class="task-title">Carregar fontes Bebas Neue + Syne via expo-font</div>
+          <div class="task-desc">Splash screen enquanto fontes carregam</div></div>
+        </li>
+        <li data-c="Task: Haptics">
+          <div class="task-check"></div>
+          <div><div class="task-title">Feedback háptico (expo-haptics)</div>
+          <div class="task-desc">Vibração ao completar série, ao terminar timer, ao concluir treino</div></div>
+        </li>
+        <li data-c="Task: App icon splash">
+          <div class="task-check"></div>
+          <div><div class="task-title">App icon e splash screen</div>
+          <div class="task-desc">Ícone com logo Forja, splash screen dark com accent</div></div>
+        </li>
+        <li data-c="Task: EAS Build">
+          <div class="task-check"></div>
+          <div><div class="task-title">Configurar EAS Build + primeiro build</div>
+          <div class="task-desc">eas.json para development, preview e production profiles</div></div>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ═══════════════ 11 AUTORES ═══════════════ -->
+  <section class="section" id="autores">
+    <div class="section-label">11 — Autores</div>
+    <h2 class="section-title" data-c="Autores: Título">AUTORES E APROVADORES</h2>
+
+    <div class="card card-accent" data-c="Autores: Lista">
+      <h3>Autor</h3>
+      <p><strong>Pedro Peralta</strong> — Desenvolvedor & Product Owner</p>
+    </div>
+  </section>
+
+</div><!-- /.container -->
+
+<!-- ═══════════════ COMMENTING SYSTEM ═══════════════ -->
+<div class="review-hint" id="reviewHint">
+  <div class="hint-title">Como Revisar</div>
+  <div class="hint-step"><span class="hint-num">1</span><span>Clique em <strong>Review Mode</strong> para começar</span></div>
+  <div class="hint-step"><span class="hint-num">2</span><span>Clique em qualquer seção destacada para comentar</span></div>
+  <div class="hint-step"><span class="hint-num">3</span><span>Clique em <strong>Export Comments</strong> para copiar</span></div>
+  <div class="hint-step"><span class="hint-num">4</span><span>Cole os comentários de volta no chat para revisões</span></div>
+  <button class="hint-dismiss" onclick="dismissHint()">Entendi</button>
+</div>
+
+<div class="review-toolbar">
+  <button class="export-toggle" id="exportToggle" onclick="openExportPanel()">Export Comments</button>
+  <button class="review-toggle" id="reviewToggle" onclick="toggleReviewMode()">
+    <span id="toggleIcon">&#9998;</span>
+    <span id="toggleLabel">Review Mode</span>
+    <span class="count" id="commentCount" style="display:none;">0</span>
+  </button>
+</div>
+
+<div class="export-panel" id="exportPanel">
+  <h3>Export Comments</h3>
+  <p style="color:var(--muted);font-size:13px;margin-bottom:12px;">
+    Copie este texto e cole de volta na conversa para revisões.
+  </p>
+  <textarea id="exportText" readonly></textarea>
+  <div class="actions">
+    <button onclick="copyExport()" style="background:var(--accent);color:#080808;">Copiar</button>
+    <button onclick="clearAllComments()" style="background:rgba(255,69,58,0.15);color:var(--danger);">Limpar Tudo</button>
+    <button onclick="closeExportPanel()" style="background:var(--surface-2);color:var(--muted);">Fechar</button>
+  </div>
+</div>
+
+<script>
+let reviewMode = false;
+const STORAGE_KEY = 'solution-comments-forja-v1';
+let comments = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+let activePopover = null;
+
+const HINT_KEY = STORAGE_KEY + '-hint-dismissed';
+if (!localStorage.getItem(HINT_KEY)) {
+  setTimeout(() => { document.getElementById('reviewHint').classList.add('visible'); }, 1500);
+}
+function dismissHint() {
+  document.getElementById('reviewHint').classList.remove('visible');
+  localStorage.setItem(HINT_KEY, 'true');
+}
+
+function updateExportButton() {
+  const btn = document.getElementById('exportToggle');
+  btn.classList.toggle('visible', comments.length > 0);
+}
+
+function toggleReviewMode() {
+  reviewMode = !reviewMode;
+  document.body.classList.toggle('review-mode', reviewMode);
+  const btn = document.getElementById('reviewToggle');
+  const label = document.getElementById('toggleLabel');
+  const icon = document.getElementById('toggleIcon');
+  if (reviewMode) {
+    btn.classList.add('active');
+    label.textContent = 'Exit Review';
+    icon.textContent = '\u2716';
+    dismissHint();
+  } else {
+    btn.classList.remove('active');
+    label.textContent = 'Review Mode';
+    icon.textContent = '\u270E';
+    closeAllPopovers();
+  }
+}
+
+function openExportPanel() {
+  updateExport();
+  document.getElementById('exportPanel').classList.add('open');
+}
+
+function saveComments() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(comments));
+  updateCount();
+  updateExport();
+  updateExportButton();
+}
+
+function updateCount() {
+  const el = document.getElementById('commentCount');
+  el.style.display = comments.length > 0 ? 'inline-flex' : 'none';
+  el.textContent = comments.length;
+}
+
+function closeAllPopovers() {
+  document.querySelectorAll('body > .comment-popover').forEach(p => p.remove());
+  activePopover = null;
+}
+
+function getContext(el) {
+  const t = el.textContent.trim().replace(/\s+/g, ' ').substring(0, 80);
+  return t.length === 80 ? t + '...' : t;
+}
+
+function positionPopover(pop, anchor) {
+  document.body.appendChild(pop);
+  const r = anchor.getBoundingClientRect();
+  let top = r.bottom + 4;
+  let left = r.left;
+  if (top + 300 > window.innerHeight) top = r.top - 300;
+  if (left + 340 > window.innerWidth) left = window.innerWidth - 350;
+  if (left < 10) left = 10;
+  pop.style.top = top + 'px';
+  pop.style.left = left + 'px';
+}
+
+function isTableRow(el) { return el.tagName === 'TR'; }
+
+document.addEventListener('click', function(e) {
+  if (!reviewMode) return;
+  const t = e.target.closest('[data-c]');
+  if (!t || e.target.closest('.comment-pin') || e.target.closest('.comment-popover')) return;
+  e.preventDefault();
+  e.stopPropagation();
+  closeAllPopovers();
+
+  const section = t.getAttribute('data-c');
+  const id = 'c' + Date.now();
+
+  const pop = document.createElement('div');
+  pop.className = 'comment-popover';
+  pop._target = t;
+  pop.innerHTML = `
+    <div class="popover-section-label">
+      Comentando em: <span class="popover-section-name">${section}</span>
+    </div>
+    <textarea placeholder="Escreva seu feedback..." id="${id}-t" autofocus></textarea>
+    <div class="comment-popover-actions">
+      <button class="btn-cancel" onclick="closeAllPopovers()">Cancelar</button>
+      <button class="btn-save" onclick="saveComment('${id}','${section.replace(/'/g,"\\'")}',this)">Salvar</button>
+    </div>
+  `;
+  positionPopover(pop, t);
+  setTimeout(() => pop.querySelector('textarea').focus(), 50);
+  activePopover = pop;
+});
+
+function saveComment(id, section, btn) {
+  const pop = btn.closest('.comment-popover');
+  const text = pop.querySelector('textarea').value.trim();
+  if (!text) return;
+  const target = pop._target;
+  const ctx = getContext(target);
+  comments.push({ id, section, text, context: ctx, ts: new Date().toISOString() });
+  saveComments();
+
+  const pin = document.createElement('span');
+  pin.className = 'comment-pin';
+  pin.textContent = comments.length;
+  pin.setAttribute('data-cid', id);
+  pin.onclick = function(e) { e.stopPropagation(); showDetail(id, this); };
+
+  if (isTableRow(target)) {
+    const lastTd = target.querySelector('td:last-child');
+    if (lastTd) lastTd.appendChild(pin);
+  } else {
+    target.appendChild(pin);
+  }
+
+  closeAllPopovers();
+}
+
+function showDetail(id, pinEl) {
+  closeAllPopovers();
+  const c = comments.find(x => x.id === id);
+  if (!c) return;
+  const pop = document.createElement('div');
+  pop.className = 'comment-popover';
+  pop.innerHTML = `
+    <div class="popover-section-label">
+      <span style="color:var(--danger);">#${comments.indexOf(c)+1}</span> em <span class="popover-section-name">${c.section}</span>
+    </div>
+    <div style="color:var(--text);font-size:13px;padding:6px 0;">${c.text}</div>
+    <div class="comment-popover-actions">
+      <button class="btn-delete" onclick="deleteComment('${id}')">Apagar</button>
+      <button class="btn-cancel" onclick="closeAllPopovers()">Fechar</button>
+    </div>
+  `;
+  positionPopover(pop, pinEl);
+}
+
+function deleteComment(id) {
+  comments = comments.filter(c => c.id !== id);
+  saveComments();
+  document.querySelectorAll(`.comment-pin[data-cid="${id}"]`).forEach(el => el.remove());
+  closeAllPopovers();
+  document.querySelectorAll('.comment-pin').forEach((p, i) => { p.textContent = i + 1; });
+}
+
+function updateExport() {
+  const ta = document.getElementById('exportText');
+  if (!comments.length) { ta.value = 'Nenhum comentário ainda.'; return; }
+  let t = `# Solution Design Review Comments\n# ${new Date().toLocaleDateString()} | ${comments.length} comentário(s)\n\n`;
+  comments.forEach((c, i) => {
+    t += `## #${i+1} — ${c.section}\n`;
+    t += `${c.text}\n`;
+    t += `> Context: "${c.context}"\n\n`;
+  });
+  ta.value = t;
+}
+
+function copyExport() {
+  navigator.clipboard.writeText(document.getElementById('exportText').value).then(() => {
+    const b = document.querySelector('.export-panel .actions button:first-child');
+    b.textContent = 'Copiado!'; b.style.background = '#059669';
+    setTimeout(() => { b.textContent = 'Copiar'; b.style.background = ''; }, 2000);
+  });
+}
+
+function closeExportPanel() { document.getElementById('exportPanel').classList.remove('open'); }
+
+function clearAllComments() {
+  if (!confirm('Apagar todos os comentários?')) return;
+  comments = [];
+  saveComments();
+  document.querySelectorAll('.comment-pin').forEach(el => el.remove());
+  closeExportPanel();
+}
+
+function restore() {
+  comments.forEach((c, i) => {
+    const el = document.querySelector(`[data-c="${CSS.escape(c.section)}"]`);
+    if (!el) return;
+
+    const pin = document.createElement('span');
+    pin.className = 'comment-pin';
+    pin.textContent = i + 1;
+    pin.setAttribute('data-cid', c.id);
+    pin.onclick = function(e) { e.stopPropagation(); showDetail(c.id, this); };
+
+    if (isTableRow(el)) {
+      const lastTd = el.querySelector('td:last-child');
+      if (lastTd) lastTd.appendChild(pin);
+    } else {
+      el.appendChild(pin);
+    }
+  });
+}
+
+updateCount(); updateExport(); updateExportButton(); restore();
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    if (activePopover) { activePopover.remove(); activePopover = null; }
+    else if (document.getElementById('exportPanel').classList.contains('open')) closeExportPanel();
+    else if (reviewMode) toggleReviewMode();
+  }
+});
+</script>
+
+</body>
+</html>

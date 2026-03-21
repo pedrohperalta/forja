@@ -1,0 +1,1349 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Forja — Solution Design v4</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({ startOnLoad: true, theme: 'dark', themeVariables: { primaryColor: '#1C1C1C', primaryTextColor: '#FFFFFF', primaryBorderColor: '#C2F000', lineColor: '#444444', secondaryColor: '#111111', tertiaryColor: '#222222', fontFamily: 'Syne, sans-serif' }});</script>
+  <style>
+    :root {
+      --bg:#080808;--surface:#111111;--surface-2:#1C1C1C;--border:#222222;--border-med:#333333;
+      --accent:#C2F000;--accent-dim:rgba(194,240,0,0.10);--accent-glow:rgba(194,240,0,0.25);
+      --text:#FFFFFF;--text-med:#AAAAAA;--muted:#888888;--dim:#444444;
+      --danger:#FF453A;--warning:#F59E0B;--info:#3B82F6;
+      --r-sm:8px;--r-md:12px;--r-lg:16px;--r-pill:100px;
+      --shadow-sm:0 2px 6px rgba(0,0,0,0.4);--shadow-md:0 6px 24px rgba(0,0,0,0.5);--shadow-lg:0 16px 48px rgba(0,0,0,0.6);
+      --font-display:'Bebas Neue',sans-serif;--font-ui:'Syne',sans-serif;
+    }
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:var(--font-ui);background:var(--bg);color:var(--text);line-height:1.6;-webkit-font-smoothing:antialiased}
+    .container{max-width:920px;margin:0 auto;padding:0 24px}
+
+    .hero{background:var(--surface);border-bottom:1px solid var(--border);padding:56px 0 44px}
+    .hero-eyebrow{font-size:12px;font-weight:700;letter-spacing:3.5px;text-transform:uppercase;color:var(--accent);margin-bottom:12px}
+    .hero-title{font-family:var(--font-display);font-size:64px;line-height:0.95;letter-spacing:1px;margin-bottom:14px}
+    .hero-subtitle{font-size:17px;color:var(--muted);max-width:640px;line-height:1.7;margin-bottom:28px}
+    .hero-meta{display:flex;flex-wrap:wrap;gap:10px}
+    .hero-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 16px;border-radius:var(--r-pill);font-size:13px;font-weight:600}
+    .badge-status{background:rgba(194,240,0,0.12);color:var(--accent)}.badge-version{background:var(--surface-2);color:var(--text-med);border:1px solid var(--border)}.badge-date{background:var(--surface-2);color:var(--muted);border:1px solid var(--border)}
+
+    .toc{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:24px 28px;margin:36px 0}
+    .toc h2{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:3px;color:var(--dim);margin-bottom:16px}
+    .toc-list{list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:8px 28px}
+    .toc-list a{color:var(--text-med);text-decoration:none;font-size:15px;font-weight:500;padding:6px 0;display:flex;align-items:center;gap:10px;transition:color .15s}
+    .toc-list a:hover{color:var(--accent)}
+    .toc-num{font-family:var(--font-display);color:var(--accent);font-size:16px;min-width:24px}
+
+    .section{margin:48px 0}
+    .section-label{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:3px;color:var(--accent);margin-bottom:8px}
+    .section-title{font-family:var(--font-display);font-size:42px;letter-spacing:.5px;margin-bottom:16px;line-height:1}
+    .section-body{font-size:16px;color:var(--muted);line-height:1.7}
+    .section-body p+p{margin-top:12px}.section-body strong{color:var(--text)}.section-body em{color:var(--text-med)}
+
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;margin-bottom:16px}
+    .card-accent{border-top:3px solid var(--accent)}.card-warning{border-top:3px solid var(--warning)}.card-danger{border-top:3px solid var(--danger)}.card-info{border-top:3px solid var(--info)}
+    .card h3{font-size:17px;font-weight:700;margin-bottom:8px}.card p{font-size:15px;color:var(--muted);line-height:1.6}
+    .card ul{list-style:none;margin-top:8px}
+    .card ul li{font-size:14px;color:var(--muted);padding:4px 0 4px 18px;position:relative}
+    .card ul li::before{content:'';position:absolute;left:0;top:11px;width:6px;height:6px;border-radius:50%;background:var(--accent-dim);border:1.5px solid var(--accent)}
+
+    .metrics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px;margin:24px 0}
+    .metric{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:20px;text-align:center}
+    .metric-value{font-family:var(--font-display);font-size:40px;color:var(--accent);line-height:1}
+    .metric-label{font-size:12px;color:var(--muted);font-weight:700;margin-top:6px;text-transform:uppercase;letter-spacing:2px}
+
+    .data-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:15px}
+    .data-table th{background:var(--surface-2);text-align:left;padding:12px 14px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--dim);border-bottom:1px solid var(--border-med)}
+    .data-table td{padding:10px 14px;border-bottom:1px solid var(--border);color:var(--text-med);vertical-align:top}
+    .data-table tr:hover td{background:var(--accent-dim)}
+
+    .priority{display:inline-flex;padding:4px 12px;border-radius:var(--r-pill);font-size:12px;font-weight:700}
+    .p0{background:rgba(255,69,58,0.15);color:#FF453A}.p1{background:rgba(245,158,11,0.15);color:#F59E0B}.p2{background:rgba(59,130,246,0.15);color:#3B82F6}
+
+    .code-block{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:18px 20px;margin:16px 0;font-family:'SF Mono','Fira Code',monospace;font-size:13px;color:var(--text-med);line-height:1.7;overflow-x:auto;white-space:pre}
+    .code-block .kw{color:var(--accent)}.code-block .str{color:#F59E0B}.code-block .cmt{color:var(--dim);font-style:italic}.code-block .fn{color:#3B82F6}
+
+    .scope-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0}
+    .mermaid-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:32px;margin:20px 0;text-align:center;overflow-x:auto}
+
+    .task-list{list-style:none;margin:16px 0}
+    .task-list li{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);font-size:15px;color:var(--text-med)}
+    .task-list li:last-child{border-bottom:none}
+    .task-check{width:18px;height:18px;border-radius:4px;border:2px solid var(--border-med);flex-shrink:0;margin-top:2px}
+    .task-title{font-weight:600;color:var(--text)}.task-desc{font-size:13px;color:var(--muted);margin-top:2px}
+
+    .phase-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;margin:24px 0}
+    .phase-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:24px}
+    .phase-num{font-size:12px;font-weight:700;color:var(--accent);letter-spacing:2px;text-transform:uppercase}
+    .phase-title{font-family:var(--font-display);font-size:28px;letter-spacing:.5px;margin:6px 0}
+    .phase-list{list-style:none;margin-top:12px}
+    .phase-list li{font-size:14px;color:var(--muted);padding:5px 0 5px 20px;position:relative}
+    .phase-list li::before{content:'';position:absolute;left:0;top:11px;width:6px;height:6px;border-radius:50%;background:var(--accent-dim);border:1.5px solid var(--accent)}
+
+    .sub-h{font-family:var(--font-display);font-size:28px;letter-spacing:.5px;margin:28px 0 16px}
+
+    @media(max-width:640px){.hero-title{font-size:36px}.toc-list{grid-template-columns:1fr}.scope-grid{grid-template-columns:1fr}.metrics-grid{grid-template-columns:1fr 1fr}}
+
+    /* ========== COMMENTING SYSTEM ========== */
+    .review-toolbar{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;gap:8px;align-items:center}
+    .review-toggle{background:var(--accent);color:var(--bg);border:none;padding:12px 20px;border-radius:var(--r-pill);font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 4px 20px var(--accent-glow);display:flex;align-items:center;gap:8px;transition:all .2s;font-family:var(--font-ui);letter-spacing:.5px}
+    .review-toggle:hover{transform:translateY(-1px);box-shadow:0 6px 30px var(--accent-glow)}
+    .review-toggle.active{background:var(--danger);box-shadow:0 4px 20px rgba(255,69,58,0.3);color:#fff}
+    .review-toggle .count{background:var(--bg);color:var(--accent);width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
+    .export-toggle{display:none;background:var(--surface-2);color:var(--text);border:1px solid var(--border);padding:12px 20px;border-radius:var(--r-pill);font-size:13px;font-weight:600;cursor:pointer;box-shadow:var(--shadow-md);transition:all .2s;font-family:var(--font-ui)}
+    .export-toggle:hover{background:var(--border-med);transform:translateY(-1px)}.export-toggle.visible{display:flex;align-items:center;gap:6px}
+    .review-hint{position:fixed;bottom:80px;right:24px;z-index:9998;background:var(--surface-2);color:var(--text);padding:16px 20px;border:1px solid var(--border);border-radius:12px;max-width:320px;font-size:12px;line-height:1.5;box-shadow:var(--shadow-lg);display:none;animation:hintSlideUp .3s ease-out}
+    .review-hint.visible{display:block}
+    .review-hint::after{content:'';position:absolute;bottom:-8px;right:40px;width:16px;height:16px;background:var(--surface-2);border-right:1px solid var(--border);border-bottom:1px solid var(--border);transform:rotate(45deg)}
+    .review-hint .hint-title{font-weight:700;margin-bottom:8px;color:var(--accent);font-size:13px}
+    .review-hint .hint-step{display:flex;gap:8px;margin-bottom:6px}
+    .review-hint .hint-num{background:var(--accent);color:var(--bg);width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0}
+    .review-hint .hint-dismiss{background:none;border:1px solid var(--border-med);color:var(--muted);padding:6px 14px;border-radius:6px;cursor:pointer;font-family:var(--font-ui);font-size:11px;margin-top:10px}
+    .review-hint .hint-dismiss:hover{background:var(--surface);color:var(--text)}
+    @keyframes hintSlideUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+    body.review-mode [data-c]{cursor:crosshair;position:relative;transition:outline .15s}
+    body.review-mode [data-c]:hover{outline:2px dashed var(--accent);outline-offset:3px;background:var(--accent-dim);border-radius:4px}
+    .comment-pin{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;background:var(--danger);color:white;border-radius:50%;font-size:10px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(255,69,58,0.4);border:2px solid var(--bg);vertical-align:middle;margin-left:6px;position:relative;z-index:100}
+    .comment-popover{z-index:10001;background:var(--surface-2);border:1px solid var(--border-med);border-radius:var(--r-md);padding:14px;width:340px;box-shadow:var(--shadow-lg);position:fixed}
+    .comment-popover textarea{width:100%;background:var(--surface);border:1px solid var(--border-med);color:var(--text);padding:8px 10px;border-radius:var(--r-sm);font-size:13px;font-family:var(--font-ui);resize:vertical;min-height:60px}
+    .comment-popover textarea:focus{outline:2px solid var(--accent);border-color:transparent}
+    .comment-popover-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:8px}
+    .comment-popover-actions button{padding:6px 14px;border-radius:var(--r-pill);font-size:12px;cursor:pointer;border:none;font-family:var(--font-ui);font-weight:600}
+    .btn-save{background:var(--accent);color:var(--bg)}.btn-save:hover{filter:brightness(1.1)}
+    .btn-cancel{background:var(--surface);color:var(--muted);border:1px solid var(--border)!important}
+    .btn-delete{background:rgba(255,69,58,0.15);color:var(--danger)}
+    .export-panel{position:fixed;top:0;right:-440px;width:440px;height:100vh;background:var(--surface);border-left:1px solid var(--border);z-index:10000;transition:right .3s ease;overflow-y:auto;padding:24px;box-shadow:-8px 0 40px rgba(0,0,0,0.5)}
+    .export-panel.open{right:0}.export-panel h3{color:var(--text);font-size:16px;margin-bottom:4px}
+    .export-panel textarea{width:100%;min-height:300px;background:var(--surface-2);border:1px solid var(--border);color:var(--text-med);padding:12px;border-radius:var(--r-md);font-size:12px;font-family:'SF Mono','Fira Code',monospace;resize:vertical}
+    .export-panel .actions{display:flex;gap:8px;margin-top:12px}
+    .export-panel .actions button{flex:1;padding:10px;border-radius:var(--r-pill);font-size:13px;cursor:pointer;border:none;font-weight:600;font-family:var(--font-ui)}
+    .popover-section-label{color:var(--dim);font-size:11px;margin-bottom:8px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+    .popover-section-name{color:var(--accent)}
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════ HERO ═══════════════ -->
+<header class="hero">
+  <div class="container">
+    <div class="hero-eyebrow" data-c="Hero: Eyebrow">Desenho de Solução</div>
+    <h1 class="hero-title" data-c="Hero: Título">FORJA — SOLUTION DESIGN</h1>
+    <p class="hero-subtitle" data-c="Hero: Subtítulo">Arquitetura técnica do app mobile para registro de treinos na academia. Expo SDK 55 (New Architecture), Zustand + MMKV, NativeWind, react-native-svg + Reanimated 4 — tudo offline-first com strict TDD.</p>
+    <div class="hero-meta">
+      <span class="hero-badge badge-status">&#9679; Em Desenvolvimento</span>
+      <span class="hero-badge badge-version">v4.0</span>
+      <span class="hero-badge badge-date">20 de março de 2026</span>
+      <span class="hero-badge badge-date">Pedro Peralta</span>
+    </div>
+  </div>
+</header>
+
+<!-- ═══════════════ TOC ═══════════════ -->
+<div class="container">
+  <nav class="toc" data-c="Índice">
+    <h2>Índice</h2>
+    <ol class="toc-list">
+      <li><a href="#problema"><span class="toc-num">01</span> Problema</a></li>
+      <li><a href="#objetivo"><span class="toc-num">02</span> Objetivo</a></li>
+      <li><a href="#solucao"><span class="toc-num">03</span> Solução Proposta</a></li>
+      <li><a href="#design-tokens"><span class="toc-num">04</span> Design System & Tokens</a></li>
+      <li><a href="#dados"><span class="toc-num">05</span> Modelo de Dados</a></li>
+      <li><a href="#navegacao"><span class="toc-num">06</span> Navegação & Telas</a></li>
+      <li><a href="#estado"><span class="toc-num">07</span> Gerenciamento de Estado</a></li>
+      <li><a href="#timer"><span class="toc-num">08</span> Timer SVG</a></li>
+      <li><a href="#qualidade"><span class="toc-num">09</span> Qualidade & Padrões</a></li>
+      <li><a href="#testes"><span class="toc-num">10</span> Estratégia de Testes</a></li>
+      <li><a href="#acessibilidade"><span class="toc-num">11</span> Acessibilidade</a></li>
+      <li><a href="#divida"><span class="toc-num">12</span> Dívida Técnica</a></li>
+      <li><a href="#tarefas"><span class="toc-num">13</span> Tarefas</a></li>
+      <li><a href="#autores"><span class="toc-num">14</span> Autores</a></li>
+    </ol>
+  </nav>
+
+  <!-- ═══════════════ 01 PROBLEMA ═══════════════ -->
+  <section class="section" id="problema">
+    <div class="section-label">01 — Problema</div>
+    <h2 class="section-title" data-c="Problema: Título">PROBLEMA</h2>
+    <div class="card card-accent" data-c="Problema: Contexto">
+      <h3>Contexto Atual</h3>
+      <p>O usuário treina 3x/semana seguindo um plano ABC de hipertrofia prescrito pelo instrutor. Não existe nenhum registro digital — pesos, séries e progresso ficam na memória ou em anotações desorganizadas.</p>
+    </div>
+    <div class="card card-danger" data-c="Problema: Dor">
+      <h3>Dor / Limitação Existente</h3>
+      <p>Sem dados estruturados, é impossível implementar sobrecarga progressiva. Apps existentes (Strong, Hevy, JEFIT) são complexos demais para quem segue um plano fixo simples.</p>
+    </div>
+    <div class="card card-info" data-c="Problema: Evidências">
+      <h3>Evidências</h3>
+      <p>Validação direta com o usuário durante a discovery (9 sessões de Q&A documentadas). A falta de registro é o principal obstáculo para progressão.</p>
+    </div>
+  </section>
+
+  <!-- ═══════════════ 02 OBJETIVO ═══════════════ -->
+  <section class="section" id="objetivo">
+    <div class="section-label">02 — Objetivo</div>
+    <h2 class="section-title" data-c="Objetivo: Título">OBJETIVO</h2>
+    <div class="section-body" data-c="Objetivo: Descrição">
+      <p>Construir um app mobile pessoal em <strong>Expo SDK 55</strong> (React Native 0.83, React 19.2) com <strong>New Architecture obrigatória</strong> (Fabric + TurboModules + JSI). O app funciona <strong>100% offline</strong>, com interface em português e NativeWind para estilização.</p>
+    </div>
+    <div class="metrics-grid">
+      <div class="metric" data-c="Objetivo: Métrica Telas"><div class="metric-value">6</div><div class="metric-label">Telas</div></div>
+      <div class="metric" data-c="Objetivo: Métrica Stores"><div class="metric-value">2</div><div class="metric-label">Zustand Stores</div></div>
+      <div class="metric" data-c="Objetivo: Métrica Deps"><div class="metric-value">~15</div><div class="metric-label">Dependências</div></div>
+      <div class="metric" data-c="Objetivo: Métrica Offline"><div class="metric-value">100%</div><div class="metric-label">Offline</div></div>
+    </div>
+    <div class="scope-grid">
+      <div class="card card-accent" data-c="Objetivo: In-scope">
+        <h3>In-scope (v1)</h3>
+        <ul>
+          <li>Home com cards de treinos A/B/C + histórico</li>
+          <li>Tela de exercício com input de peso e séries</li>
+          <li>Timer de descanso com arco SVG animado (60s)</li>
+          <li>Pular exercício (aparelho ocupado) e "Não vou fazer hoje"</li>
+          <li>Revisão de exercícios pendentes (checkpoint)</li>
+          <li>Tela de conclusão com resumo</li>
+          <li>Histórico de treinos com opção de apagar</li>
+          <li>Persistência local via MMKV (síncrono)</li>
+          <li>Strict TDD — testes antes da implementação</li>
+          <li>NativeWind (Tailwind CSS) para estilização</li>
+        </ul>
+      </div>
+      <div class="card card-warning" data-c="Objetivo: Out-of-scope">
+        <h3>Out-of-scope (futuro)</h3>
+        <ul>
+          <li>Sync com nuvem (planejado para v2 — entidades já incluem sync metadata)</li>
+          <li>Notificações push locais em background</li>
+          <li>Gráficos de progresso / tendência de peso</li>
+          <li>Editor de plano (criar/modificar treinos)</li>
+          <li>Foto do equipamento (câmera)</li>
+          <li>Autenticação / multi-usuário</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ 03 SOLUÇÃO PROPOSTA ═══════════════ -->
+  <section class="section" id="solucao">
+    <div class="section-label">03 — Solução Proposta</div>
+    <h2 class="section-title" data-c="Solução: Título">SOLUÇÃO PROPOSTA</h2>
+    <div class="section-body" data-c="Solução: Descrição">
+      <p>App construído com <strong>Expo SDK 55</strong> usando <strong>New Architecture exclusivamente</strong> (legacy bridge removido). Navegação file-based via Expo Router em <code>src/app/</code>, estado com <strong>Zustand v5</strong> persistido via <strong>MMKV</strong> (20-30x mais rápido que AsyncStorage, leitura síncrona), estilização com <strong>NativeWind</strong> (Tailwind CSS), e o <strong>React Compiler v1.0</strong> elimina necessidade de memoização manual.</p>
+    </div>
+
+    <div class="card card-accent" data-c="Solução: Stack Tecnológico">
+      <h3>Stack Tecnológico</h3>
+      <table class="data-table">
+        <thead><tr><th>Camada</th><th>Tecnologia</th><th>Versão</th></tr></thead>
+        <tbody>
+          <tr data-c="Stack: Runtime"><td><strong>Runtime</strong></td><td>Expo SDK (managed, New Arch mandatory)</td><td>55</td></tr>
+          <tr data-c="Stack: Framework"><td><strong>Framework</strong></td><td>React Native + React 19.2</td><td>0.83</td></tr>
+          <tr data-c="Stack: JS Engine"><td><strong>JS Engine</strong></td><td>Hermes V1 (~55% faster startup)</td><td>—</td></tr>
+          <tr data-c="Stack: Navegação"><td><strong>Navegação</strong></td><td>Expo Router (file-based, typed routes)</td><td>~55.x</td></tr>
+          <tr data-c="Stack: Estado"><td><strong>Estado</strong></td><td>Zustand + persist middleware (slice pattern)</td><td>5.x</td></tr>
+          <tr data-c="Stack: Storage"><td><strong>Storage</strong></td><td>react-native-mmkv (synchronous, memory-mapped)</td><td>latest</td></tr>
+          <tr data-c="Stack: Animação"><td><strong>Animação</strong></td><td>react-native-reanimated (CSS animations API)</td><td>^4.2.3</td></tr>
+          <tr data-c="Stack: Gestos"><td><strong>Gestos</strong></td><td>react-native-gesture-handler (GestureDetector)</td><td>^2.30</td></tr>
+          <tr data-c="Stack: SVG"><td><strong>SVG</strong></td><td>react-native-svg (useAnimatedProps)</td><td>~15.x</td></tr>
+          <tr data-c="Stack: Estilização"><td><strong>Estilização</strong></td><td>NativeWind (Tailwind CSS for RN, dark mode)</td><td>^4.2</td></tr>
+          <tr data-c="Stack: Listas"><td><strong>Listas</strong></td><td>@shopify/flash-list (New Arch only, 60fps)</td><td>v2</td></tr>
+          <tr data-c="Stack: Haptics"><td><strong>Haptics</strong></td><td>expo-haptics</td><td>SDK 55</td></tr>
+          <tr data-c="Stack: Validação"><td><strong>Validação</strong></td><td>Zod (runtime schema validation at boundaries)</td><td>latest</td></tr>
+          <tr data-c="Stack: Compiler"><td><strong>Compiler</strong></td><td>React Compiler v1.0 (auto memoization)</td><td>—</td></tr>
+          <tr data-c="Stack: Linguagem"><td><strong>Linguagem</strong></td><td>TypeScript (strict mode)</td><td>5.8+</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card card-info" data-c="Solução: New Architecture">
+      <h3>New Architecture (Obrigatória no SDK 55)</h3>
+      <ul>
+        <li><strong>JSI</strong> substitui a bridge JSON-serialized (comunicação direta JS ↔ C++)</li>
+        <li><strong>Fabric</strong> renderiza UI com layout síncrono</li>
+        <li><strong>TurboModules</strong> carregam funcionalidades nativas lazy (menos startup time)</li>
+        <li>~43% melhoria cold start, ~39% rendering speed, ~20-30% redução memória</li>
+      </ul>
+    </div>
+
+    <div class="card card-info" data-c="Solução: React Compiler">
+      <h3>React Compiler v1.0</h3>
+      <p>Memoização automática em build time via Babel plugin. <strong>Sem necessidade de useMemo/useCallback/React.memo manual</strong> — o compiler insere cache boundaries por reactive scope. Componentes devem seguir Rules of React (sem mutação de props, sem leitura de estado mutável externo durante render).</p>
+    </div>
+
+    <h3 class="sub-h" data-c="Solução: Diagrama Título">DIAGRAMA DE ARQUITETURA</h3>
+    <div class="mermaid-wrap" data-c="Solução: Diagrama">
+      <pre class="mermaid">
+flowchart TB
+    subgraph UI["Camada UI (React Native + NativeWind)"]
+        HOME["Home Screen"]
+        WORKOUT["Workout Screen"]
+        REST["Rest Timer Screen"]
+        CHECK["Checkpoint Screen"]
+        COMPLETE["Complete Screen"]
+        HISTORY["History Screen"]
+    end
+    subgraph STATE["Camada de Estado (Zustand v5)"]
+        WS["workoutStore\ntreino ativo, fila, séries,\ntimer, exercícios pulados"]
+        AS["appStore\núltimos pesos, últimas datas,\nhistórico de treinos"]
+    end
+    subgraph STORAGE["Camada de Persistência"]
+        MMKV["MMKV\n(synchronous, memory-mapped)"]
+    end
+    HOME --> WS
+    WORKOUT --> WS
+    REST --> WS
+    CHECK --> WS
+    COMPLETE --> WS
+    COMPLETE --> AS
+    HISTORY --> AS
+    HOME --> AS
+    WS -- "persist + MMKV adapter" --> MMKV
+    AS -- "persist + MMKV adapter" --> MMKV
+      </pre>
+    </div>
+  </section>
+
+  <!-- ═══════════════ 04 DESIGN SYSTEM & TOKENS ═══════════════ -->
+  <section class="section" id="design-tokens">
+    <div class="section-label">04 — Design System & Tokens</div>
+    <h2 class="section-title" data-c="Tokens: Título">DESIGN SYSTEM & TOKENS</h2>
+    <div class="section-body" data-c="Tokens: Descrição">
+      <p>Todos os valores visuais da PRD e do mockup interativo mapeados para o <strong>NativeWind (Tailwind CSS)</strong>. Este é o contrato entre design e implementação — qualquer componente que use as classes abaixo reflete automaticamente o visual definido na PRD.</p>
+    </div>
+
+    <div class="card card-accent" data-c="Tokens: tailwind.config.js">
+      <h3>tailwind.config.js</h3>
+      <div class="code-block"><span class="cmt">// tailwind.config.js</span>
+<span class="kw">module</span>.exports = {
+  content: [<span class="str">'./src/**/*.{js,jsx,ts,tsx}'</span>],
+  presets: [<span class="fn">require</span>(<span class="str">'nativewind/preset'</span>)],
+  theme: {
+    extend: {
+      colors: {
+        background: <span class="str">'#080808'</span>,
+        surface: {
+          DEFAULT: <span class="str">'#111111'</span>,
+          <span class="fn">2</span>: <span class="str">'#1C1C1C'</span>,
+        },
+        border: {
+          DEFAULT: <span class="str">'#222222'</span>,
+          med: <span class="str">'#333333'</span>,
+        },
+        accent: {
+          DEFAULT: <span class="str">'#C2F000'</span>,
+          dim: <span class="str">'rgba(194,240,0,0.10)'</span>,
+          glow: <span class="str">'rgba(194,240,0,0.25)'</span>,
+        },
+        text: {
+          DEFAULT: <span class="str">'#FFFFFF'</span>,
+          med: <span class="str">'#AAAAAA'</span>,
+        },
+        muted: <span class="str">'#888888'</span>,
+        dim: <span class="str">'#444444'</span>,
+        danger: {
+          DEFAULT: <span class="str">'#FF453A'</span>,
+          dim: <span class="str">'rgba(255,69,58,0.10)'</span>,
+        },
+        warning: {
+          DEFAULT: <span class="str">'#F59E0B'</span>,
+          dim: <span class="str">'rgba(245,158,11,0.15)'</span>,
+        },
+        info: {
+          DEFAULT: <span class="str">'#3B82F6'</span>,
+          dim: <span class="str">'rgba(59,130,246,0.15)'</span>,
+        },
+      },
+      fontFamily: {
+        display: [<span class="str">'BebasNeue'</span>],   <span class="cmt">// expo-font: Bebas Neue</span>
+        ui: [<span class="str">'Syne'</span>],              <span class="cmt">// expo-font: Syne 400-800</span>
+      },
+      borderRadius: {
+        sm: <span class="str">'8px'</span>,
+        md: <span class="str">'12px'</span>,
+        lg: <span class="str">'16px'</span>,
+        pill: <span class="str">'100px'</span>,
+      },
+      boxShadow: {
+        sm: <span class="str">'0 2px 6px rgba(0,0,0,0.4)'</span>,
+        md: <span class="str">'0 6px 24px rgba(0,0,0,0.5)'</span>,
+        lg: <span class="str">'0 16px 48px rgba(0,0,0,0.6)'</span>,
+      },
+    },
+  },
+  plugins: [],
+};</div>
+    </div>
+
+    <div class="card card-accent" data-c="Tokens: Paleta">
+      <h3>Paleta de Cores</h3>
+      <table class="data-table">
+        <thead><tr><th>Token PRD</th><th>Hex</th><th>Classe NativeWind</th><th>Uso</th></tr></thead>
+        <tbody>
+          <tr data-c="Cor: background"><td><code>--bg</code></td><td><code>#080808</code></td><td><code>bg-background</code></td><td>Fundo de todas as telas</td></tr>
+          <tr data-c="Cor: surface"><td><code>--surface</code></td><td><code>#111111</code></td><td><code>bg-surface</code></td><td>Cards, inputs, header</td></tr>
+          <tr data-c="Cor: surface-2"><td><code>--surface-2</code></td><td><code>#1C1C1C</code></td><td><code>bg-surface-2</code></td><td>Cards elevados, badges</td></tr>
+          <tr data-c="Cor: border"><td><code>--border</code></td><td><code>#222222</code></td><td><code>border-border</code></td><td>Bordas padrão</td></tr>
+          <tr data-c="Cor: border-med"><td><code>--border-med</code></td><td><code>#333333</code></td><td><code>border-border-med</code></td><td>Bordas com ênfase</td></tr>
+          <tr data-c="Cor: accent"><td><code>--accent</code></td><td><code>#C2F000</code></td><td><code>text-accent</code> · <code>bg-accent</code></td><td>CTA, chip "PRÓXIMO", progress</td></tr>
+          <tr data-c="Cor: accent-dim"><td><code>--accent-dim</code></td><td><code>rgba(194,240,0,0.10)</code></td><td><code>bg-accent-dim</code></td><td>Background sutil de badges accent</td></tr>
+          <tr data-c="Cor: danger"><td><code>--danger</code></td><td><code>#FF453A</code></td><td><code>text-danger</code> · <code>bg-danger</code></td><td>Apagar, "não vou fazer", timer &lt;10s</td></tr>
+          <tr data-c="Cor: text"><td><code>--text</code></td><td><code>#FFFFFF</code></td><td><code>text-text</code></td><td>Texto primário</td></tr>
+          <tr data-c="Cor: text-med"><td><code>--text-med</code></td><td><code>#AAAAAA</code></td><td><code>text-text-med</code></td><td>Texto secundário, metadata</td></tr>
+          <tr data-c="Cor: muted"><td><code>--muted</code></td><td><code>#888888</code></td><td><code>text-muted</code></td><td>Labels, subtítulos, datas</td></tr>
+          <tr data-c="Cor: dim"><td><code>--dim</code></td><td><code>#444444</code></td><td><code>text-dim</code></td><td>Texto terciário, dividers</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card card-accent" data-c="Tokens: Tipografia">
+      <h3>Tipografia</h3>
+      <table class="data-table">
+        <thead><tr><th>Elemento</th><th>Fonte</th><th>Tamanho</th><th>Peso</th><th>Classe NativeWind</th></tr></thead>
+        <tbody>
+          <tr data-c="Tipo: Título principal"><td>Título principal</td><td>Bebas Neue</td><td>32px</td><td>400</td><td><code>font-display text-[32px]</code></td></tr>
+          <tr data-c="Tipo: Nome exercício"><td>Nome exercício</td><td>Bebas Neue</td><td>28–32px</td><td>400</td><td><code>font-display text-[28px]</code></td></tr>
+          <tr data-c="Tipo: Timer countdown"><td>Timer countdown</td><td>Bebas Neue</td><td>42px</td><td>400</td><td><code>font-display text-[42px]</code></td></tr>
+          <tr data-c="Tipo: Peso input"><td>Peso (valor)</td><td>Bebas Neue</td><td>28px</td><td>400</td><td><code>font-display text-[28px]</code></td></tr>
+          <tr data-c="Tipo: Stat number"><td>Stat number (complete)</td><td>Bebas Neue</td><td>40px</td><td>400</td><td><code>font-display text-[40px]</code></td></tr>
+          <tr data-c="Tipo: Body"><td>Body / UI text</td><td>Syne</td><td>15px</td><td>400</td><td><code>font-ui text-[15px]</code></td></tr>
+          <tr data-c="Tipo: Botão CTA"><td>Botão CTA</td><td>Syne</td><td>14–16px</td><td>700</td><td><code>font-ui font-bold text-[15px]</code></td></tr>
+          <tr data-c="Tipo: Label/eyebrow"><td>Label / eyebrow</td><td>Syne</td><td>10–12px</td><td>700</td><td><code>font-ui font-bold text-[11px] tracking-[3px] uppercase</code></td></tr>
+          <tr data-c="Tipo: Badge"><td>Badge / chip</td><td>Syne</td><td>9–10px</td><td>700</td><td><code>font-ui font-bold text-[9px] tracking-[2px] uppercase</code></td></tr>
+          <tr data-c="Tipo: Metadata"><td>Metadata / data</td><td>Syne</td><td>13px</td><td>500</td><td><code>font-ui font-medium text-[13px]</code></td></tr>
+        </tbody>
+      </table>
+      <div style="margin-top:12px;padding:10px 14px;background:var(--surface);border-radius:var(--r-sm);border-left:3px solid var(--info)">
+        <strong style="color:var(--info);font-size:12px;letter-spacing:1px">CARREGAMENTO DE FONTES</strong>
+        <p style="color:var(--text-med);font-size:13px;margin-top:4px">Bebas Neue e Syne carregadas via <code>expo-font</code> no root <code>_layout.tsx</code>. Splash screen visível até <code>fontsLoaded === true</code>. Os nomes registrados (<code>BebasNeue</code>, <code>Syne</code>) devem coincidir com os definidos em <code>fontFamily</code> do Tailwind config.</p>
+      </div>
+    </div>
+
+    <div class="card card-accent" data-c="Tokens: Medidas Componentes">
+      <h3>Medidas de Componentes</h3>
+      <table class="data-table">
+        <thead><tr><th>Componente</th><th>Valor</th><th>Classe / Estilo</th></tr></thead>
+        <tbody>
+          <tr data-c="Medida: Touch target"><td>Touch target mínimo</td><td>44 × 44 pt</td><td><code>min-h-[44px] min-w-[44px]</code></td></tr>
+          <tr data-c="Medida: Botão CTA"><td>Botão primário (CTA)</td><td>height 52px, radius pill</td><td><code>h-[52px] rounded-pill</code></td></tr>
+          <tr data-c="Medida: Botão secundário"><td>Botão secundário</td><td>height 46px, radius pill</td><td><code>h-[46px] rounded-pill</code></td></tr>
+          <tr data-c="Medida: Weight input"><td>Weight input box</td><td>height 56px, radius lg</td><td><code>h-[56px] rounded-lg</code></td></tr>
+          <tr data-c="Medida: Timer ring"><td>Timer ring (SVG)</td><td>180 × 180 px</td><td><code>width={180} height={180}</code> (SVG prop)</td></tr>
+          <tr data-c="Medida: Set dot"><td>Set indicator dot</td><td>26 × 5 px, radius 3px</td><td><code>w-[26px] h-[5px] rounded-[3px]</code></td></tr>
+          <tr data-c="Medida: Progress bar"><td>Progress bar</td><td>height 3px, radius full</td><td><code>h-[3px] rounded-full</code></td></tr>
+          <tr data-c="Medida: Workout card"><td>Workout card</td><td>padding 16–20px, radius lg</td><td><code>p-4 rounded-lg</code></td></tr>
+          <tr data-c="Medida: Card border"><td>Card border</td><td>1px solid border</td><td><code>border border-border</code></td></tr>
+          <tr data-c="Medida: Safe area"><td>Safe area (horizontal)</td><td>padding 24px</td><td><code>px-6</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card card-info" data-c="Tokens: Mapeamento">
+      <h3>PRD → NativeWind — Referência Rápida</h3>
+      <div class="code-block"><span class="cmt">// Backgrounds</span>
+bg-background         <span class="cmt">→ #080808  (tela)</span>
+bg-surface            <span class="cmt">→ #111111  (card)</span>
+bg-surface-2          <span class="cmt">→ #1C1C1C  (card elevado)</span>
+bg-accent             <span class="cmt">→ #C2F000  (botão CTA filled)</span>
+bg-accent-dim         <span class="cmt">→ rgba(...)  (badge accent)</span>
+bg-danger             <span class="cmt">→ #FF453A  (botão apagar)</span>
+bg-danger-dim         <span class="cmt">→ rgba(...)  (badge danger)</span>
+
+<span class="cmt">// Text</span>
+text-text             <span class="cmt">→ #FFFFFF  (primário)</span>
+text-text-med         <span class="cmt">→ #AAAAAA  (secundário)</span>
+text-muted            <span class="cmt">→ #888888  (terciário)</span>
+text-dim              <span class="cmt">→ #444444  (quaternário)</span>
+text-accent           <span class="cmt">→ #C2F000  (destaque)</span>
+text-danger           <span class="cmt">→ #FF453A  (erro/apagar)</span>
+
+<span class="cmt">// Borders</span>
+border-border         <span class="cmt">→ #222222  (padrão)</span>
+border-border-med     <span class="cmt">→ #333333  (ênfase)</span>
+border-accent         <span class="cmt">→ #C2F000  (active/focus)</span>
+
+<span class="cmt">// Radius</span>
+rounded-sm            <span class="cmt">→ 8px</span>
+rounded-md            <span class="cmt">→ 12px</span>
+rounded-lg            <span class="cmt">→ 16px</span>
+rounded-pill          <span class="cmt">→ 100px  (botões, badges)</span>
+
+<span class="cmt">// Typography</span>
+font-display          <span class="cmt">→ Bebas Neue  (títulos, números)</span>
+font-ui               <span class="cmt">→ Syne  (body, labels, botões)</span>
+
+<span class="cmt">// Shadows (limitado no RN — usar via StyleSheet quando necessário)</span>
+shadow-sm             <span class="cmt">→ 0 2px 6px rgba(0,0,0,0.4)</span></div>
+    </div>
+
+    <div class="card card-warning" data-c="Tokens: Limitações RN">
+      <h3>Limitações do NativeWind no React Native</h3>
+      <ul>
+        <li><strong>box-shadow</strong>: RN não suporta box-shadow nativamente. Usar <code>elevation</code> (Android) e <code>shadowColor/shadowOffset/shadowOpacity/shadowRadius</code> (iOS) via <code>StyleSheet.create()</code> para sombras críticas (ex: phone-like cards). NativeWind <code>shadow-sm</code> converte automaticamente para as propriedades nativas.</li>
+        <li><strong>rgba em cores</strong>: NativeWind suporta <code>bg-accent/10</code> (opacidade via modificador). Porém, para valores exatos como <code>rgba(194,240,0,0.10)</code>, definir no config é mais preciso.</li>
+        <li><strong>letter-spacing</strong>: <code>tracking-[3px]</code> funciona no NativeWind. Atenção: valores em px, não em em.</li>
+        <li><strong>Glow/filter</strong>: Efeitos de glow (ex: accent-glow no timer) não são nativos do RN. Usar <code>react-native-svg</code> filters ou <code>View</code> com <code>shadowColor: '#C2F000'</code>.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ═══════════════ 05 MODELO DE DADOS ═══════════════ -->
+  <section class="section" id="dados">
+    <div class="section-label">05 — Modelo de Dados</div>
+    <h2 class="section-title" data-c="Dados: Título">MODELO DE DADOS</h2>
+    <div class="section-body" data-c="Dados: Descrição">
+      <p>Dados estáticos (planos de treino, hardcoded na v1) e dinâmicos (registros do usuário). Persistência via Zustand persist + MMKV StateStorage adapter. Entidades já incluem <strong>sync metadata</strong> (syncStatus, version, timestamps) preparando para cloud sync na v2.</p>
+    </div>
+
+    <div class="card card-accent" data-c="Dados: Tipos Branded">
+      <h3>Branded Types (zero runtime cost)</h3>
+      <div class="code-block"><span class="kw">type</span> Brand&lt;K, T&gt; = K &amp; { __brand: T }
+<span class="kw">type</span> ExerciseId = Brand&lt;<span class="fn">string</span>, <span class="str">'ExerciseId'</span>&gt;
+<span class="kw">type</span> WorkoutId = Brand&lt;<span class="fn">string</span>, <span class="str">'WorkoutId'</span>&gt;
+<span class="kw">type</span> PlanId = Brand&lt;<span class="fn">string</span>, <span class="str">'PlanId'</span>&gt;</div>
+    </div>
+
+    <div class="card card-accent" data-c="Dados: Plan">
+      <h3>Plan (Plano de Treino) — Estático</h3>
+      <div class="code-block"><span class="kw">type</span> Plan = {
+  id: PlanId                   <span class="cmt">// 'A' | 'B' | 'C'</span>
+  name: <span class="fn">string</span>                  <span class="cmt">// "Peito / Ombros / Tríceps"</span>
+  focus: <span class="fn">string</span>                 <span class="cmt">// "7 exercícios · Hipertrofia"</span>
+  exercises: Exercise[]
+}
+
+<span class="kw">type</span> Exercise = {
+  id: ExerciseId               <span class="cmt">// "supino-45-bilateral"</span>
+  name: <span class="fn">string</span>                  <span class="cmt">// "Supino 45° Bilateral"</span>
+  category: <span class="fn">string</span>              <span class="cmt">// "EMPH" | "COMP" | "ISO"</span>
+  equipment: <span class="fn">string</span>             <span class="cmt">// "Halter" | "Máquina" | "Barra"</span>
+  reps: <span class="fn">string</span>                  <span class="cmt">// "10-15"</span>
+  sets: <span class="fn">number</span>                  <span class="cmt">// 3</span>
+}
+
+<span class="kw">const</span> PLANS = {
+  A: { ... },
+  B: { ... },
+  C: { ... },
+} <span class="kw">satisfies</span> Record&lt;<span class="fn">string</span>, Plan&gt;  <span class="cmt">// preserves literal types</span></div>
+    </div>
+
+    <div class="card card-accent" data-c="Dados: WorkoutSession">
+      <h3>WorkoutSession — Dinâmico (com sync metadata)</h3>
+      <div class="code-block"><span class="kw">type</span> WorkoutSession = {
+  id: WorkoutId                <span class="cmt">// Date.now() timestamp</span>
+  planId: PlanId
+  planName: <span class="fn">string</span>
+  focus: <span class="fn">string</span>
+  date: <span class="fn">string</span>                  <span class="cmt">// "2026-03-20"</span>
+  durationMinutes: <span class="fn">number</span>
+  exercises: CompletedExercise[]
+  <span class="cmt">// sync metadata (prepared for v2)</span>
+  syncStatus: <span class="str">'local'</span> | <span class="str">'synced'</span> | <span class="str">'pending'</span>
+  version: <span class="fn">number</span>
+  createdAt: <span class="fn">string</span>             <span class="cmt">// ISO timestamp</span>
+  updatedAt: <span class="fn">string</span>             <span class="cmt">// ISO timestamp</span>
+}
+
+<span class="kw">type</span> CompletedExercise = {
+  name: <span class="fn">string</span>
+  sets: <span class="fn">number</span>
+  weight: <span class="fn">number</span>               <span class="cmt">// último peso registrado (kg)</span>
+}</div>
+    </div>
+
+    <div class="card card-accent" data-c="Dados: Zod Schema">
+      <h3>Zod Schemas (validação runtime na boundary de storage)</h3>
+      <div class="code-block"><span class="kw">import</span> { z } <span class="kw">from</span> <span class="str">'zod'</span>
+
+<span class="kw">const</span> WorkoutSessionSchema = z.object({
+  id: z.string(),
+  planId: z.enum([<span class="str">'A'</span>, <span class="str">'B'</span>, <span class="str">'C'</span>]),
+  date: z.string(),
+  durationMinutes: z.number(),
+  exercises: z.array(z.object({
+    name: z.string(),
+    sets: z.number(),
+    weight: z.number(),
+  })),
+  syncStatus: z.enum([<span class="str">'local'</span>, <span class="str">'synced'</span>, <span class="str">'pending'</span>]),
+  version: z.number(),
+})
+
+<span class="cmt">// Always use safeParse, never parse</span>
+<span class="kw">const</span> result = WorkoutSessionSchema.<span class="fn">safeParse</span>(data)</div>
+    </div>
+
+    <div class="card card-accent" data-c="Dados: MMKV Adapter">
+      <h3>MMKV StateStorage Adapter</h3>
+      <div class="code-block"><span class="kw">import</span> { MMKV } <span class="kw">from</span> <span class="str">'react-native-mmkv'</span>
+<span class="kw">import</span> { StateStorage } <span class="kw">from</span> <span class="str">'zustand/middleware'</span>
+
+<span class="kw">const</span> storage = <span class="kw">new</span> MMKV()
+
+<span class="kw">export const</span> mmkvStorage: StateStorage = {
+  <span class="fn">getItem</span>: (name) =&gt; storage.getString(name) ?? <span class="fn">null</span>,
+  <span class="fn">setItem</span>: (name, value) =&gt; storage.set(name, value),
+  <span class="fn">removeItem</span>: (name) =&gt; storage.delete(name),
+}</div>
+    </div>
+
+    <h3 class="sub-h" data-c="Dados: ER Título">DIAGRAMA ENTIDADE-RELACIONAMENTO</h3>
+    <div class="mermaid-wrap" data-c="Dados: ER Diagrama">
+      <pre class="mermaid">
+erDiagram
+    PLAN ||--o{ EXERCISE : contains
+    PLAN {
+        string id PK
+        string name
+        string focus
+    }
+    EXERCISE {
+        string id PK
+        string name
+        string category
+        string equipment
+        string reps
+        number sets
+    }
+    WORKOUT_SESSION ||--o{ COMPLETED_EXERCISE : logs
+    WORKOUT_SESSION {
+        string id PK
+        string planId FK
+        string date
+        number durationMinutes
+        string syncStatus
+        number version
+    }
+    COMPLETED_EXERCISE {
+        string name
+        number sets
+        number weight
+    }
+    PLAN ||--o{ WORKOUT_SESSION : generates
+      </pre>
+    </div>
+  </section>
+
+  <!-- ═══════════════ 06 NAVEGAÇÃO ═══════════════ -->
+  <section class="section" id="navegacao">
+    <div class="section-label">06 — Navegação & Telas</div>
+    <h2 class="section-title" data-c="Navegação: Título">NAVEGAÇÃO & TELAS</h2>
+    <div class="section-body" data-c="Navegação: Descrição">
+      <p>Expo Router com file-based routing em <code>src/app/</code>. Stack simples, sem tabs. Telas de treino ativo agrupadas em <code>(workout)</code> com gestos desabilitados. Path aliases <code>@/</code> → <code>./src/</code> configurados em tsconfig.json e babel.config.js. Typed routes habilitadas via <code>experiments.typedRoutes</code>.</p>
+    </div>
+
+    <div class="card card-accent" data-c="Navegação: Estrutura">
+      <h3>Estrutura do Projeto</h3>
+      <div class="code-block">src/
+  app/                          <span class="cmt">// Expo Router — route files ONLY</span>
+    _layout.tsx                 <span class="cmt">// Root Stack (fonts, providers, splash)</span>
+    index.tsx                   <span class="cmt">// Home — lista de treinos + histórico</span>
+    history.tsx                 <span class="cmt">// Histórico completo de treinos</span>
+    (workout)/
+      _layout.tsx               <span class="cmt">// Workout Stack (gestureEnabled: false)</span>
+      exercise.tsx              <span class="cmt">// Tela de exercício — input de peso, séries</span>
+      rest.tsx                  <span class="cmt">// Timer de descanso (60s)</span>
+      checkpoint.tsx            <span class="cmt">// Revisão de exercícios pulados</span>
+      complete.tsx              <span class="cmt">// Resumo final do treino</span>
+  components/                   <span class="cmt">// Componentes reutilizáveis (PascalCase)</span>
+    RestTimer.tsx
+    RestTimer.test.tsx          <span class="cmt">// testes colocados ao lado</span>
+    ExerciseCard.tsx
+    SetCard.tsx
+  stores/                       <span class="cmt">// Zustand stores (camelCase)</span>
+    workoutStore.ts
+    workoutStore.test.ts
+    appStore.ts
+    appStore.test.ts
+  hooks/                        <span class="cmt">// Custom hooks</span>
+    useRestTimer.ts
+    useHaptics.ts
+  types/                        <span class="cmt">// Shared type definitions</span>
+    workout.ts
+    plan.ts
+  schemas/                      <span class="cmt">// Zod schemas</span>
+    workout.ts
+  constants/                    <span class="cmt">// Static data</span>
+    plans.ts                    <span class="cmt">// Hardcoded ABC workout plans</span>
+  utils/                        <span class="cmt">// Helper functions (camelCase)</span>
+    formatDuration.ts
+__tests__/screens/              <span class="cmt">// Route tests (can't put tests in app/)</span>
+__mocks__/                      <span class="cmt">// Jest mocks</span>
+  zustand.ts                    <span class="cmt">// Official Zustand mock with store reset</span>
+  svgMock.js
+.maestro/                       <span class="cmt">// E2E test flows</span></div>
+    </div>
+
+    <div class="card card-info" data-c="Navegação: Naming">
+      <h3>Convenções de Nomeação</h3>
+      <table class="data-table">
+        <thead><tr><th>Elemento</th><th>Convenção</th><th>Exemplo</th></tr></thead>
+        <tbody>
+          <tr data-c="Naming: Routes"><td>Route files</td><td>kebab-case</td><td><code>workout-detail.tsx</code></td></tr>
+          <tr data-c="Naming: Components"><td>Components</td><td>PascalCase</td><td><code>RestTimer.tsx</code></td></tr>
+          <tr data-c="Naming: Utils"><td>Utils / hooks</td><td>camelCase</td><td><code>formatDuration.ts</code></td></tr>
+          <tr data-c="Naming: Dirs"><td>Directories</td><td>kebab-case</td><td><code>workout-store/</code></td></tr>
+          <tr data-c="Naming: Constants"><td>Constants</td><td>UPPER_SNAKE_CASE</td><td><code>DEFAULT_REST_SECONDS</code></td></tr>
+          <tr data-c="Naming: Types"><td>Types</td><td>PascalCase</td><td><code>WorkoutSession</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="sub-h" data-c="Navegação: Fluxo Título">FLUXO DE NAVEGAÇÃO</h3>
+    <div class="mermaid-wrap" data-c="Navegação: Fluxo Diagrama">
+      <pre class="mermaid">
+flowchart TD
+    HOME["/ (Home)"] -- "tap treino card" --> EX["/(workout)/exercise"]
+    EX -- "completar série (não é última)" --> REST["/(workout)/rest"]
+    REST -- "timer 0 ou pular" --> EX
+    EX -- "completar última série (próximo existe)" --> REST
+    EX -- "completar última série (fila vazia)" --> COMP["/(workout)/complete"]
+    EX -- "todos restantes pulados" --> CHECK["/(workout)/checkpoint"]
+    CHECK -- "fazer exercício" --> EX
+    CHECK -- "pular todos" --> COMP
+    EX -- "pular exercício" --> EX2["/(workout)/exercise (próximo)"]
+    HOME -- "tap histórico" --> HIST["/history"]
+    HIST -- "voltar" --> HOME
+    COMP -- "voltar à home" --> HOME
+      </pre>
+    </div>
+
+    <div class="card card-info" data-c="Navegação: Gestos">
+      <h3>Bloqueio de Gestos</h3>
+      <p>O grupo <code>(workout)</code> desabilita <strong>gestureEnabled</strong> para impedir swipe back acidental. A única saída é o botão de voltar (com confirmação) ou completar o treino.</p>
+    </div>
+
+    <!-- ── ESPECIFICAÇÃO POR TELA ── -->
+    <h3 class="sub-h" data-c="Telas: Título">ESPECIFICAÇÃO POR TELA</h3>
+
+    <!-- HOME -->
+    <div class="card card-accent" data-c="Tela: Home" style="margin-top:16px">
+      <h3>Home — <code>src/app/index.tsx</code></h3>
+      <table class="data-table">
+        <tbody>
+          <tr data-c="Home: Rota"><td style="width:140px"><strong>Rota</strong></td><td><code>/</code> — default export (Expo Router page)</td></tr>
+          <tr data-c="Home: Componentes"><td><strong>Componentes</strong></td><td><code>WorkoutCard</code> × 3 (um por plano A/B/C) · <code>HistoryChip</code> (condicional: só aparece após primeiro treino)</td></tr>
+          <tr data-c="Home: Estado"><td><strong>Store selectors</strong></td><td>
+            <code>appStore</code> → <code>lastDates</code> (Record&lt;PlanId, string&gt;) · <code>history.length</code><br>
+            Selectors atômicos separados: <code>useAppStore(s =&gt; s.lastDates)</code> e <code>useAppStore(s =&gt; s.history).length</code>
+          </td></tr>
+          <tr data-c="Home: Ações"><td><strong>Ações</strong></td><td>
+            <code>workoutStore.startWorkout(plan)</code> → <code>router.push('/(workout)/exercise')</code>
+          </td></tr>
+          <tr data-c="Home: Screen State"><td><strong>Screen state</strong></td><td>
+            Sempre <code>idle</code> — dados locais via MMKV (leitura síncrona), sem loading state. Não usar discriminated union aqui.
+          </td></tr>
+          <tr data-c="Home: Layout"><td><strong>Layout</strong></td><td>
+            <code>SafeAreaView</code> → <code>ScrollView</code> → header ("Bom treino.") + 3× <code>WorkoutCard</code> + <code>HistoryChip</code>. NativeWind: <code>className="flex-1 bg-background"</code>
+          </td></tr>
+          <tr data-c="Home: A11y"><td><strong>Acessibilidade</strong></td><td>
+            Cada <code>WorkoutCard</code>: <code>accessibilityRole="button"</code> · <code>accessibilityLabel="Treino 1: Peito, Ombros, Tríceps. Último: 15/03"</code>
+          </td></tr>
+        </tbody>
+      </table>
+      <div style="margin-top:12px;padding:10px 14px;background:var(--surface);border-radius:var(--r-sm);border-left:3px solid var(--accent)">
+        <strong style="color:var(--accent);font-size:12px;letter-spacing:1px">LÓGICA "PRÓXIMO"</strong>
+        <p style="color:var(--text-med);font-size:13px;margin-top:4px">O chip <code>PRÓXIMO</code> aparece no card cujo <code>lastDates[planId]</code> é o mais antigo ou <code>undefined</code> (nunca realizado). Se todos iguais, prioriza ordem A → B → C. Derivar via <code>useMemo</code> (ou React Compiler cuida) a partir de <code>lastDates</code> + <code>PLANS</code>.</p>
+      </div>
+    </div>
+
+    <!-- EXERCISE -->
+    <div class="card card-accent" data-c="Tela: Exercise">
+      <h3>Exercise — <code>src/app/(workout)/exercise.tsx</code></h3>
+      <table class="data-table">
+        <tbody>
+          <tr data-c="Exercise: Rota"><td style="width:140px"><strong>Rota</strong></td><td><code>/(workout)/exercise</code> — dentro do grupo com gestos desabilitados</td></tr>
+          <tr data-c="Exercise: Componentes"><td><strong>Componentes</strong></td><td>
+            <code>ProgressBar</code> (barra visual no topo) ·
+            <code>ExerciseBadges</code> (tipo + equipamento) ·
+            <code>SkipIndicator</code> (badge vermelho com contagem) ·
+            <code>WeightInput</code> (input numérico com "KG") ·
+            <code>SeriesDots</code> (3 dots filled/hollow) ·
+            Botão primário "COMPLETEI A SÉRIE" ·
+            Botões secundários: "Pular" + "Não vou fazer" (condicionais)
+          </td></tr>
+          <tr data-c="Exercise: Estado"><td><strong>Store selectors</strong></td><td>
+            <code>workoutStore</code>: <code>queue[0]</code> (exercício atual) · <code>currentSet</code> · <code>currentSets</code> · <code>skippedIds.length</code> · <code>log.length</code> (para progress)<br>
+            <code>appStore</code>: <code>lastWeights[exerciseId]</code> (pré-preenchimento do peso)<br>
+            Usar <code>useShallow</code> para agrupar selectors do workoutStore.
+          </td></tr>
+          <tr data-c="Exercise: Ações"><td><strong>Ações</strong></td><td>
+            <code>completeSet(weight)</code> — registra série, avança <code>currentSet</code><br>
+            <code>skipExercise()</code> — move exercício pro final da fila, adiciona a <code>skippedIds</code><br>
+            <code>removeExercise()</code> — remove da fila ("não vou fazer hoje")
+          </td></tr>
+          <tr data-c="Exercise: Screen State"><td><strong>Screen state</strong></td><td>
+            <div class="code-block" style="margin:6px 0"><span class="kw">type</span> ExerciseScreenState =
+  | { status: <span class="str">'active'</span>; exercise: Exercise; set: <span class="fn">number</span> }
+  | { status: <span class="str">'checkpoint'</span> }  <span class="cmt">// todos restantes são pulados</span>
+  | { status: <span class="str">'complete'</span> }     <span class="cmt">// fila vazia</span></div>
+          </td></tr>
+          <tr data-c="Exercise: Layout"><td><strong>Layout</strong></td><td>
+            <code>SafeAreaView</code> → <code>View</code> vertical — header com back + progress counter → <code>ProgressBar</code> → badges → nome do exercício → rep range → <code>WeightInput</code> → <code>SeriesDots</code> → botões. NativeWind: <code>className="flex-1 justify-between px-6 py-4"</code>
+          </td></tr>
+          <tr data-c="Exercise: A11y"><td><strong>Acessibilidade</strong></td><td>
+            <code>WeightInput</code>: <code>accessibilityLabel="Peso em quilogramas"</code> · <code>keyboardType="decimal-pad"</code><br>
+            "COMPLETEI A SÉRIE": <code>accessibilityRole="button"</code> · <code>accessibilityState={{ disabled: !weight }}</code><br>
+            <code>ProgressBar</code>: <code>accessibilityRole="progressbar"</code> · <code>accessibilityValue={{ min: 0, max: total, now: current }}</code>
+          </td></tr>
+        </tbody>
+      </table>
+      <div style="margin-top:12px;padding:10px 14px;background:var(--surface);border-radius:var(--r-sm);border-left:3px solid var(--warning)">
+        <strong style="color:var(--warning);font-size:12px;letter-spacing:1px">RENDERIZAÇÃO CONDICIONAL</strong>
+        <p style="color:var(--text-med);font-size:13px;margin-top:4px">Os botões "Pular — aparelho ocupado" e "Não vou fazer hoje" só aparecem quando <code>currentSet === 1</code>. A partir da série 2, apenas o botão "COMPLETEI A SÉRIE" é visível. O <code>SkipIndicator</code> (badge vermelho) aparece quando <code>skippedIds.length > 0</code>.</p>
+      </div>
+      <div style="margin-top:8px;padding:10px 14px;background:var(--surface);border-radius:var(--r-sm);border-left:3px solid var(--info)">
+        <strong style="color:var(--info);font-size:12px;letter-spacing:1px">NAVEGAÇÃO PÓS-SÉRIE</strong>
+        <p style="color:var(--text-med);font-size:13px;margin-top:4px">Após <code>completeSet</code>: se não é última série → <code>router.push('/(workout)/rest')</code>. Se última série e <code>queue.length > 1</code> → rest (próximo exercício após timer). Se <code>queue.length === 0</code> → <code>router.replace('/(workout)/complete')</code>. Se todos restantes estão em <code>skippedIds</code> → <code>router.push('/(workout)/checkpoint')</code>.</p>
+      </div>
+    </div>
+
+    <!-- REST TIMER -->
+    <div class="card card-accent" data-c="Tela: Rest Timer">
+      <h3>Rest Timer — <code>src/app/(workout)/rest.tsx</code></h3>
+      <table class="data-table">
+        <tbody>
+          <tr data-c="Rest: Rota"><td style="width:140px"><strong>Rota</strong></td><td><code>/(workout)/rest</code> — push sobre exercise (back retorna ao exercise com próximo da fila)</td></tr>
+          <tr data-c="Rest: Componentes"><td><strong>Componentes</strong></td><td>
+            <code>RestTimer</code> (arco SVG animado, detalhado na §8) ·
+            Label "DESCANSO" ·
+            Countdown number (grande, animando) ·
+            Preview do próximo exercício ·
+            Botão "Pular Descanso" ·
+            Botão "Ir para exercícios pulados (N)" (condicional)
+          </td></tr>
+          <tr data-c="Rest: Estado"><td><strong>Store selectors</strong></td><td>
+            <code>workoutStore</code>: <code>queue[0]?.name</code> (próximo exercício) · <code>skippedIds.length</code><br>
+            Hook <code>useRestTimer(60)</code> → <code>{ remaining, progress, skip, isComplete }</code>
+          </td></tr>
+          <tr data-c="Rest: Ações"><td><strong>Ações</strong></td><td>
+            Timer completo ou skip → <code>router.back()</code> (retorna ao exercise que recarrega com próximo da fila)<br>
+            "Ir para pulados" → <code>router.replace('/(workout)/checkpoint')</code>
+          </td></tr>
+          <tr data-c="Rest: Screen State"><td><strong>Screen state</strong></td><td>
+            <div class="code-block" style="margin:6px 0"><span class="kw">type</span> RestScreenState =
+  | { status: <span class="str">'counting'</span>; remaining: <span class="fn">number</span> }
+  | { status: <span class="str">'warning'</span>; remaining: <span class="fn">number</span> }  <span class="cmt">// últimos 10s (cor danger)</span>
+  | { status: <span class="str">'done'</span> }                     <span class="cmt">// auto-navega</span></div>
+          </td></tr>
+          <tr data-c="Rest: Layout"><td><strong>Layout</strong></td><td>
+            <code>SafeAreaView</code> → conteúdo centrado vertical + horizontal — label → timer circle → countdown → próximo exercício → botões. NativeWind: <code>className="flex-1 items-center justify-center"</code>
+          </td></tr>
+          <tr data-c="Rest: A11y"><td><strong>Acessibilidade</strong></td><td>
+            Timer: <code>accessibilityRole="timer"</code> · <code>accessibilityLabel={`${remaining} segundos restantes`}</code><br>
+            Arco SVG: <code>accessibilityRole="progressbar"</code> · <code>accessibilityValue={{ min: 0, max: 60, now: remaining }}</code>
+          </td></tr>
+        </tbody>
+      </table>
+      <div style="margin-top:12px;padding:10px 14px;background:var(--surface);border-radius:var(--r-sm);border-left:3px solid var(--accent)">
+        <strong style="color:var(--accent);font-size:12px;letter-spacing:1px">HAPTICS & COR</strong>
+        <p style="color:var(--text-med);font-size:13px;margin-top:4px">Últimos 10s: cor accent (<code>#C2F000</code>) → danger (<code>#FF453A</code>) via <code>interpolateColor</code>. Countdown 3-2-1: <code>impactAsync(Light)</code>. Timer 0: <code>notificationAsync(Success)</code>. Background: usa <code>Date.now()</code> para calcular restante ao retornar — se expirou, navega direto.</p>
+      </div>
+    </div>
+
+    <!-- CHECKPOINT -->
+    <div class="card card-accent" data-c="Tela: Checkpoint">
+      <h3>Checkpoint — <code>src/app/(workout)/checkpoint.tsx</code></h3>
+      <table class="data-table">
+        <tbody>
+          <tr data-c="Checkpoint: Rota"><td style="width:140px"><strong>Rota</strong></td><td><code>/(workout)/checkpoint</code> — aparece quando todos os exercícios restantes na fila estão em <code>skippedIds</code></td></tr>
+          <tr data-c="Checkpoint: Componentes"><td><strong>Componentes</strong></td><td>
+            Header com aviso "EXERCÍCIOS PENDENTES" ·
+            <code>FlashList</code> de <code>PendingExerciseCard</code> ·
+            Cada card: badges (tipo + equipamento) · nome do exercício · status ("Pulado — aparelho ocupado") · dois botões ("FAZER AGORA" / "NÃO VOU FAZER")
+          </td></tr>
+          <tr data-c="Checkpoint: Estado"><td><strong>Store selectors</strong></td><td>
+            <code>workoutStore</code>: <code>queue</code> filtrada por <code>skippedIds</code> (exercícios pendentes)<br>
+            Derivar: <code>const pending = queue.filter(e =&gt; skippedIds.includes(e.id))</code>
+          </td></tr>
+          <tr data-c="Checkpoint: Ações"><td><strong>Ações</strong></td><td>
+            "FAZER AGORA": <code>returnToSkipped(exerciseId)</code> → <code>router.replace('/(workout)/exercise')</code><br>
+            "NÃO VOU FAZER": <code>removeExercise(exerciseId)</code> — se era o último pendente → auto-navega a complete<br>
+            Se todos NÃO VOU FAZER → <code>skipAllPending()</code> → <code>router.replace('/(workout)/complete')</code>
+          </td></tr>
+          <tr data-c="Checkpoint: Layout"><td><strong>Layout</strong></td><td>
+            <code>SafeAreaView</code> → header centrado (ícone atenção + título + subtítulo) → <code>FlashList</code> de cards com <code>estimatedItemSize={120}</code>. NativeWind: cards com <code>className="bg-surface rounded-lg p-4 mb-3"</code>
+          </td></tr>
+          <tr data-c="Checkpoint: A11y"><td><strong>Acessibilidade</strong></td><td>
+            Cada card: <code>accessibilityLabel={`${exerciseName}, pulado. Fazer agora ou não fazer`}</code><br>
+            Botões: <code>accessibilityRole="button"</code> com labels descritivos
+          </td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- COMPLETE -->
+    <div class="card card-accent" data-c="Tela: Complete">
+      <h3>Complete — <code>src/app/(workout)/complete.tsx</code></h3>
+      <table class="data-table">
+        <tbody>
+          <tr data-c="Complete: Rota"><td style="width:140px"><strong>Rota</strong></td><td><code>/(workout)/complete</code> — tela final, substitui stack via <code>router.replace</code></td></tr>
+          <tr data-c="Complete: Componentes"><td><strong>Componentes</strong></td><td>
+            Chip "TREINO CONCLUÍDO" ·
+            Título "MUITO BEM!" ·
+            Grid de stats (3 colunas): exercícios · séries · duração ·
+            <code>FlashList</code> de resumo dos exercícios (nome + séries + peso) ·
+            Botão "VOLTAR AO INÍCIO"
+          </td></tr>
+          <tr data-c="Complete: Estado"><td><strong>Store selectors</strong></td><td>
+            <code>workoutStore</code>: <code>log</code> (exercícios concluídos) · <code>startedAt</code><br>
+            Valores computados (derivar no componente):<br>
+            • <code>exerciseCount = log.length</code><br>
+            • <code>totalSets = log.reduce((sum, e) =&gt; sum + e.sets.length, 0)</code><br>
+            • <code>duration = formatDuration(Date.now() - startedAt)</code>
+          </td></tr>
+          <tr data-c="Complete: Ações"><td><strong>Ações</strong></td><td>
+            No mount (<code>useEffect</code> ou ref guard):<br>
+            1. Montar <code>WorkoutSession</code> a partir do <code>log</code><br>
+            2. <code>appStore.saveWorkout(session)</code> — persiste no histórico<br>
+            3. <code>appStore.updateLastWeights(weights)</code> — atualiza últimos pesos<br>
+            Botão: <code>workoutStore.reset()</code> + <code>router.replace('/')</code>
+          </td></tr>
+          <tr data-c="Complete: Screen State"><td><strong>Screen state</strong></td><td>
+            Sempre <code>success</code> — dados já em memória no <code>workoutStore.log</code>. Sem loading, sem erro possível (write para MMKV é síncrono).
+          </td></tr>
+          <tr data-c="Complete: Layout"><td><strong>Layout</strong></td><td>
+            <code>SafeAreaView</code> → <code>ScrollView</code> → chip + título centrados → grid de 3 colunas (<code>flexDirection: 'row'</code>, espaço igual) → lista de exercícios → botão fixo no bottom. NativeWind: <code>className="flex-1 px-6 pt-12"</code>
+          </td></tr>
+          <tr data-c="Complete: A11y"><td><strong>Acessibilidade</strong></td><td>
+            Stats grid: cada stat com <code>accessibilityLabel="7 exercícios"</code> (valor + label como texto corrido)<br>
+            Botão: <code>accessibilityRole="button"</code> · <code>accessibilityLabel="Voltar ao início"</code>
+          </td></tr>
+        </tbody>
+      </table>
+      <div style="margin-top:12px;padding:10px 14px;background:var(--surface);border-radius:var(--r-sm);border-left:3px solid var(--warning)">
+        <strong style="color:var(--warning);font-size:12px;letter-spacing:1px">SAVE GUARD</strong>
+        <p style="color:var(--text-med);font-size:13px;margin-top:4px">O <code>saveWorkout</code> deve executar uma única vez. Usar <code>useRef</code> como guard (<code>hasSaved.current</code>) para evitar double-save se o componente re-renderizar. O React Compiler não elimina efeitos — essa proteção continua necessária.</p>
+      </div>
+    </div>
+
+    <!-- HISTORY -->
+    <div class="card card-accent" data-c="Tela: History">
+      <h3>History — <code>src/app/history.tsx</code></h3>
+      <table class="data-table">
+        <tbody>
+          <tr data-c="History: Rota"><td style="width:140px"><strong>Rota</strong></td><td><code>/history</code> — stack push a partir da Home, back padrão habilitado</td></tr>
+          <tr data-c="History: Componentes"><td><strong>Componentes</strong></td><td>
+            Header com back + "HISTÓRICO" ·
+            <code>FlashList</code> de <code>WorkoutHistoryCard</code> (ordenado por data desc) ·
+            Cada card: label do treino · nome · metadata (data · exercícios · duração) · resumo de exercícios + pesos · botão "APAGAR" ·
+            Confirmação de exclusão inline (expandível dentro do card, não modal)
+          </td></tr>
+          <tr data-c="History: Estado"><td><strong>Store selectors</strong></td><td>
+            <code>appStore</code>: <code>history</code> (array de <code>WorkoutSession</code>, sortear desc por <code>completedAt</code>)<br>
+            Estado local: <code>const [deletingId, setDeletingId] = useState&lt;WorkoutId | null&gt;(null)</code>
+          </td></tr>
+          <tr data-c="History: Ações"><td><strong>Ações</strong></td><td>
+            "APAGAR" tap → <code>setDeletingId(workout.id)</code> (mostra confirmação inline)<br>
+            "CONFIRMAR EXCLUSÃO" → <code>appStore.deleteWorkout(id)</code> + <code>setDeletingId(null)</code><br>
+            "CANCELAR" → <code>setDeletingId(null)</code>
+          </td></tr>
+          <tr data-c="History: Screen State"><td><strong>Screen state</strong></td><td>
+            <div class="code-block" style="margin:6px 0"><span class="kw">type</span> HistoryScreenState =
+  | { status: <span class="str">'empty'</span> }               <span class="cmt">// nenhum treino registrado</span>
+  | { status: <span class="str">'list'</span>; count: <span class="fn">number</span> }  <span class="cmt">// mostrando histórico</span></div>
+          </td></tr>
+          <tr data-c="History: Layout"><td><strong>Layout</strong></td><td>
+            <code>SafeAreaView</code> → header fixo → <code>FlashList</code> com <code>estimatedItemSize={160}</code>. Empty state: ícone + "Nenhum treino registrado ainda" centrado. NativeWind: cards <code>className="bg-surface rounded-lg p-4 mb-3 mx-4"</code>
+          </td></tr>
+          <tr data-c="History: A11y"><td><strong>Acessibilidade</strong></td><td>
+            Cada card: <code>accessibilityLabel={`Treino 1: Peito, Ombros, Tríceps. 18 de março. 7 exercícios, 48 minutos`}</code><br>
+            Botão apagar: <code>accessibilityRole="button"</code> · <code>accessibilityLabel="Apagar treino"</code><br>
+            Confirmação: <code>accessibilityLiveRegion="polite"</code> para anúncio ao expandir
+          </td></tr>
+        </tbody>
+      </table>
+      <div style="margin-top:12px;padding:10px 14px;background:var(--surface);border-radius:var(--r-sm);border-left:3px solid var(--info)">
+        <strong style="color:var(--info);font-size:12px;letter-spacing:1px">DELETE INLINE (NÃO MODAL)</strong>
+        <p style="color:var(--text-med);font-size:13px;margin-top:4px">A confirmação de exclusão é inline — o card expande para mostrar "Confirmar Exclusão?" com dois botões (Cancelar / Apagar). Motivo: evitar modais durante scroll em FlashList (problemas de z-index + performance). O <code>deletingId</code> local garante que só um card mostra confirmação por vez.</p>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ═══════════════ 07 ESTADO ═══════════════ -->
+  <section class="section" id="estado">
+    <div class="section-label">07 — Gerenciamento de Estado</div>
+    <h2 class="section-title" data-c="Estado: Título">GERENCIAMENTO DE ESTADO</h2>
+    <div class="section-body" data-c="Estado: Descrição">
+      <p>Dois Zustand stores (slice pattern) com <strong>persist middleware + MMKV adapter</strong>. Leitura síncrona (sem async hydration). Middleware order: <code>persist(devtools(...))</code>. Selectors atômicos obrigatórios: <code>useStore(s =&gt; s.bears)</code>. Para múltiplos valores: <code>useShallow</code>. Schema versioning (<code>version</code> + <code>migrate</code>) configurado desde o dia um.</p>
+    </div>
+
+    <div class="card card-accent" data-c="Estado: workoutStore">
+      <h3>workoutStore — Treino Ativo</h3>
+      <div class="code-block"><span class="kw">interface</span> WorkoutState {
+  <span class="cmt">// Estado</span>
+  activePlan: Plan | <span class="fn">null</span>
+  queue: Exercise[]              <span class="cmt">// fila de exercícios restantes</span>
+  skippedIds: <span class="fn">string</span>[]            <span class="cmt">// IDs pulados (array, not Set — JSON safe)</span>
+  currentSet: <span class="fn">number</span>             <span class="cmt">// série atual (1, 2 ou 3)</span>
+  currentSets: SetRecord[]       <span class="cmt">// séries já feitas do exercício atual</span>
+  log: ExerciseLog[]             <span class="cmt">// exercícios já concluídos</span>
+  startedAt: <span class="fn">number</span> | <span class="fn">null</span>
+
+  <span class="cmt">// Ações</span>
+  <span class="fn">startWorkout</span>(plan: Plan): <span class="fn">void</span>
+  <span class="fn">completeSet</span>(weight: <span class="fn">number</span>): <span class="fn">void</span>
+  <span class="fn">skipExercise</span>(): <span class="fn">void</span>
+  <span class="fn">removeExercise</span>(): <span class="fn">void</span>         <span class="cmt">// "não vou fazer hoje"</span>
+  <span class="fn">returnToSkipped</span>(id: ExerciseId): <span class="fn">void</span>
+  <span class="fn">skipAllPending</span>(): <span class="fn">void</span>
+  <span class="fn">isSkipped</span>(id: ExerciseId): <span class="fn">boolean</span>  <span class="cmt">// helper</span>
+  <span class="fn">reset</span>(): <span class="fn">void</span>
+}
+
+<span class="cmt">// Persist config</span>
+{
+  name: <span class="str">'workout-store'</span>,
+  storage: <span class="fn">createJSONStorage</span>(() =&gt; mmkvStorage),
+  version: <span class="fn">1</span>,
+  <span class="fn">partialize</span>: (state) =&gt; ({
+    <span class="cmt">// only persist essential state, not ephemeral UI</span>
+    activePlan: state.activePlan,
+    queue: state.queue,
+    skippedIds: state.skippedIds,
+    currentSet: state.currentSet,
+    currentSets: state.currentSets,
+    log: state.log,
+    startedAt: state.startedAt,
+  }),
+}</div>
+    </div>
+
+    <div class="card card-accent" data-c="Estado: appStore">
+      <h3>appStore — Dados Persistentes</h3>
+      <div class="code-block"><span class="kw">interface</span> AppState {
+  lastWeights: Record&lt;<span class="fn">string</span>, <span class="fn">number</span>&gt;   <span class="cmt">// exerciseId → último peso (kg)</span>
+  lastDates: Record&lt;<span class="fn">string</span>, <span class="fn">string</span>&gt;     <span class="cmt">// planId → última data ISO</span>
+  history: WorkoutSession[]
+
+  <span class="fn">saveWorkout</span>(session: WorkoutSession): <span class="fn">void</span>
+  <span class="fn">updateLastWeights</span>(weights: Record&lt;<span class="fn">string</span>, <span class="fn">number</span>&gt;): <span class="fn">void</span>
+  <span class="fn">deleteWorkout</span>(id: WorkoutId): <span class="fn">void</span>
+}
+
+<span class="cmt">// Persist config</span>
+{
+  name: <span class="str">'app-store'</span>,
+  storage: <span class="fn">createJSONStorage</span>(() =&gt; mmkvStorage),
+  version: <span class="fn">1</span>,
+  <span class="fn">migrate</span>: (persisted, version) =&gt; { <span class="cmt">/* schema evolution */</span> },
+}</div>
+    </div>
+
+    <div class="card card-info" data-c="Estado: Selectors">
+      <h3>Padrão de Selectors (Zustand v5)</h3>
+      <div class="code-block"><span class="cmt">// ✅ Atomic selector — single value</span>
+<span class="kw">const</span> queue = <span class="fn">useWorkoutStore</span>(s =&gt; s.queue)
+
+<span class="cmt">// ✅ Multiple values — useShallow</span>
+<span class="kw">const</span> { queue, currentSet } = <span class="fn">useWorkoutStore</span>(
+  <span class="fn">useShallow</span>(s =&gt; ({ queue: s.queue, currentSet: s.currentSet }))
+)
+
+<span class="cmt">// ❌ NEVER — new object without useShallow causes infinite re-renders</span>
+<span class="kw">const</span> { queue, currentSet } = <span class="fn">useWorkoutStore</span>(
+  s =&gt; ({ queue: s.queue, currentSet: s.currentSet })
+)</div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ 08 TIMER SVG ═══════════════ -->
+  <section class="section" id="timer">
+    <div class="section-label">08 — Timer SVG</div>
+    <h2 class="section-title" data-c="Timer: Título">TIMER DE DESCANSO</h2>
+    <div class="section-body" data-c="Timer: Descrição">
+      <p>Arco circular SVG animado via <strong>react-native-svg</strong> + <strong>Reanimated 4</strong>. Usa <code>useAnimatedProps</code> (não <code>useAnimatedStyle</code>) para animar props SVG na UI thread. <code>Animated.createAnimatedComponent(Circle)</code> para componente animável.</p>
+    </div>
+    <div class="card card-accent" data-c="Timer: Implementação">
+      <h3>Implementação</h3>
+      <ul>
+        <li>Componente <code>RestTimer</code> recebe <code>duration</code> (60s) e callback <code>onComplete</code></li>
+        <li>Arco SVG: <code>r=45</code>, <code>circumference = 2π×45 ≈ 282.74</code></li>
+        <li><code>strokeDashoffset</code> animado de circumference → 0 via <code>withTiming</code> (linear)</li>
+        <li><code>transform="rotate(-90)"</code> para início às 12h (não às 3h)</li>
+        <li><code>strokeLinecap="round"</code> para pontas arredondadas</li>
+        <li>Últimos 10s: cor accent → danger</li>
+        <li>Ao chegar a 0: <code>expo-haptics</code> → <code>notificationAsync(Success)</code></li>
+        <li>Countdown warnings (3-2-1): <code>impactAsync(Light)</code></li>
+      </ul>
+    </div>
+    <div class="card card-warning" data-c="Timer: Background">
+      <h3>Background (v1)</h3>
+      <p>Na v1, o timer usa <code>Date.now()</code> para calcular restante ao retornar de background. Se expirou, navega para próximo exercício. Notificações push locais planejadas para v2.</p>
+    </div>
+    <div class="card card-accent" data-c="Timer: Accessibility">
+      <h3>Acessibilidade do Timer</h3>
+      <ul>
+        <li><code>accessibilityRole="timer"</code> com <code>accessibilityLabel</code> dinâmico</li>
+        <li>Progress ring: <code>accessibilityRole="progressbar"</code> com <code>accessibilityValue={{ min: 0, max: 60, now: remaining }}</code></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ═══════════════ 09 QUALIDADE ═══════════════ -->
+  <section class="section" id="qualidade">
+    <div class="section-label">09 — Qualidade & Padrões</div>
+    <h2 class="section-title" data-c="Qualidade: Título">QUALIDADE & PADRÕES DE CÓDIGO</h2>
+
+    <div class="card card-accent" data-c="Qualidade: Ferramentas">
+      <h3>Ferramentas de Qualidade</h3>
+      <table class="data-table">
+        <thead><tr><th>Ferramenta</th><th>Propósito</th></tr></thead>
+        <tbody>
+          <tr data-c="Quality: ESLint"><td>ESLint (flat config)</td><td>Linting via <code>eslint-config-expo/flat</code></td></tr>
+          <tr data-c="Quality: Prettier"><td>Prettier</td><td>Auto-formatting</td></tr>
+          <tr data-c="Quality: Lefthook"><td>Lefthook</td><td>Git hooks (faster que Husky, Go binary)</td></tr>
+          <tr data-c="Quality: Commitlint"><td>commitlint</td><td>Valida Conventional Commits</td></tr>
+          <tr data-c="Quality: Zod"><td>Zod</td><td>Validação runtime em boundaries de storage</td></tr>
+          <tr data-c="Quality: Compiler"><td>React Compiler</td><td>Memoização automática (Babel plugin)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card card-accent" data-c="Qualidade: Git Hooks">
+      <h3>Git Hooks (Lefthook)</h3>
+      <div class="code-block"><span class="cmt"># lefthook.yml</span>
+pre-commit:
+  parallel: <span class="kw">true</span>
+  commands:
+    lint:
+      glob: <span class="str">"*.{ts,tsx}"</span>
+      run: npx eslint --fix {staged_files}
+    format:
+      glob: <span class="str">"*.{ts,tsx,json}"</span>
+      run: npx prettier --write {staged_files}
+    typecheck:
+      run: npx tsc --noEmit
+commit-msg:
+  commands:
+    validate:
+      run: npx commitlint --edit {1}</div>
+    </div>
+
+    <div class="card card-accent" data-c="Qualidade: TypeScript">
+      <h3>TypeScript Patterns</h3>
+      <ul>
+        <li><strong>Strict mode</strong> com <code>noUncheckedIndexedAccess</code> e <code>exactOptionalPropertyTypes</code></li>
+        <li><strong>No <code>any</code></strong> — usar <code>unknown</code> ou tipos apropriados</li>
+        <li><strong>Discriminated unions</strong> para screen state: <code>{ status: 'idle' } | { status: 'loading' } | { status: 'error'; error: Error }</code></li>
+        <li><strong>Branded types</strong> para IDs de domínio (ExerciseId, WorkoutId, PlanId)</li>
+        <li><strong><code>satisfies</code></strong> em vez de <code>as</code> para type-checked assertions</li>
+        <li><strong>Named exports</strong> para componentes (default export só para Expo Router pages)</li>
+        <li><strong>Functional components only</strong> — sem class components</li>
+      </ul>
+    </div>
+
+    <div class="card card-accent" data-c="Qualidade: Commits">
+      <h3>Commit Strategy</h3>
+      <p><strong>Conventional Commits</strong> com scopes descritivos. Push direto na <code>main</code>.</p>
+      <div class="code-block"><span class="fn">feat</span>(workout): add rest timer with SVG arc animation
+<span class="fn">fix</span>(home): correct next workout chip logic
+<span class="fn">test</span>(store): add workoutStore persistence tests
+<span class="fn">refactor</span>(navigation): simplify exercise flow routing</div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ 10 TESTES ═══════════════ -->
+  <section class="section" id="testes">
+    <div class="section-label">10 — Estratégia de Testes</div>
+    <h2 class="section-title" data-c="Testes: Título">ESTRATÉGIA DE TESTES</h2>
+    <div class="section-body" data-c="Testes: Política">
+      <p><strong>TDD Strict</strong> — testes são escritos ANTES da implementação. Cada task deve ter cobertura correspondente. Nenhum código de implementação sem teste precedente.</p>
+    </div>
+
+    <div class="card card-accent" data-c="Testes: Stack">
+      <h3>Testing Stack</h3>
+      <table class="data-table">
+        <thead><tr><th>Camada</th><th>Ferramenta</th><th>Versão</th></tr></thead>
+        <tbody>
+          <tr data-c="Test: Jest"><td>Test runner</td><td>Jest via jest-expo</td><td>30.x</td></tr>
+          <tr data-c="Test: RNTL"><td>Component tests</td><td>@testing-library/react-native (RNTL)</td><td>13.x</td></tr>
+          <tr data-c="Test: Router"><td>Router tests</td><td>expo-router/testing-library (renderRouter)</td><td>~55.x</td></tr>
+          <tr data-c="Test: Store"><td>Store tests</td><td>Zustand __mocks__/zustand.ts pattern</td><td>—</td></tr>
+          <tr data-c="Test: E2E"><td>E2E tests</td><td>Maestro (YAML-based, zero in-project deps)</td><td>latest</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card card-accent" data-c="Testes: Convenções">
+      <h3>Convenções</h3>
+      <ul>
+        <li><strong>Testar comportamento, não implementação</strong> — query por <code>getByRole</code>, <code>getByText</code>, <code>getByLabelText</code> (nunca <code>getByTestId</code> a menos que sem alternativa)</li>
+        <li><strong>Cobrir 4 screen states:</strong> idle, loading, error, success</li>
+        <li><strong>80%+ coverage</strong> em código novo, foco em stores/utils/hooks</li>
+        <li><strong>Store tests:</strong> usar <code>__mocks__/zustand.ts</code> oficial com <code>afterEach</code> reset</li>
+        <li><strong>Naming:</strong> <code>*.test.ts</code> / <code>*.test.tsx</code> (não <code>.spec</code>)</li>
+        <li><strong>MMKV mock:</strong> in-memory <code>StateStorage</code> implementation nos testes</li>
+        <li><strong>Reanimated mock:</strong> <code>setUpTests()</code> no <code>jest-setup.ts</code></li>
+      </ul>
+    </div>
+
+    <div class="card card-accent" data-c="Testes: E2E Flows">
+      <h3>Maestro E2E Flows</h3>
+      <ul>
+        <li><strong>start-workout.yaml:</strong> Home → selecionar treino → completar 1 exercício</li>
+        <li><strong>complete-workout.yaml:</strong> Fluxo completo 7 exercícios → resumo</li>
+        <li><strong>skip-flow.yaml:</strong> Pular 2 exercícios → checkpoint → decidir</li>
+        <li><strong>history-flow.yaml:</strong> Completar treino → verificar histórico → apagar</li>
+      </ul>
+    </div>
+
+    <div class="card card-accent" data-c="Testes: Publicação">
+      <h3>Build & Deploy</h3>
+      <ul>
+        <li><strong>Desenvolvimento:</strong> Development builds em device físico (não Expo Go)</li>
+        <li><strong>Build:</strong> EAS Build (managed) para binários iOS/Android</li>
+        <li><strong>OTA:</strong> EAS Update com Hermes bytecode diffing (75% menores)</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ═══════════════ 11 ACESSIBILIDADE ═══════════════ -->
+  <section class="section" id="acessibilidade">
+    <div class="section-label">11 — Acessibilidade</div>
+    <h2 class="section-title" data-c="Acessibilidade: Título">ACESSIBILIDADE</h2>
+    <div class="card card-accent" data-c="Acessibilidade: Regras">
+      <h3>Regras de Acessibilidade</h3>
+      <ul>
+        <li><strong>Touch targets:</strong> mínimo 44×44 points</li>
+        <li><strong>Contraste de cor:</strong> ratio mínimo 4.5:1</li>
+        <li><strong>Timer:</strong> <code>accessibilityRole="timer"</code> com <code>accessibilityLabel</code> dinâmico</li>
+        <li><strong>Progress ring:</strong> <code>accessibilityRole="progressbar"</code> com <code>accessibilityValue={{ min, max, now }}</code></li>
+        <li><strong>Botões:</strong> <code>accessibilityRole="button"</code> com <code>accessibilityState={{ disabled }}</code></li>
+        <li><strong>Testes:</strong> VoiceOver (iOS) e TalkBack (Android)</li>
+      </ul>
+    </div>
+    <div class="card card-accent" data-c="Acessibilidade: Haptics">
+      <h3>Haptics Centralizados (useHaptics hook)</h3>
+      <table class="data-table">
+        <thead><tr><th>Evento</th><th>Feedback</th></tr></thead>
+        <tbody>
+          <tr data-c="Haptics: Timer"><td>Timer completou</td><td><code>notificationAsync(Success)</code></td></tr>
+          <tr data-c="Haptics: Countdown"><td>Countdown 3-2-1</td><td><code>impactAsync(Light)</code></td></tr>
+          <tr data-c="Haptics: Button"><td>Press de botão</td><td><code>impactAsync(Light)</code></td></tr>
+          <tr data-c="Haptics: Selection"><td>Mudança de seleção</td><td><code>selectionAsync()</code></td></tr>
+          <tr data-c="Haptics: Error"><td>Estado de erro</td><td><code>notificationAsync(Error)</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ═══════════════ 12 DÍVIDA TÉCNICA ═══════════════ -->
+  <section class="section" id="divida">
+    <div class="section-label">12 — Dívida Técnica</div>
+    <h2 class="section-title" data-c="Dívida: Título">DÍVIDA TÉCNICA</h2>
+    <div class="card card-warning" data-c="Dívida: Planos Hardcoded">
+      <h3>Planos de treino hardcoded</h3>
+      <p>Na v1, os 3 planos ABC são definidos em <code>src/constants/plans.ts</code> com <code>satisfies</code>. Quando o instrutor mudar o plano, será necessário deploy. <strong>Migração:</strong> editor de plano com persistência local (v2) e sync backend (v3).</p>
+    </div>
+    <div class="card card-warning" data-c="Dívida: Timer Background">
+      <h3>Timer sem notificação em background</h3>
+      <p>Na v1, timer não notifica em background. <strong>Migração:</strong> <code>expo-notifications</code> com scheduled notification local (v2).</p>
+    </div>
+    <div class="card card-info" data-c="Dívida: Sync Metadata">
+      <h3>Sync metadata preparado desde v1</h3>
+      <p>Todas as entidades dinâmicas já incluem <code>syncStatus</code>, <code>version</code>, <code>createdAt</code>, <code>updatedAt</code>. Na v2, um adapter pode substituir MMKV por uma solução que faz sync (Supabase, Firebase, ou API custom) sem alterar componentes UI. Zustand <code>version</code> + <code>migrate</code> configurados desde o início para schema evolution.</p>
+    </div>
+  </section>
+
+  <!-- ═══════════════ 13 TAREFAS ═══════════════ -->
+  <section class="section" id="tarefas">
+    <div class="section-label">13 — Tarefas</div>
+    <h2 class="section-title" data-c="Tarefas: Título">TAREFAS</h2>
+    <div class="section-body" data-c="Tarefas: Descrição">
+      <p>Breakdown técnico ordenado por dependência. <strong>TDD strict:</strong> cada tarefa inclui testes escritos antes da implementação.</p>
+    </div>
+
+    <div class="card card-accent" data-c="Tarefas: Setup">
+      <h3>Fase 1 — Setup do Projeto</h3>
+      <ul class="task-list">
+        <li data-c="Task: Criar projeto"><div class="task-check"></div><div><div class="task-title">Criar projeto Expo SDK 55 com TypeScript</div><div class="task-desc"><code>npx create-expo-app forja --template</code> + configurar <code>src/app/</code> structure</div></div></li>
+        <li data-c="Task: Instalar deps"><div class="task-check"></div><div><div class="task-title">Instalar dependências</div><div class="task-desc">zustand, react-native-mmkv, react-native-svg, reanimated ^4.2.3, gesture-handler, nativewind, flash-list v2, expo-haptics, zod</div></div></li>
+        <li data-c="Task: Config tooling"><div class="task-check"></div><div><div class="task-title">Configurar tooling</div><div class="task-desc">ESLint flat config, Prettier, Lefthook, commitlint, path aliases (@/), typed routes, React Compiler Babel plugin</div></div></li>
+        <li data-c="Task: Design tokens"><div class="task-check"></div><div><div class="task-title">Configurar NativeWind com design tokens Forja</div><div class="task-desc">tailwind.config.ts com cores (#080808 bg, #C2F000 accent, etc.), fontes (Bebas Neue, Syne), dark mode</div></div></li>
+        <li data-c="Task: Dados estáticos"><div class="task-check"></div><div><div class="task-title">Criar src/constants/plans.ts com os 3 planos ABC</div><div class="task-desc">21 exercícios (7 por plano) com branded types, <code>satisfies Record&lt;string, Plan&gt;</code></div></div></li>
+        <li data-c="Task: MMKV adapter"><div class="task-check"></div><div><div class="task-title">Criar MMKV StateStorage adapter</div><div class="task-desc">Adapter para Zustand <code>createJSONStorage</code>, in-memory mock para testes</div></div></li>
+      </ul>
+    </div>
+
+    <div class="card card-accent" data-c="Tarefas: Stores">
+      <h3>Fase 2 — Stores Zustand (TDD)</h3>
+      <ul class="task-list">
+        <li data-c="Task: appStore tests"><div class="task-check"></div><div><div class="task-title">Escrever testes do appStore</div><div class="task-desc">Cenários: saveWorkout, deleteWorkout, updateLastWeights, persistência via MMKV mock</div></div></li>
+        <li data-c="Task: appStore impl"><div class="task-check"></div><div><div class="task-title">Implementar appStore</div><div class="task-desc">lastWeights, lastDates, history com persist + MMKV + version + migrate</div></div></li>
+        <li data-c="Task: workoutStore tests"><div class="task-check"></div><div><div class="task-title">Escrever testes do workoutStore</div><div class="task-desc">Cenários: treino normal, skip + checkpoint, não vou fazer, fila vazia, all skipped</div></div></li>
+        <li data-c="Task: workoutStore impl"><div class="task-check"></div><div><div class="task-title">Implementar workoutStore</div><div class="task-desc">startWorkout, completeSet, skipExercise, removeExercise, returnToSkipped, skipAllPending, reset com partialize</div></div></li>
+      </ul>
+    </div>
+
+    <div class="card card-accent" data-c="Tarefas: Telas">
+      <h3>Fase 3 — Telas (TDD)</h3>
+      <ul class="task-list">
+        <li data-c="Task: Home"><div class="task-check"></div><div><div class="task-title">Home Screen (index.tsx)</div><div class="task-desc">Cards de treino com "Próximo" chip, card de histórico. NativeWind styling.</div></div></li>
+        <li data-c="Task: Exercise"><div class="task-check"></div><div><div class="task-title">Exercise Screen</div><div class="task-desc">Input de peso, séries dots, botões pular/não fazer (visíveis só em set 1), skip indicator</div></div></li>
+        <li data-c="Task: Rest Timer"><div class="task-check"></div><div><div class="task-title">Rest Timer Screen + RestTimer component</div><div class="task-desc">Arco SVG animado com Reanimated 4, useAnimatedProps, haptics, "ir ao pulado"</div></div></li>
+        <li data-c="Task: Checkpoint"><div class="task-check"></div><div><div class="task-title">Checkpoint Screen</div><div class="task-desc">Lista de pulados, fazer ou pular todos. FlashList para lista.</div></div></li>
+        <li data-c="Task: Complete"><div class="task-check"></div><div><div class="task-title">Complete Screen</div><div class="task-desc">Resumo com duração, exercícios, pesos. Save workout no appStore.</div></div></li>
+        <li data-c="Task: History"><div class="task-check"></div><div><div class="task-title">History Screen</div><div class="task-desc">FlashList de treinos, expandir detalhes, apagar com confirmação inline</div></div></li>
+      </ul>
+    </div>
+
+    <div class="card card-accent" data-c="Tarefas: Polish">
+      <h3>Fase 4 — Polish & Deploy</h3>
+      <ul class="task-list">
+        <li data-c="Task: Fontes"><div class="task-check"></div><div><div class="task-title">Fontes Bebas Neue + Syne via expo-font</div><div class="task-desc">Splash screen enquanto fontes carregam + providers no root _layout.tsx</div></div></li>
+        <li data-c="Task: Haptics hook"><div class="task-check"></div><div><div class="task-title">useHaptics hook centralizado</div><div class="task-desc">Respeita device capabilities. Timer success, countdown, button press, selection, error.</div></div></li>
+        <li data-c="Task: Accessibility"><div class="task-check"></div><div><div class="task-title">Audit de acessibilidade</div><div class="task-desc">ARIA roles em todos os elementos interativos, touch targets 44×44, contraste 4.5:1</div></div></li>
+        <li data-c="Task: E2E Maestro"><div class="task-check"></div><div><div class="task-title">Maestro E2E flows</div><div class="task-desc">4 flows YAML: start-workout, complete-workout, skip-flow, history-flow</div></div></li>
+        <li data-c="Task: App icon"><div class="task-check"></div><div><div class="task-title">App icon e splash screen</div><div class="task-desc">Ícone com logo Forja, splash dark com accent</div></div></li>
+        <li data-c="Task: EAS Build"><div class="task-check"></div><div><div class="task-title">Configurar EAS Build</div><div class="task-desc">eas.json para development, preview e production profiles. Development build como primary dev workflow.</div></div></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ═══════════════ 14 AUTORES ═══════════════ -->
+  <section class="section" id="autores">
+    <div class="section-label">14 — Autores</div>
+    <h2 class="section-title" data-c="Autores: Título">AUTORES</h2>
+    <div class="card card-accent" data-c="Autores: Lista">
+      <h3>Autor</h3>
+      <p><strong>Pedro Peralta</strong> — Desenvolvedor & Product Owner</p>
+    </div>
+  </section>
+
+</div>
+
+<!-- ═══════════════ COMMENTING SYSTEM ═══════════════ -->
+<div class="review-hint" id="reviewHint">
+  <div class="hint-title">Como Revisar</div>
+  <div class="hint-step"><span class="hint-num">1</span><span>Clique em <strong>Review Mode</strong></span></div>
+  <div class="hint-step"><span class="hint-num">2</span><span>Clique em qualquer seção para comentar</span></div>
+  <div class="hint-step"><span class="hint-num">3</span><span>Clique em <strong>Export Comments</strong> para copiar</span></div>
+  <div class="hint-step"><span class="hint-num">4</span><span>Cole os comentários de volta no chat</span></div>
+  <button class="hint-dismiss" onclick="dismissHint()">Entendi</button>
+</div>
+<div class="review-toolbar">
+  <button class="export-toggle" id="exportToggle" onclick="openExportPanel()">Export Comments</button>
+  <button class="review-toggle" id="reviewToggle" onclick="toggleReviewMode()">
+    <span id="toggleIcon">&#9998;</span>
+    <span id="toggleLabel">Review Mode</span>
+    <span class="count" id="commentCount" style="display:none;">0</span>
+  </button>
+</div>
+<div class="export-panel" id="exportPanel">
+  <h3>Export Comments</h3>
+  <p style="color:var(--muted);font-size:13px;margin-bottom:12px;">Copie e cole de volta na conversa para revisões.</p>
+  <textarea id="exportText" readonly></textarea>
+  <div class="actions">
+    <button onclick="copyExport()" style="background:var(--accent);color:#080808;">Copiar</button>
+    <button onclick="clearAllComments()" style="background:rgba(255,69,58,0.15);color:var(--danger);">Limpar Tudo</button>
+    <button onclick="closeExportPanel()" style="background:var(--surface-2);color:var(--muted);">Fechar</button>
+  </div>
+</div>
+
+<script>
+let reviewMode=false;const STORAGE_KEY='solution-comments-forja-v4';let comments=JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');let activePopover=null;const HINT_KEY=STORAGE_KEY+'-hint-dismissed';if(!localStorage.getItem(HINT_KEY)){setTimeout(()=>{document.getElementById('reviewHint').classList.add('visible')},1500)}function dismissHint(){document.getElementById('reviewHint').classList.remove('visible');localStorage.setItem(HINT_KEY,'true')}function updateExportButton(){document.getElementById('exportToggle').classList.toggle('visible',comments.length>0)}function toggleReviewMode(){reviewMode=!reviewMode;document.body.classList.toggle('review-mode',reviewMode);const btn=document.getElementById('reviewToggle'),label=document.getElementById('toggleLabel'),icon=document.getElementById('toggleIcon');if(reviewMode){btn.classList.add('active');label.textContent='Exit Review';icon.textContent='\u2716';dismissHint()}else{btn.classList.remove('active');label.textContent='Review Mode';icon.textContent='\u270E';closeAllPopovers()}}function openExportPanel(){updateExport();document.getElementById('exportPanel').classList.add('open')}function saveComments(){localStorage.setItem(STORAGE_KEY,JSON.stringify(comments));updateCount();updateExport();updateExportButton()}function updateCount(){const el=document.getElementById('commentCount');el.style.display=comments.length>0?'inline-flex':'none';el.textContent=comments.length}function closeAllPopovers(){document.querySelectorAll('body > .comment-popover').forEach(p=>p.remove());activePopover=null}function getContext(el){const t=el.textContent.trim().replace(/\s+/g,' ').substring(0,80);return t.length===80?t+'...':t}function positionPopover(pop,anchor){document.body.appendChild(pop);const r=anchor.getBoundingClientRect();let top=r.bottom+4,left=r.left;if(top+300>window.innerHeight)top=r.top-300;if(left+340>window.innerWidth)left=window.innerWidth-350;if(left<10)left=10;pop.style.top=top+'px';pop.style.left=left+'px'}function isTableRow(el){return el.tagName==='TR'}document.addEventListener('click',function(e){if(!reviewMode)return;const t=e.target.closest('[data-c]');if(!t||e.target.closest('.comment-pin')||e.target.closest('.comment-popover'))return;e.preventDefault();e.stopPropagation();closeAllPopovers();const section=t.getAttribute('data-c'),id='c'+Date.now();const pop=document.createElement('div');pop.className='comment-popover';pop._target=t;pop.innerHTML=`<div class="popover-section-label">Comentando em: <span class="popover-section-name">${section}</span></div><textarea placeholder="Escreva seu feedback..." id="${id}-t" autofocus></textarea><div class="comment-popover-actions"><button class="btn-cancel" onclick="closeAllPopovers()">Cancelar</button><button class="btn-save" onclick="saveComment('${id}','${section.replace(/'/g,"\\'")}',this)">Salvar</button></div>`;positionPopover(pop,t);setTimeout(()=>pop.querySelector('textarea').focus(),50);activePopover=pop});function saveComment(id,section,btn){const pop=btn.closest('.comment-popover'),text=pop.querySelector('textarea').value.trim();if(!text)return;const target=pop._target,ctx=getContext(target);comments.push({id,section,text,context:ctx,ts:new Date().toISOString()});saveComments();const pin=document.createElement('span');pin.className='comment-pin';pin.textContent=comments.length;pin.setAttribute('data-cid',id);pin.onclick=function(e){e.stopPropagation();showDetail(id,this)};if(isTableRow(target)){const lastTd=target.querySelector('td:last-child');if(lastTd)lastTd.appendChild(pin)}else{target.appendChild(pin)}closeAllPopovers()}function showDetail(id,pinEl){closeAllPopovers();const c=comments.find(x=>x.id===id);if(!c)return;const pop=document.createElement('div');pop.className='comment-popover';pop.innerHTML=`<div class="popover-section-label"><span style="color:var(--danger);">#${comments.indexOf(c)+1}</span> em <span class="popover-section-name">${c.section}</span></div><div style="color:var(--text);font-size:13px;padding:6px 0;">${c.text}</div><div class="comment-popover-actions"><button class="btn-delete" onclick="deleteComment('${id}')">Apagar</button><button class="btn-cancel" onclick="closeAllPopovers()">Fechar</button></div>`;positionPopover(pop,pinEl)}function deleteComment(id){comments=comments.filter(c=>c.id!==id);saveComments();document.querySelectorAll(`.comment-pin[data-cid="${id}"]`).forEach(el=>el.remove());closeAllPopovers();document.querySelectorAll('.comment-pin').forEach((p,i)=>{p.textContent=i+1})}function updateExport(){const ta=document.getElementById('exportText');if(!comments.length){ta.value='Nenhum comentário ainda.';return}let t=`# Solution Design Review Comments\n# ${new Date().toLocaleDateString()} | ${comments.length} comentário(s)\n\n`;comments.forEach((c,i)=>{t+=`## #${i+1} — ${c.section}\n${c.text}\n> Context: "${c.context}"\n\n`});ta.value=t}function copyExport(){navigator.clipboard.writeText(document.getElementById('exportText').value).then(()=>{const b=document.querySelector('.export-panel .actions button:first-child');b.textContent='Copiado!';b.style.background='#059669';setTimeout(()=>{b.textContent='Copiar';b.style.background=''},2000)})}function closeExportPanel(){document.getElementById('exportPanel').classList.remove('open')}function clearAllComments(){if(!confirm('Apagar todos os comentários?'))return;comments=[];saveComments();document.querySelectorAll('.comment-pin').forEach(el=>el.remove());closeExportPanel()}function restore(){comments.forEach((c,i)=>{const el=document.querySelector(`[data-c="${CSS.escape(c.section)}"]`);if(!el)return;const pin=document.createElement('span');pin.className='comment-pin';pin.textContent=i+1;pin.setAttribute('data-cid',c.id);pin.onclick=function(e){e.stopPropagation();showDetail(c.id,this)};if(isTableRow(el)){const lastTd=el.querySelector('td:last-child');if(lastTd)lastTd.appendChild(pin)}else{el.appendChild(pin)}})}updateCount();updateExport();updateExportButton();restore();document.addEventListener('keydown',function(e){if(e.key==='Escape'){if(activePopover){activePopover.remove();activePopover=null}else if(document.getElementById('exportPanel').classList.contains('open'))closeExportPanel();else if(reviewMode)toggleReviewMode()}});
+</script>
+</body>
+</html>
