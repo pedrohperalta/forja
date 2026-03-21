@@ -6,7 +6,7 @@
  * and double-tap protection.
  */
 
-import { render, screen, fireEvent, act, waitFor } from '@testing-library/react-native'
+import { render, screen, fireEvent } from '@testing-library/react-native'
 import type { ExerciseId, Exercise, Plan, PlanId, SetRecord, ExerciseLog } from '@/types'
 
 // -- Mock stores --

@@ -10,12 +10,9 @@ describe('SeriesDots', () => {
   })
 
   it('renders totalSets number of dots', () => {
-    const { getAllByLabelText } = render(<SeriesDots currentSet={1} totalSets={3} />)
+    render(<SeriesDots currentSet={1} totalSets={3} />)
 
-    // Each dot has its own accessibility label
-    const dots = getAllByLabelText(/Série \d/)
-    // Container + 3 individual dots = all labels containing "Série"
-    // We check the container label
+    // Check the container label
     const container = screen.getByLabelText('Série 1 de 3')
     expect(container).toBeTruthy()
   })
