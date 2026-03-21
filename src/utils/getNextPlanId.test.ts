@@ -5,7 +5,6 @@
  * undefined (never done) beats any date, tie-break A->B->C.
  */
 
-import type { PlanId } from '@/types'
 import { getNextPlanId } from '@/utils/getNextPlanId'
 
 describe('getNextPlanId', () => {

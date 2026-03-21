@@ -8,7 +8,7 @@ import { PLANS } from '@/constants/plans'
 import { getNextPlanId } from '@/utils/getNextPlanId'
 import { WorkoutCard } from '@/components/WorkoutCard'
 import { HistoryChip } from '@/components/HistoryChip'
-import type { Plan, PlanId } from '@/types'
+import type { Plan } from '@/types'
 
 const PLAN_ENTRIES = Object.values(PLANS) as Plan[]
 

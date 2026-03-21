@@ -7,7 +7,13 @@
  */
 
 import { render, screen, fireEvent } from '@testing-library/react-native'
-import type { PlanId } from '@/types'
+
+// Import mocked stores for test setup
+import { useWorkoutStore } from '@/stores/workoutStore'
+import { useAppStore } from '@/stores/appStore'
+
+// Import the component under test (will fail until implementation exists)
+import HomeScreen from '@/app/index'
 
 // -- Mocks --
 
@@ -25,13 +31,6 @@ jest.mock('@/stores/workoutStore', () => ({
 jest.mock('@/stores/appStore', () => ({
   useAppStore: jest.fn(),
 }))
-
-// Import mocked stores for test setup
-import { useWorkoutStore } from '@/stores/workoutStore'
-import { useAppStore } from '@/stores/appStore'
-
-// Import the component under test (will fail until implementation exists)
-import HomeScreen from '@/app/index'
 
 // -- Helpers --
 

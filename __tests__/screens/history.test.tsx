@@ -8,6 +8,9 @@
 import { render, screen, fireEvent } from '@testing-library/react-native'
 import type { WorkoutSession, WorkoutId, PlanId } from '@/types'
 
+import { useAppStore } from '@/stores/appStore'
+import HistoryScreen from '@/app/history'
+
 // -- Mocks --
 
 jest.mock('expo-router', () => ({
@@ -20,14 +23,12 @@ jest.mock('@/stores/appStore', () => ({
 
 // Mock FlashList as a simple FlatList for testing
 jest.mock('@shopify/flash-list', () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { FlatList } = require('react-native')
   return {
     FlashList: FlatList,
   }
 })
-
-import { useAppStore } from '@/stores/appStore'
-import HistoryScreen from '@/app/history'
 
 // -- Test data factory --
 
@@ -50,10 +51,7 @@ function makeSession(overrides: Partial<WorkoutSession> = {}): WorkoutSession {
 
 // -- Helpers --
 
-function setupMocks({
-  history = [] as WorkoutSession[],
-  deleteWorkout = jest.fn(),
-} = {}) {
+function setupMocks({ history = [] as WorkoutSession[], deleteWorkout = jest.fn() } = {}) {
   const appState = { history, deleteWorkout }
   ;(useAppStore as unknown as jest.Mock).mockImplementation(
     (selector: (s: typeof appState) => unknown) => selector(appState),
@@ -103,9 +101,7 @@ describe('HistoryScreen', () => {
 
   describe('Inline delete', () => {
     it('shows confirmation when APAGAR is tapped', () => {
-      const sessions = [
-        makeSession({ id: 'A-1000' as WorkoutId, planName: 'Treino A' }),
-      ]
+      const sessions = [makeSession({ id: 'A-1000' as WorkoutId, planName: 'Treino A' })]
       setupMocks({ history: sessions })
 
       render(<HistoryScreen />)
@@ -119,9 +115,7 @@ describe('HistoryScreen', () => {
     })
 
     it('deletes workout when CONFIRMAR is tapped', () => {
-      const sessions = [
-        makeSession({ id: 'A-1000' as WorkoutId, planName: 'Treino A' }),
-      ]
+      const sessions = [makeSession({ id: 'A-1000' as WorkoutId, planName: 'Treino A' })]
       const { deleteWorkout } = setupMocks({ history: sessions })
 
       render(<HistoryScreen />)
@@ -134,9 +128,7 @@ describe('HistoryScreen', () => {
     })
 
     it('hides confirmation when CANCELAR is tapped', () => {
-      const sessions = [
-        makeSession({ id: 'A-1000' as WorkoutId, planName: 'Treino A' }),
-      ]
+      const sessions = [makeSession({ id: 'A-1000' as WorkoutId, planName: 'Treino A' })]
       setupMocks({ history: sessions })
 
       render(<HistoryScreen />)
