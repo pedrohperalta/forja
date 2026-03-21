@@ -1,0 +1,18 @@
+{
+  "id": "workout-flow-screens_20260321",
+  "title": "Workout Flow Screens",
+  "type": "feature",
+  "status": "pending",
+  "created": "2026-03-21T00:00:00.000Z",
+  "updated": "2026-03-21T00:00:00.000Z",
+  "phases": {
+    "total": 7,
+    "completed": 0
+  },
+  "tasks": {
+    "total": 30,
+    "completed": 0
+  },
+  "masonsIdeaId": "forja-mvp",
+  "dependsOn": ["zustand-stores_20260321"]
+}

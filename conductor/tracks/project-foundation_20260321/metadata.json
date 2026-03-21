@@ -1,0 +1,18 @@
+{
+  "id": "project-foundation_20260321",
+  "title": "Project Foundation",
+  "type": "feature",
+  "status": "pending",
+  "created": "2026-03-21T00:00:00.000Z",
+  "updated": "2026-03-21T00:00:00.000Z",
+  "phases": {
+    "total": 7,
+    "completed": 0
+  },
+  "tasks": {
+    "total": 26,
+    "completed": 0
+  },
+  "masonsIdeaId": "forja-mvp",
+  "dependsOn": []
+}

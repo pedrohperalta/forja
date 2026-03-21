@@ -1,0 +1,18 @@
+{
+  "id": "polish-accessibility_20260321",
+  "title": "Polish & Accessibility",
+  "type": "feature",
+  "status": "pending",
+  "created": "2026-03-21T00:00:00.000Z",
+  "updated": "2026-03-21T00:00:00.000Z",
+  "phases": {
+    "total": 5,
+    "completed": 0
+  },
+  "tasks": {
+    "total": 16,
+    "completed": 0
+  },
+  "masonsIdeaId": "forja-mvp",
+  "dependsOn": ["home-history-screens_20260321", "workout-flow-screens_20260321"]
+}
