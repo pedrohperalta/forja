@@ -34,16 +34,18 @@ export function PendingExerciseCard({
       {/* Action buttons */}
       <View className="mt-3 flex-row gap-3">
         <Pressable
-          className="flex-1 items-center rounded-md bg-accent py-3"
+          className="min-h-[44px] flex-1 items-center justify-center rounded-md bg-accent py-3"
           onPress={() => onDoNow(exercise.id)}
           accessibilityRole="button"
+          accessibilityLabel={`Fazer ${exercise.name} agora`}
         >
           <Text className="font-bold text-background">FAZER AGORA</Text>
         </Pressable>
         <Pressable
-          className="flex-1 items-center rounded-md border border-danger-dim py-3"
+          className="min-h-[44px] flex-1 items-center justify-center rounded-md border border-danger-dim py-3"
           onPress={() => onRemove(exercise.id)}
           accessibilityRole="button"
+          accessibilityLabel={`Não vou fazer ${exercise.name}`}
         >
           <Text className="font-bold text-danger">NÃO VOU FAZER</Text>
         </Pressable>

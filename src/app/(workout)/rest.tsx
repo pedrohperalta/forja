@@ -1,8 +1,9 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { View, Text, Pressable } from 'react-native'
 import { useRouter } from 'expo-router'
 import { useWorkoutStore } from '@/stores/workoutStore'
 import { useRestTimer } from '@/hooks/useRestTimer'
+import { useHaptics } from '@/hooks/useHaptics'
 import { RestTimer } from '@/components/RestTimer'
 import { getCurrentExercise } from '@/utils/getCurrentExercise'
 
@@ -18,6 +19,23 @@ export default function RestScreen(): React.JSX.Element {
 
   // Rest timer hook
   const { secondsLeft, progress, isFinished } = useRestTimer(REST_DURATION_SECONDS)
+
+  // Haptic feedback
+  const haptics = useHaptics()
+  const prevSecondsRef = useRef(REST_DURATION_SECONDS)
+
+  // Light haptic on last 3 seconds countdown, success on complete
+  useEffect(() => {
+    if (secondsLeft !== prevSecondsRef.current) {
+      if (secondsLeft > 0 && secondsLeft <= 3) {
+        haptics.light()
+      }
+      if (secondsLeft === 0 && prevSecondsRef.current > 0) {
+        haptics.success()
+      }
+      prevSecondsRef.current = secondsLeft
+    }
+  }, [secondsLeft, haptics])
 
   // Next exercise preview
   const nextExercise = getCurrentExercise(queue, skippedIds)
@@ -55,9 +73,11 @@ export default function RestScreen(): React.JSX.Element {
 
       {/* Skip rest button */}
       <Pressable
-        className="mt-8 rounded-md border border-border-med px-8 py-3"
+        testID="skip-rest-button"
+        className="mt-8 min-h-[44px] items-center justify-center rounded-md border border-border-med px-8 py-3"
         onPress={handleSkipRest}
         accessibilityRole="button"
+        accessibilityLabel="Pular Descanso"
       >
         <Text className="text-text-med">Pular Descanso</Text>
       </Pressable>
@@ -65,9 +85,11 @@ export default function RestScreen(): React.JSX.Element {
       {/* Go to skipped exercises — guarded */}
       {canGoToCheckpoint && (
         <Pressable
-          className="mt-4 rounded-md border border-warning-dim px-6 py-3"
+          testID="go-to-skipped-button"
+          className="mt-4 min-h-[44px] items-center justify-center rounded-md border border-warning-dim px-6 py-3"
           onPress={handleGoToCheckpoint}
           accessibilityRole="button"
+          accessibilityLabel={`Ir para exercícios pulados, ${skippedIds.length} pendentes`}
         >
           <Text className="text-warning">Ir para exercícios pulados ({skippedIds.length})</Text>
         </Pressable>

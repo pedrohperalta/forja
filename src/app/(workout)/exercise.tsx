@@ -3,6 +3,7 @@ import { View, Text, Pressable } from 'react-native'
 import { useRouter } from 'expo-router'
 import { useWorkoutStore } from '@/stores/workoutStore'
 import { useAppStore } from '@/stores/appStore'
+import { useHaptics } from '@/hooks/useHaptics'
 import { getCurrentExercise } from '@/utils/getCurrentExercise'
 import { ProgressBar } from '@/components/ProgressBar'
 import { WeightInput } from '@/components/WeightInput'
@@ -26,6 +27,9 @@ export default function ExerciseScreen(): React.JSX.Element | null {
 
   // Atomic selector from appStore
   const lastWeights = useAppStore((s) => s.lastWeights)
+
+  // Haptic feedback
+  const haptics = useHaptics()
 
   // Derive current exercise — NEVER queue[0]
   const currentExercise = getCurrentExercise(queue, skippedIds)
@@ -99,6 +103,7 @@ export default function ExerciseScreen(): React.JSX.Element | null {
       return
     }
 
+    haptics.medium()
     const result = completeSet(weightNum)
     handleNavigation(result)
   }
@@ -149,12 +154,14 @@ export default function ExerciseScreen(): React.JSX.Element | null {
 
       {/* Complete set button */}
       <Pressable
+        testID="complete-set-button"
         className={`mt-8 h-14 items-center justify-center rounded-md ${
           isWeightValid && !isNavigating.current ? 'bg-accent' : 'bg-dim'
         }`}
         onPress={handleCompleteSet}
         disabled={!isWeightValid}
         accessibilityRole="button"
+        accessibilityLabel="Completei a série"
         accessibilityState={{ disabled: !isWeightValid }}
       >
         <Text className="text-lg font-bold text-background">COMPLETEI A SÉRIE</Text>
@@ -164,16 +171,20 @@ export default function ExerciseScreen(): React.JSX.Element | null {
       {currentSet === 1 && (
         <View className="mt-4 flex-row justify-center gap-4">
           <Pressable
-            className="rounded-md border border-border-med px-6 py-3"
+            testID="skip-button"
+            className="min-h-[44px] items-center justify-center rounded-md border border-border-med px-6 py-3"
             onPress={handleSkip}
             accessibilityRole="button"
+            accessibilityLabel="Pular exercício"
           >
             <Text className="text-text-med">Pular</Text>
           </Pressable>
           <Pressable
-            className="rounded-md border border-danger-dim px-6 py-3"
+            testID="not-doing-button"
+            className="min-h-[44px] items-center justify-center rounded-md border border-danger-dim px-6 py-3"
             onPress={handleRemove}
             accessibilityRole="button"
+            accessibilityLabel="Não vou fazer este exercício"
           >
             <Text className="text-danger">Não vou fazer</Text>
           </Pressable>

@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router'
 import { FlashList } from '@shopify/flash-list'
 import { useWorkoutStore } from '@/stores/workoutStore'
 import { useAppStore } from '@/stores/appStore'
+import { useHaptics } from '@/hooks/useHaptics'
 import { buildWorkoutSession } from '@/utils/buildWorkoutSession'
 import type { CompletedExercise, ExerciseLog } from '@/types'
 
@@ -22,6 +23,17 @@ export default function CompleteScreen(): React.JSX.Element {
   // Atomic selectors from appStore
   const saveWorkout = useAppStore((s) => s.saveWorkout)
   const updateLastWeights = useAppStore((s) => s.updateLastWeights)
+
+  // Haptic feedback on mount
+  const haptics = useHaptics()
+  const hasPlayedHaptic = useRef(false)
+
+  useEffect(() => {
+    if (!hasPlayedHaptic.current && log.length > 0) {
+      hasPlayedHaptic.current = true
+      haptics.success()
+    }
+  }, [haptics, log.length])
 
   // Prevent double save
   const hasSaved = useRef(false)
@@ -84,9 +96,11 @@ export default function CompleteScreen(): React.JSX.Element {
       <View className="flex-1 items-center justify-center bg-background px-6">
         <Text className="text-xl text-text-med">Nenhum exercício completado</Text>
         <Pressable
+          testID="back-to-home-button"
           className="mt-8 rounded-md bg-accent px-8 py-4"
           onPress={handleGoHome}
           accessibilityRole="button"
+          accessibilityLabel="Voltar ao início"
         >
           <Text className="font-bold text-background">VOLTAR AO INÍCIO</Text>
         </Pressable>
@@ -135,9 +149,11 @@ export default function CompleteScreen(): React.JSX.Element {
 
       {/* Go home button */}
       <Pressable
+        testID="back-to-home-button"
         className="mb-12 rounded-md bg-accent py-4"
         onPress={handleGoHome}
         accessibilityRole="button"
+        accessibilityLabel="Voltar ao início"
       >
         <Text className="text-center font-bold text-background">VOLTAR AO INÍCIO</Text>
       </Pressable>

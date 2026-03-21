@@ -12,9 +12,11 @@ export function HistoryChip({
 }: HistoryChipProps): React.JSX.Element {
   return (
     <Pressable
+      testID="history-chip"
       onPress={onPress}
       accessibilityRole="button"
-      className="flex-row items-center rounded-pill bg-surface-2 px-4 py-2"
+      accessibilityLabel={`Historico, ${count} treinos`}
+      className="min-h-[44px] flex-row items-center rounded-pill bg-surface-2 px-4 py-2"
     >
       <Text className="font-ui text-sm text-text-med">Historico</Text>
       <View className="ml-2 h-5 w-5 items-center justify-center rounded-full bg-accent">

@@ -57,8 +57,10 @@ export default function HomeScreen() {
       {/* Resume banner */}
       {isActive ? (
         <Pressable
+          testID="resume-banner"
           onPress={handleResumeBannerPress}
           accessibilityRole="button"
+          accessibilityLabel="Continuar Treino"
           className="mb-4 rounded-lg bg-accent p-4"
         >
           <Text className="font-ui text-center text-base font-bold text-background">
@@ -72,6 +74,7 @@ export default function HomeScreen() {
         {PLAN_ENTRIES.map((plan) => (
           <WorkoutCard
             key={plan.id}
+            planId={plan.id}
             planName={plan.name}
             focus={plan.focus}
             lastDate={lastDates[plan.id]}

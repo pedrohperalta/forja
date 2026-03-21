@@ -30,6 +30,7 @@ export function WeightInput({
 
   return (
     <TextInput
+      testID="weight-input"
       className="h-14 rounded-md border border-border-med bg-surface px-4 text-center text-2xl text-text"
       value={value}
       onChangeText={handleChangeText}

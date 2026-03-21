@@ -17,6 +17,7 @@ type WorkoutHistoryCardProps = {
 
 /** Card displaying a completed workout with inline delete confirmation. */
 export function WorkoutHistoryCard({
+  id,
   planName,
   focus,
   date,
@@ -61,18 +62,22 @@ export function WorkoutHistoryCard({
         {isDeleting ? (
           <>
             <Pressable
+              testID="cancel-delete-button"
               onPress={onCancelDelete}
               accessibilityRole="button"
-              className="rounded-pill bg-surface-2 px-4 py-2"
+              accessibilityLabel="Cancelar exclusão"
+              className="min-h-[44px] items-center justify-center rounded-pill bg-surface-2 px-4 py-2"
             >
               <Text className="font-ui text-xs font-bold text-text-med">
                 CANCELAR
               </Text>
             </Pressable>
             <Pressable
+              testID="confirm-delete-button"
               onPress={onConfirmDelete}
               accessibilityRole="button"
-              className="rounded-pill bg-danger-dim px-4 py-2"
+              accessibilityLabel="Confirmar exclusão"
+              className="min-h-[44px] items-center justify-center rounded-pill bg-danger-dim px-4 py-2"
             >
               <Text className="font-ui text-xs font-bold text-danger">
                 CONFIRMAR
@@ -81,9 +86,11 @@ export function WorkoutHistoryCard({
           </>
         ) : (
           <Pressable
+            testID={`delete-workout-button-${id}`}
             onPress={onDelete}
             accessibilityRole="button"
-            className="rounded-pill bg-surface-2 px-4 py-2"
+            accessibilityLabel="Apagar treino"
+            className="min-h-[44px] items-center justify-center rounded-pill bg-surface-2 px-4 py-2"
           >
             <Text className="font-ui text-xs font-bold text-danger">
               APAGAR
