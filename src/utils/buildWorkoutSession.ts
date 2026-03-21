@@ -1,10 +1,4 @@
-import type {
-  CompletedExercise,
-  ExerciseLog,
-  Plan,
-  WorkoutId,
-  WorkoutSession,
-} from '@/types'
+import type { CompletedExercise, ExerciseLog, Plan, WorkoutId, WorkoutSession } from '@/types'
 
 /**
  * Builds a WorkoutSession from workout completion data.

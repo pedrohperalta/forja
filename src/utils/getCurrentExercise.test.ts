@@ -37,12 +37,7 @@ describe('getCurrentExercise', () => {
   })
 
   it('returns the correct exercise when multiple are skipped', () => {
-    const queue = [
-      makeExercise('a'),
-      makeExercise('b'),
-      makeExercise('c'),
-      makeExercise('d'),
-    ]
+    const queue = [makeExercise('a'), makeExercise('b'), makeExercise('c'), makeExercise('d')]
     const skipped = ['a' as ExerciseId, 'b' as ExerciseId, 'c' as ExerciseId]
     const result = getCurrentExercise(queue, skipped)
     expect(result).toEqual(queue[3])

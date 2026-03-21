@@ -6,17 +6,11 @@
  * interference.
  */
 
-jest.mock('@/storage/mmkv', () => require('@/storage/__mocks__/mmkv'))
-
-import type {
-  ExerciseId,
-  Plan,
-  PlanId,
-  NavigationTarget,
-  Exercise,
-} from '@/types'
+import type { ExerciseId, Plan, PlanId, NavigationTarget, Exercise } from '@/types'
 import { clearMockStorage } from '@/storage/__mocks__/mmkv'
 import { useWorkoutStore } from '@/stores/workoutStore'
+
+jest.mock('@/storage/mmkv', () => require('@/storage/__mocks__/mmkv'))
 
 // -- Test data factories --
 
@@ -200,9 +194,9 @@ describe('workoutStore', () => {
       useWorkoutStore.getState().skipExercise()
 
       // Remove ex-1 by ID (from checkpoint)
-      const result: NavigationTarget = useWorkoutStore.getState().removeExercise(
-        'ex-1' as ExerciseId,
-      )
+      const result: NavigationTarget = useWorkoutStore
+        .getState()
+        .removeExercise('ex-1' as ExerciseId)
 
       expect(result).toEqual({ target: 'next' })
       expect(useWorkoutStore.getState().queue).toHaveLength(2)

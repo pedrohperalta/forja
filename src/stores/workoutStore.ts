@@ -1,13 +1,6 @@
 import { create } from 'zustand'
 import { devtools, persist, createJSONStorage } from 'zustand/middleware'
-import type {
-  Exercise,
-  ExerciseId,
-  ExerciseLog,
-  NavigationTarget,
-  Plan,
-  SetRecord,
-} from '@/types'
+import type { Exercise, ExerciseId, ExerciseLog, NavigationTarget, Plan, SetRecord } from '@/types'
 import { mmkvStateStorage } from '@/storage/mmkv'
 import { getCurrentExercise } from '@/utils/getCurrentExercise'
 

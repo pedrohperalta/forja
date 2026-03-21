@@ -5,11 +5,11 @@
  * The MMKV storage is mocked to use an in-memory Map.
  */
 
-jest.mock('@/storage/mmkv', () => require('@/storage/__mocks__/mmkv'))
-
 import type { WorkoutSession, WorkoutId, PlanId } from '@/types'
 import { clearMockStorage } from '@/storage/__mocks__/mmkv'
 import { useAppStore } from '@/stores/appStore'
+
+jest.mock('@/storage/mmkv', () => require('@/storage/__mocks__/mmkv'))
 
 // -- Test data factory --
 
