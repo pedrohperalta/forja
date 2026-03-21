@@ -1,0 +1,44 @@
+{
+  "expo": {
+    "name": "Forja",
+    "slug": "forja",
+    "scheme": "forja",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#080808"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.forja.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#080808",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "package": "com.forja.app"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "experiments": {
+      "typedRoutes": true
+    },
+    "plugins": [
+      [
+        "expo-router",
+        {
+          "root": "./src/app"
+        }
+      ]
+    ]
+  }
+}
