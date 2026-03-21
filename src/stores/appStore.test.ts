@@ -1,14 +1,15 @@
 /**
  * appStore tests — Phase 1 (TDD: tests first, implementation second)
  *
- * These tests use the real Zustand store with a mocked MMKV storage layer.
- * The store module is resolved via jest.mock so it uses the in-memory mock.
+ * Uses a direct import of the store with state reset between tests.
+ * The MMKV storage is mocked to use an in-memory Map.
  */
+
+jest.mock('@/storage/mmkv', () => require('@/storage/__mocks__/mmkv'))
 
 import type { WorkoutSession, WorkoutId, PlanId } from '@/types'
 import { clearMockStorage } from '@/storage/__mocks__/mmkv'
-
-jest.mock('@/storage/mmkv', () => require('@/storage/__mocks__/mmkv'))
+import { useAppStore } from '@/stores/appStore'
 
 // -- Test data factory --
 
@@ -33,48 +34,38 @@ function makeSession(overrides: Partial<WorkoutSession> = {}): WorkoutSession {
 
 describe('appStore', () => {
   beforeEach(() => {
+    // Reset store state to defaults and clear persisted storage
+    useAppStore.setState({ lastWeights: {}, lastDates: {}, history: [] })
     clearMockStorage()
-    jest.resetModules()
   })
-
-  function getStore() {
-    // Re-import to get a fresh store after resetModules
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { useAppStore } = require('@/stores/appStore') as typeof import('@/stores/appStore')
-    return useAppStore
-  }
 
   describe('saveWorkout', () => {
     it('adds session to history and updates lastDates[planId]', () => {
-      const store = getStore()
       const session = makeSession()
 
-      store.getState().saveWorkout(session)
+      useAppStore.getState().saveWorkout(session)
 
-      expect(store.getState().history).toHaveLength(1)
-      expect(store.getState().history[0]).toEqual(session)
-      expect(store.getState().lastDates['A']).toBe('2026-03-21')
+      expect(useAppStore.getState().history).toHaveLength(1)
+      expect(useAppStore.getState().history[0]).toEqual(session)
+      expect(useAppStore.getState().lastDates['A']).toBe('2026-03-21')
     })
 
     it('is idempotent — duplicate ID is a no-op', () => {
-      const store = getStore()
       const session = makeSession()
 
-      store.getState().saveWorkout(session)
-      store.getState().saveWorkout(session)
+      useAppStore.getState().saveWorkout(session)
+      useAppStore.getState().saveWorkout(session)
 
-      expect(store.getState().history).toHaveLength(1)
+      expect(useAppStore.getState().history).toHaveLength(1)
     })
   })
 
   describe('updateLastWeights', () => {
     it('merges new weights into existing', () => {
-      const store = getStore()
+      useAppStore.getState().updateLastWeights({ 'supino-reto': 60 })
+      useAppStore.getState().updateLastWeights({ 'rosca-direta': 30, 'supino-reto': 65 })
 
-      store.getState().updateLastWeights({ 'supino-reto': 60 })
-      store.getState().updateLastWeights({ 'rosca-direta': 30, 'supino-reto': 65 })
-
-      expect(store.getState().lastWeights).toEqual({
+      expect(useAppStore.getState().lastWeights).toEqual({
         'supino-reto': 65,
         'rosca-direta': 30,
       })
@@ -83,7 +74,6 @@ describe('appStore', () => {
 
   describe('deleteWorkout', () => {
     it('removes session and recalculates lastDates to most recent remaining', () => {
-      const store = getStore()
       const session1 = makeSession({
         id: 'A-1000' as WorkoutId,
         date: '2026-03-19',
@@ -97,48 +87,43 @@ describe('appStore', () => {
         date: '2026-03-20',
       })
 
-      store.getState().saveWorkout(session1)
-      store.getState().saveWorkout(session2)
-      store.getState().saveWorkout(session3)
+      useAppStore.getState().saveWorkout(session1)
+      useAppStore.getState().saveWorkout(session2)
+      useAppStore.getState().saveWorkout(session3)
 
       // Delete the most recent (2026-03-21) — lastDates should fall back to 2026-03-20
-      store.getState().deleteWorkout('A-2000' as WorkoutId)
+      useAppStore.getState().deleteWorkout('A-2000' as WorkoutId)
 
-      expect(store.getState().history).toHaveLength(2)
-      expect(store.getState().lastDates['A']).toBe('2026-03-20')
+      expect(useAppStore.getState().history).toHaveLength(2)
+      expect(useAppStore.getState().lastDates['A']).toBe('2026-03-20')
     })
 
     it('removes lastDates key when no sessions remain for that plan', () => {
-      const store = getStore()
       const session = makeSession()
 
-      store.getState().saveWorkout(session)
-      store.getState().deleteWorkout(session.id)
+      useAppStore.getState().saveWorkout(session)
+      useAppStore.getState().deleteWorkout(session.id)
 
-      expect(store.getState().history).toHaveLength(0)
-      expect(store.getState().lastDates).not.toHaveProperty('A')
+      expect(useAppStore.getState().history).toHaveLength(0)
+      expect(useAppStore.getState().lastDates).not.toHaveProperty('A')
     })
 
     it('is a no-op when ID does not exist', () => {
-      const store = getStore()
       const session = makeSession()
 
-      store.getState().saveWorkout(session)
-      store.getState().deleteWorkout('nonexistent' as WorkoutId)
+      useAppStore.getState().saveWorkout(session)
+      useAppStore.getState().deleteWorkout('nonexistent' as WorkoutId)
 
-      expect(store.getState().history).toHaveLength(1)
+      expect(useAppStore.getState().history).toHaveLength(1)
     })
   })
 
   describe('rehydration', () => {
     it('rehydrates from MMKV mock correctly', async () => {
-      // Seed storage with persisted data in the format Zustand persist uses.
-      // We must reset modules FIRST, then seed the fresh mock storage,
-      // then import the store so it picks up the seeded data.
+      // Reset modules so we get a fresh store that reads from seeded storage
       jest.resetModules()
       jest.mock('@/storage/mmkv', () => require('@/storage/__mocks__/mmkv'))
 
-      // Get the fresh mock storage instance (same one the store will use)
       const { mmkvStateStorage: mockStorage } =
         require('@/storage/__mocks__/mmkv') as typeof import('@/storage/__mocks__/mmkv')
 
@@ -152,26 +137,24 @@ describe('appStore', () => {
       }
       mockStorage.setItem('app-store', JSON.stringify(persistedState))
 
-      // Now import the store — it will rehydrate from the seeded storage
-      const { useAppStore } =
+      const { useAppStore: freshStore } =
         require('@/stores/appStore') as typeof import('@/stores/appStore')
 
-      // Wait for rehydration
       await new Promise<void>((resolve) => {
-        if (useAppStore.persist.hasHydrated()) {
+        if (freshStore.persist.hasHydrated()) {
           resolve()
           return
         }
-        const unsub = useAppStore.persist.onFinishHydration(() => {
+        const unsub = freshStore.persist.onFinishHydration(() => {
           unsub()
           resolve()
         })
       })
 
-      expect(useAppStore.getState().history).toHaveLength(1)
-      expect(useAppStore.getState().history[0]?.id).toBe('A-1000')
-      expect(useAppStore.getState().lastWeights['supino-reto']).toBe(60)
-      expect(useAppStore.getState().lastDates['A']).toBe('2026-03-21')
+      expect(freshStore.getState().history).toHaveLength(1)
+      expect(freshStore.getState().history[0]?.id).toBe('A-1000')
+      expect(freshStore.getState().lastWeights['supino-reto']).toBe(60)
+      expect(freshStore.getState().lastDates['A']).toBe('2026-03-21')
     })
   })
 })
