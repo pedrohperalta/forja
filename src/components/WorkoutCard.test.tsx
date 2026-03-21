@@ -7,9 +7,11 @@
 
 import { render, screen, fireEvent } from '@testing-library/react-native'
 import { WorkoutCard } from '@/components/WorkoutCard'
+import type { PlanId } from '@/types'
 
 describe('WorkoutCard', () => {
   const defaultProps = {
+    planId: 'A' as PlanId,
     planName: 'Treino A',
     focus: 'Peito / Ombros / Triceps',
     lastDate: '2026-03-20',

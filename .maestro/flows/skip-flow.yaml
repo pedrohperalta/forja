@@ -1,0 +1,87 @@
+# Skip Flow — Skip exercises, checkpoint screen, remove skipped
+# Start workout -> skip exercise -> complete remaining -> checkpoint -> remove -> complete
+appId: com.forja.app
+---
+# Launch the app fresh
+- launchApp:
+    clearState: true
+
+# Verify home screen
+- assertVisible: "FORJA"
+
+# Start workout A
+- tapOn:
+    id: "workout-card-A"
+
+# --- Exercise 1: Supino Reto Vertical — Skip it ---
+- assertVisible: "Supino Reto Vertical"
+- tapOn:
+    id: "skip-button"
+
+# --- Exercise 2: Crucifixo Articulado TS — Complete it ---
+- assertVisible: "Crucifixo Articulado TS"
+
+# Complete 3 sets
+- tapOn:
+    id: "weight-input"
+- inputText: "25"
+- tapOn:
+    id: "complete-set-button"
+- assertVisible: "Pular Descanso"
+- tapOn:
+    id: "skip-rest-button"
+
+- tapOn:
+    id: "weight-input"
+- inputText: "25"
+- tapOn:
+    id: "complete-set-button"
+- assertVisible: "Pular Descanso"
+- tapOn:
+    id: "skip-rest-button"
+
+- tapOn:
+    id: "weight-input"
+- inputText: "25"
+- tapOn:
+    id: "complete-set-button"
+
+# After last set, rest screen should show "Ir para pulados" button
+- assertVisible: "Pular Descanso"
+- assertVisible:
+    id: "go-to-skipped-button"
+
+# Skip rest to continue to next exercise
+- tapOn:
+    id: "skip-rest-button"
+
+# --- Exercises 3-7: Remove them to reach checkpoint faster ---
+- tapOn:
+    id: "not-doing-button"
+- tapOn:
+    id: "not-doing-button"
+- tapOn:
+    id: "not-doing-button"
+- tapOn:
+    id: "not-doing-button"
+- tapOn:
+    id: "not-doing-button"
+
+# Should now be on checkpoint screen with skipped exercise
+- assertVisible: "Exercícios Pulados"
+- assertVisible: "Supino Reto Vertical"
+
+# Tap "NÃO VOU FAZER" to remove skipped exercise
+- tapOn: "NÃO VOU FAZER"
+
+# Should navigate to complete screen
+- assertVisible: "Treino Completo!"
+
+# Verify stats
+- assertVisible: "Exercícios"
+- assertVisible: "Séries"
+
+# Go back home
+- tapOn:
+    id: "back-to-home-button"
+- assertVisible: "FORJA"

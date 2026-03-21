@@ -5,11 +5,11 @@
     "scheme": "forja",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/images/icon.png",
     "userInterfaceStyle": "dark",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/images/splash-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#080808"
     },
@@ -20,9 +20,9 @@
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#080808",
-        "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
+        "foregroundImage": "./assets/images/adaptive-icon-foreground.png",
+        "backgroundImage": "./assets/images/adaptive-icon-background.png",
+        "monochromeImage": "./assets/images/adaptive-icon-monochrome.png"
       },
       "package": "com.forja.app"
     },
@@ -38,7 +38,8 @@
         {
           "root": "./src/app"
         }
-      ]
+      ],
+      "expo-font"
     ]
   }
 }

@@ -6,10 +6,7 @@ type HistoryChipProps = {
 }
 
 /** Chip displaying "Historico" label with a count badge. Navigates to history screen. */
-export function HistoryChip({
-  count,
-  onPress,
-}: HistoryChipProps): React.JSX.Element {
+export function HistoryChip({ count, onPress }: HistoryChipProps): React.JSX.Element {
   return (
     <Pressable
       testID="history-chip"
@@ -20,9 +17,7 @@ export function HistoryChip({
     >
       <Text className="font-ui text-sm text-text-med">Historico</Text>
       <View className="ml-2 h-5 w-5 items-center justify-center rounded-full bg-accent">
-        <Text className="font-ui text-xs font-bold text-background">
-          {count}
-        </Text>
+        <Text className="font-ui text-xs font-bold text-background">{count}</Text>
       </View>
     </Pressable>
   )

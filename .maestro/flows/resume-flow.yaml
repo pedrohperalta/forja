@@ -1,0 +1,44 @@
+# Resume Flow — Start workout, kill app, reopen, resume
+# Verifies crash-resume via Zustand MMKV persistence
+appId: com.forja.app
+---
+# Launch the app fresh
+- launchApp:
+    clearState: true
+
+# Verify home screen
+- assertVisible: "FORJA"
+
+# Start workout A
+- tapOn:
+    id: "workout-card-A"
+
+# Complete 1 set of exercise 1
+- assertVisible: "Supino Reto Vertical"
+- tapOn:
+    id: "weight-input"
+- inputText: "50"
+- tapOn:
+    id: "complete-set-button"
+
+# Should be on rest screen
+- assertVisible: "Pular Descanso"
+
+# Kill the app (simulate crash)
+- stopApp
+
+# Relaunch the app
+- launchApp
+
+# Home screen should show the resume banner since workout is active
+- assertVisible: "FORJA"
+- assertVisible:
+    id: "resume-banner"
+- assertVisible: "Continuar Treino"
+
+# Tap resume banner to continue workout
+- tapOn:
+    id: "resume-banner"
+
+# Should be back on exercise screen — continuing from set 2
+- assertVisible: "Supino Reto Vertical"

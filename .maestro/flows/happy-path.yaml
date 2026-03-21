@@ -1,0 +1,122 @@
+# Happy Path Flow — Full workout completion
+# Home -> tap workout card -> complete sets with weight -> rest -> complete -> home
+appId: com.forja.app
+---
+# Launch the app fresh
+- launchApp:
+    clearState: true
+
+# Verify home screen is visible
+- assertVisible: "FORJA"
+
+# Tap workout card A to start a workout
+- tapOn:
+    id: "workout-card-A"
+
+# --- Exercise 1: Supino Reto Vertical ---
+
+# Verify we're on the exercise screen
+- assertVisible: "Supino Reto Vertical"
+- assertVisible: "10-15 reps"
+
+# Enter weight and complete set 1
+- tapOn:
+    id: "weight-input"
+- inputText: "40"
+- tapOn:
+    id: "complete-set-button"
+
+# Rest screen — skip rest to speed up flow
+- assertVisible: "Pular Descanso"
+- tapOn:
+    id: "skip-rest-button"
+
+# Complete set 2
+- tapOn:
+    id: "weight-input"
+- inputText: "40"
+- tapOn:
+    id: "complete-set-button"
+
+# Rest screen — skip rest
+- assertVisible: "Pular Descanso"
+- tapOn:
+    id: "skip-rest-button"
+
+# Complete set 3 (last set of exercise 1)
+- tapOn:
+    id: "weight-input"
+- inputText: "40"
+- tapOn:
+    id: "complete-set-button"
+
+# After completing all sets of exercise 1, should go to rest then next exercise
+# Rest screen — skip rest
+- assertVisible: "Pular Descanso"
+- tapOn:
+    id: "skip-rest-button"
+
+# --- Exercise 2: Crucifixo Articulado TS ---
+- assertVisible: "Crucifixo Articulado TS"
+
+# Complete 3 sets quickly
+- tapOn:
+    id: "weight-input"
+- inputText: "20"
+- tapOn:
+    id: "complete-set-button"
+- assertVisible: "Pular Descanso"
+- tapOn:
+    id: "skip-rest-button"
+
+- tapOn:
+    id: "weight-input"
+- inputText: "20"
+- tapOn:
+    id: "complete-set-button"
+- assertVisible: "Pular Descanso"
+- tapOn:
+    id: "skip-rest-button"
+
+- tapOn:
+    id: "weight-input"
+- inputText: "20"
+- tapOn:
+    id: "complete-set-button"
+- assertVisible: "Pular Descanso"
+- tapOn:
+    id: "skip-rest-button"
+
+# --- Exercise 3-7: Remove remaining exercises to finish faster ---
+# For exercise 3, use "Não vou fazer" to skip ahead to complete
+- assertVisible: "Supino 45 Bilateral"
+- tapOn:
+    id: "not-doing-button"
+
+# Exercise 4
+- tapOn:
+    id: "not-doing-button"
+
+# Exercise 5
+- tapOn:
+    id: "not-doing-button"
+
+# Exercise 6
+- tapOn:
+    id: "not-doing-button"
+
+# Exercise 7 (last) — removing should go to complete screen
+- tapOn:
+    id: "not-doing-button"
+
+# Verify complete screen
+- assertVisible: "Treino Completo!"
+- assertVisible: "Exercícios"
+- assertVisible: "Séries"
+
+# Go back to home
+- tapOn:
+    id: "back-to-home-button"
+
+# Verify we're back on home screen
+- assertVisible: "FORJA"

@@ -35,16 +35,12 @@ export function WorkoutCard({
         <Text className="font-display text-2xl text-text">{planName}</Text>
         {isNext ? (
           <View className="rounded-pill bg-accent px-3 py-1">
-            <Text className="font-ui text-xs font-bold text-background">
-              PROXIMO
-            </Text>
+            <Text className="font-ui text-xs font-bold text-background">PROXIMO</Text>
           </View>
         ) : null}
       </View>
       <Text className="mt-1 font-ui text-sm text-text-med">{focus}</Text>
-      <Text className="mt-2 font-ui text-xs text-muted">
-        {lastDate ?? 'Nunca realizado'}
-      </Text>
+      <Text className="mt-2 font-ui text-xs text-muted">{lastDate ?? 'Nunca realizado'}</Text>
     </Pressable>
   )
 }

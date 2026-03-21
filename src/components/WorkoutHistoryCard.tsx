@@ -39,19 +39,14 @@ export function WorkoutHistoryCard({
 
       {/* Metadata */}
       <View className="mt-2 flex-row gap-3">
-        <Text className="font-ui text-xs text-muted">
-          {exercises.length} exerc.
-        </Text>
+        <Text className="font-ui text-xs text-muted">{exercises.length} exerc.</Text>
         <Text className="font-ui text-xs text-muted">{durationMinutes} min</Text>
       </View>
 
       {/* Exercise summary */}
       <View className="mt-3 gap-1">
         {exercises.map((exercise) => (
-          <Text
-            key={exercise.name}
-            className="font-ui text-xs text-text-med"
-          >
+          <Text key={exercise.name} className="font-ui text-xs text-text-med">
             {exercise.name} - {exercise.sets}x {exercise.weight}kg
           </Text>
         ))}
@@ -68,9 +63,7 @@ export function WorkoutHistoryCard({
               accessibilityLabel="Cancelar exclusão"
               className="min-h-[44px] items-center justify-center rounded-pill bg-surface-2 px-4 py-2"
             >
-              <Text className="font-ui text-xs font-bold text-text-med">
-                CANCELAR
-              </Text>
+              <Text className="font-ui text-xs font-bold text-text-med">CANCELAR</Text>
             </Pressable>
             <Pressable
               testID="confirm-delete-button"
@@ -79,9 +72,7 @@ export function WorkoutHistoryCard({
               accessibilityLabel="Confirmar exclusão"
               className="min-h-[44px] items-center justify-center rounded-pill bg-danger-dim px-4 py-2"
             >
-              <Text className="font-ui text-xs font-bold text-danger">
-                CONFIRMAR
-              </Text>
+              <Text className="font-ui text-xs font-bold text-danger">CONFIRMAR</Text>
             </Pressable>
           </>
         ) : (
@@ -92,9 +83,7 @@ export function WorkoutHistoryCard({
             accessibilityLabel="Apagar treino"
             className="min-h-[44px] items-center justify-center rounded-pill bg-surface-2 px-4 py-2"
           >
-            <Text className="font-ui text-xs font-bold text-danger">
-              APAGAR
-            </Text>
+            <Text className="font-ui text-xs font-bold text-danger">APAGAR</Text>
           </Pressable>
         )}
       </View>

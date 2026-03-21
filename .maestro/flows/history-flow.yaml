@@ -1,0 +1,86 @@
+# History Flow — Complete a workout, view history, delete entry
+# Assumes we complete a workout first, then navigate to history
+appId: com.forja.app
+---
+# Launch the app fresh
+- launchApp:
+    clearState: true
+
+# Verify home screen
+- assertVisible: "FORJA"
+
+# Start workout A and complete it quickly
+- tapOn:
+    id: "workout-card-A"
+
+# Complete exercise 1 (3 sets)
+- assertVisible: "Supino Reto Vertical"
+- tapOn:
+    id: "weight-input"
+- inputText: "40"
+- tapOn:
+    id: "complete-set-button"
+- assertVisible: "Pular Descanso"
+- tapOn:
+    id: "skip-rest-button"
+
+- tapOn:
+    id: "weight-input"
+- inputText: "40"
+- tapOn:
+    id: "complete-set-button"
+- assertVisible: "Pular Descanso"
+- tapOn:
+    id: "skip-rest-button"
+
+- tapOn:
+    id: "weight-input"
+- inputText: "40"
+- tapOn:
+    id: "complete-set-button"
+- assertVisible: "Pular Descanso"
+- tapOn:
+    id: "skip-rest-button"
+
+# Remove remaining exercises to finish the workout quickly
+- tapOn:
+    id: "not-doing-button"
+- tapOn:
+    id: "not-doing-button"
+- tapOn:
+    id: "not-doing-button"
+- tapOn:
+    id: "not-doing-button"
+- tapOn:
+    id: "not-doing-button"
+
+# Should be on complete screen
+- assertVisible: "Treino Completo!"
+
+# Go back to home
+- tapOn:
+    id: "back-to-home-button"
+
+# Home screen should now show HistoryChip
+- assertVisible: "FORJA"
+- assertVisible:
+    id: "history-chip"
+
+# Navigate to history
+- tapOn:
+    id: "history-chip"
+
+# Verify history screen shows the completed workout
+- assertVisible: "Historico"
+- assertVisible: "Treino A"
+
+# Tap APAGAR to start deletion
+- tapOn: "APAGAR"
+
+# Confirm deletion
+- assertVisible: "CONFIRMAR"
+- tapOn:
+    id: "confirm-delete-button"
+
+# Verify workout is removed — empty state message
+- assertVisible: "Nenhum treino registrado"
