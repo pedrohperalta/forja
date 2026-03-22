@@ -1,0 +1,25 @@
+name: Build Android Preview
+
+on:
+  push:
+    branches: ['main']
+
+jobs:
+  lint_and_test:
+    name: Lint & Test
+    runs_on: linux-medium
+    steps:
+      - uses: eas/checkout
+      - uses: eas/install_node_modules
+      - name: Lint
+        run: npx expo lint
+      - name: Test
+        run: npx jest --ci
+
+  build_android:
+    name: Build Android APK
+    needs: [lint_and_test]
+    type: build
+    params:
+      platform: android
+      profile: preview
