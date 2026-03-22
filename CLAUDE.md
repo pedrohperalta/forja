@@ -19,7 +19,10 @@ Before writing any code, read and follow these files:
 - **Path aliases**: use `@/` imports (e.g., `@/components/RestTimer`)
 - **Route files only in `src/app/`**: no components, hooks, utils, or tests inside the app directory
 - **Tests colocated** with source files, except route tests which go in `__tests__/screens/`
-- **Conventional Commits**: `feat:`, `fix:`, `test:`, etc. — push directly to `main`
+- **Conventional Commits**: `feat:`, `fix:`, `test:`, etc.
+- **Branching**: work on `track/<track-name>` branches, merge to `main` when track is complete
+- **Never push to `main` without explicit user confirmation** — pushing triggers a CI build
+- **EAS Workflows**: push to `main` triggers Android preview build; `v*` tags trigger production build (`.eas/workflows/`)
 - **All code and comments in English**, UI text in Portuguese (pt-BR)
 
 ## UI Design System
