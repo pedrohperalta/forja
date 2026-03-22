@@ -131,9 +131,7 @@ describe('appStore', () => {
       useAppStore.getState().saveEquipmentPhoto('supino-reto', 'file:///photos/old.jpg')
       useAppStore.getState().saveEquipmentPhoto('supino-reto', 'file:///photos/new.jpg')
 
-      expect(useAppStore.getState().equipmentPhotos['supino-reto']).toBe(
-        'file:///photos/new.jpg',
-      )
+      expect(useAppStore.getState().equipmentPhotos['supino-reto']).toBe('file:///photos/new.jpg')
     })
 
     it('deletes equipment photo for an exercise', () => {

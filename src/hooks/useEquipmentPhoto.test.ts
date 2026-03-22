@@ -31,7 +31,9 @@ jest.mock('expo-file-system', () => ({
   Paths: { document: { uri: 'file:///mock-docs/' } },
   Directory: jest.fn().mockImplementation((...args: unknown[]) => {
     // Directory(Paths.document, 'equipment-photos') → dir object
-    const parts = args.map((a) => (typeof a === 'object' && a !== null && 'uri' in a ? (a as { uri: string }).uri : a))
+    const parts = args.map((a) =>
+      typeof a === 'object' && a !== null && 'uri' in a ? (a as { uri: string }).uri : a,
+    )
     const uri = parts.join('')
     return {
       uri: uri.endsWith('/') ? uri : `${uri}/`,
@@ -73,7 +75,9 @@ describe('useEquipmentPhoto', () => {
 
   it('returns photo URI when photo exists in store', () => {
     useAppStore.setState({
-      equipmentPhotos: { [EXERCISE_ID]: 'file:///mock-docs/equipment-photos/supino-reto-vertical.jpg' },
+      equipmentPhotos: {
+        [EXERCISE_ID]: 'file:///mock-docs/equipment-photos/supino-reto-vertical.jpg',
+      },
     })
 
     const { result } = renderHook(() => useEquipmentPhoto(EXERCISE_ID))
@@ -156,7 +160,9 @@ describe('useEquipmentPhoto', () => {
 
   it('removes photo file and store entry', () => {
     useAppStore.setState({
-      equipmentPhotos: { [EXERCISE_ID]: 'file:///mock-docs/equipment-photos/supino-reto-vertical.jpg' },
+      equipmentPhotos: {
+        [EXERCISE_ID]: 'file:///mock-docs/equipment-photos/supino-reto-vertical.jpg',
+      },
     })
 
     const { result } = renderHook(() => useEquipmentPhoto(EXERCISE_ID))

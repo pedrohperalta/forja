@@ -86,12 +86,7 @@ export function EquipmentPhoto({ exerciseId }: EquipmentPhotoProps): React.JSX.E
       </Pressable>
 
       {/* Full-screen photo overlay */}
-      <Modal
-        visible={overlayVisible}
-        transparent
-        animationType="fade"
-        onRequestClose={handleClose}
-      >
+      <Modal visible={overlayVisible} transparent animationType="fade" onRequestClose={handleClose}>
         <View className="flex-1 bg-background/95">
           {/* Close button */}
           <Pressable
