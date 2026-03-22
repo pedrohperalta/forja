@@ -14,6 +14,8 @@ export default function RootLayout() {
   const [loaded, error] = useFonts({
     BebasNeue: require('../../assets/fonts/BebasNeue-Regular.ttf'),
     Syne: require('../../assets/fonts/Syne-Regular.ttf'),
+    'Syne-SemiBold': require('../../assets/fonts/Syne-SemiBold.ttf'),
+    'Syne-Bold': require('../../assets/fonts/Syne-Bold.ttf'),
   })
 
   useEffect(() => {
