@@ -8,6 +8,7 @@ import { getCurrentExercise } from '@/utils/getCurrentExercise'
 import { ProgressBar } from '@/components/ProgressBar'
 import { WeightInput } from '@/components/WeightInput'
 import { SeriesDots } from '@/components/SeriesDots'
+import { EquipmentPhoto } from '@/components/EquipmentPhoto'
 import type { NavigationTarget } from '@/types'
 
 export default function ExerciseScreen(): React.JSX.Element | null {
@@ -165,6 +166,11 @@ export default function ExerciseScreen(): React.JSX.Element | null {
               {currentExercise.equipment}
             </Text>
           </View>
+        </View>
+
+        {/* Equipment photo reference */}
+        <View className="mt-4 px-2">
+          <EquipmentPhoto exerciseId={currentExercise.id} />
         </View>
 
         {/* Reps info */}

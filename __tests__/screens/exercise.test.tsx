@@ -34,9 +34,12 @@ const mockAppState = {
   lastWeights: {} as Record<string, number>,
   lastDates: {},
   history: [],
+  equipmentPhotos: {} as Record<string, string>,
   saveWorkout: jest.fn(),
   updateLastWeights: jest.fn(),
   deleteWorkout: jest.fn(),
+  saveEquipmentPhoto: jest.fn(),
+  deleteEquipmentPhoto: jest.fn(),
 }
 
 jest.mock('@/stores/workoutStore', () => ({
@@ -59,6 +62,42 @@ jest.mock('expo-router', () => ({
     back: mockBack,
   }),
   useFocusEffect: (cb: () => void) => cb(),
+}))
+
+// Mock react-native-svg for EquipmentPhoto component
+jest.mock('react-native-svg', () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const React = require('react')
+  const Svg = (props: Record<string, unknown>) => React.createElement('View', props)
+  return {
+    __esModule: true,
+    default: Svg,
+    Svg,
+    Path: (props: Record<string, unknown>) => React.createElement('View', props),
+  }
+})
+
+// Mock expo-image-picker and expo-file-system for EquipmentPhoto
+jest.mock('expo-image-picker', () => ({
+  launchImageLibraryAsync: jest.fn(),
+  launchCameraAsync: jest.fn(),
+  requestCameraPermissionsAsync: jest.fn(),
+  MediaType: { Images: 'images' },
+}))
+
+jest.mock('expo-file-system', () => ({
+  Paths: { document: { uri: 'file:///mock-docs/' } },
+  Directory: jest.fn().mockImplementation(() => ({
+    uri: 'file:///mock-docs/equipment-photos/',
+    exists: false,
+    create: jest.fn(),
+  })),
+  File: jest.fn().mockImplementation(() => ({
+    uri: 'file:///mock-docs/equipment-photos/test.jpg',
+    exists: false,
+    copy: jest.fn(),
+    delete: jest.fn(),
+  })),
 }))
 
 // -- Test data factories --

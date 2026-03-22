@@ -3,14 +3,17 @@ import { devtools, persist, createJSONStorage } from 'zustand/middleware'
 import type { WorkoutSession, WorkoutId } from '@/types'
 import { mmkvStateStorage } from '@/storage/mmkv'
 
-/** Persistent app-level state: workout history, last weights, and last dates. */
+/** Persistent app-level state: workout history, last weights, last dates, and equipment photos. */
 export interface AppState {
   lastWeights: Record<string, number>
   lastDates: Partial<Record<string, string>>
   history: WorkoutSession[]
+  equipmentPhotos: Record<string, string>
   saveWorkout: (session: WorkoutSession) => void
   updateLastWeights: (weights: Record<string, number>) => void
   deleteWorkout: (id: WorkoutId) => void
+  saveEquipmentPhoto: (exerciseId: string, photoUri: string) => void
+  deleteEquipmentPhoto: (exerciseId: string) => void
 }
 
 export const useAppStore = create<AppState>()(
@@ -19,6 +22,7 @@ export const useAppStore = create<AppState>()(
       lastWeights: {},
       lastDates: {},
       history: [],
+      equipmentPhotos: {},
 
       saveWorkout: (session: WorkoutSession): void => {
         const { history } = get()
@@ -60,12 +64,26 @@ export const useAppStore = create<AppState>()(
           })
         }
       },
+      saveEquipmentPhoto: (exerciseId: string, photoUri: string): void => {
+        set({ equipmentPhotos: { ...get().equipmentPhotos, [exerciseId]: photoUri } })
+      },
+
+      deleteEquipmentPhoto: (exerciseId: string): void => {
+        const { [exerciseId]: _, ...rest } = get().equipmentPhotos
+        set({ equipmentPhotos: rest })
+      },
     })),
     {
       name: 'app-store',
       storage: createJSONStorage(() => mmkvStateStorage),
-      version: 1,
-      migrate: (state) => state as AppState,
+      version: 2,
+      migrate: (persisted) => {
+        const state = persisted as unknown as Record<string, unknown>
+        if (!state['equipmentPhotos']) {
+          state['equipmentPhotos'] = {}
+        }
+        return state as unknown as AppState
+      },
     },
   ),
 )

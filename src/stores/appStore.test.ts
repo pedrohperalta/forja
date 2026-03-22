@@ -35,7 +35,7 @@ function makeSession(overrides: Partial<WorkoutSession> = {}): WorkoutSession {
 describe('appStore', () => {
   beforeEach(() => {
     // Reset store state to defaults and clear persisted storage
-    useAppStore.setState({ lastWeights: {}, lastDates: {}, history: [] })
+    useAppStore.setState({ lastWeights: {}, lastDates: {}, history: [], equipmentPhotos: {} })
     clearMockStorage()
   })
 
@@ -115,6 +115,41 @@ describe('appStore', () => {
       useAppStore.getState().deleteWorkout('nonexistent' as WorkoutId)
 
       expect(useAppStore.getState().history).toHaveLength(1)
+    })
+  })
+
+  describe('equipmentPhotos', () => {
+    it('saves equipment photo URI for an exercise', () => {
+      useAppStore.getState().saveEquipmentPhoto('supino-reto', 'file:///photos/supino.jpg')
+
+      expect(useAppStore.getState().equipmentPhotos['supino-reto']).toBe(
+        'file:///photos/supino.jpg',
+      )
+    })
+
+    it('overwrites existing photo URI when saving again', () => {
+      useAppStore.getState().saveEquipmentPhoto('supino-reto', 'file:///photos/old.jpg')
+      useAppStore.getState().saveEquipmentPhoto('supino-reto', 'file:///photos/new.jpg')
+
+      expect(useAppStore.getState().equipmentPhotos['supino-reto']).toBe(
+        'file:///photos/new.jpg',
+      )
+    })
+
+    it('deletes equipment photo for an exercise', () => {
+      useAppStore.getState().saveEquipmentPhoto('supino-reto', 'file:///photos/supino.jpg')
+      useAppStore.getState().deleteEquipmentPhoto('supino-reto')
+
+      expect(useAppStore.getState().equipmentPhotos).not.toHaveProperty('supino-reto')
+    })
+
+    it('is a no-op when deleting a non-existent photo', () => {
+      useAppStore.getState().saveEquipmentPhoto('supino-reto', 'file:///photos/supino.jpg')
+      useAppStore.getState().deleteEquipmentPhoto('nonexistent')
+
+      expect(useAppStore.getState().equipmentPhotos['supino-reto']).toBe(
+        'file:///photos/supino.jpg',
+      )
     })
   })
 
