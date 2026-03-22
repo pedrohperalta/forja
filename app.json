@@ -15,7 +15,10 @@
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.forja.app"
+      "bundleIdentifier": "com.forja.app",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -24,7 +27,8 @@
         "backgroundImage": "./assets/images/adaptive-icon-background.png",
         "monochromeImage": "./assets/images/adaptive-icon-monochrome.png"
       },
-      "package": "com.forja.app"
+      "package": "com.forja.app",
+      "permissions": []
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -57,6 +61,15 @@
           "cameraPermission": "Tire fotos dos aparelhos da academia"
         }
       ]
-    ]
+    ],
+    "extra": {
+      "router": {
+        "root": "./src/app"
+      },
+      "eas": {
+        "projectId": "e2586b92-1328-454b-b86e-3e923c4964eb"
+      }
+    },
+    "owner": "pedrohperalta"
   }
 }
