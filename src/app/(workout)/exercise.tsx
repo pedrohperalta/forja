@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { View, Text, Pressable, ScrollView } from 'react-native'
+import Svg, { Path } from 'react-native-svg'
 import { useRouter, useFocusEffect } from 'expo-router'
 import { useWorkoutStore } from '@/stores/workoutStore'
 import { useAppStore } from '@/stores/appStore'
@@ -141,21 +142,43 @@ export default function ExerciseScreen(): React.JSX.Element | null {
         contentContainerStyle={{ paddingBottom: 16 }}
         showsVerticalScrollIndicator={false}
       >
+        {/* Back navigation — chevron integrated with section label */}
+        <View className="mb-2 flex-row items-center">
+          <Pressable
+            testID="back-button"
+            onPress={() => router.replace('/')}
+            accessibilityRole="button"
+            accessibilityLabel="Voltar ao início"
+            className="mr-1 h-[44px] w-[44px] items-center justify-center"
+          >
+            <Svg width={20} height={20} viewBox="0 0 20 20" fill="none">
+              <Path
+                d="M12.5 15L7.5 10L12.5 5"
+                stroke="#888888"
+                strokeWidth={2}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </Svg>
+          </Pressable>
+          <Text className="font-ui text-[10px] uppercase tracking-[3px] text-accent">INÍCIO</Text>
+        </View>
+
         {/* Progress bar */}
         <ProgressBar current={log.length} total={totalExercises} />
 
         {/* Progress counter */}
-        <Text className="mt-4 text-center font-ui text-[11px] tracking-[2px] text-muted">
+        <Text className="mt-2 text-center font-ui text-[11px] tracking-[2px] text-muted">
           {log.length + 1} de {totalExercises}
         </Text>
 
         {/* Exercise name — the HERO */}
-        <Text className="mt-3 text-center font-display text-[36px] tracking-[1px] text-text">
+        <Text className="mt-1 text-center font-display text-[36px] tracking-[1px] text-text">
           {currentExercise.name}
         </Text>
 
         {/* Exercise badges */}
-        <View className="mt-3 flex-row items-center justify-center gap-2">
+        <View className="mt-2 flex-row items-center justify-center gap-2">
           <View className="rounded-pill bg-surface-2 px-3 py-1">
             <Text className="font-ui text-[10px] uppercase tracking-[1px] text-text-med">
               {currentExercise.category}
@@ -169,23 +192,23 @@ export default function ExerciseScreen(): React.JSX.Element | null {
         </View>
 
         {/* Equipment photo reference */}
-        <View className="mt-4 px-2">
+        <View className="mt-3 px-2">
           <EquipmentPhoto exerciseId={currentExercise.id} />
         </View>
 
         {/* Reps info */}
-        <Text className="mt-4 text-center font-ui text-[15px] text-text-med">
+        <Text className="mt-3 text-center font-ui text-[15px] text-text-med">
           {currentExercise.reps} reps
         </Text>
 
         {/* Series dots */}
-        <View className="mt-6 items-center">
+        <View className="mt-3 items-center">
           <SeriesDots currentSet={currentSet} totalSets={currentExercise.sets} />
         </View>
 
         {/* Weight input — key forces remount on exercise change */}
-        <View className="mt-10">
-          <Text className="mb-3 text-center font-ui text-[11px] uppercase tracking-[3px] text-muted">
+        <View className="mt-5">
+          <Text className="mb-2 text-center font-ui text-[11px] uppercase tracking-[3px] text-muted">
             PESO (KG)
           </Text>
           <WeightInput

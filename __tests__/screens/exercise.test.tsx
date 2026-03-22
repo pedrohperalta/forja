@@ -173,6 +173,14 @@ describe('Exercise Screen', () => {
 
       expect(screen.getByText('Supino Reto')).toBeTruthy()
     })
+
+    it('navigates to home when back button is pressed', () => {
+      render(<ExerciseScreen />)
+
+      fireEvent.press(screen.getByLabelText('Voltar ao início'))
+
+      expect(mockReplace).toHaveBeenCalledWith('/')
+    })
   })
 
   describe('weight pre-fill', () => {
