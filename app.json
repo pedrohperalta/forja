@@ -11,7 +11,7 @@
     "splash": {
       "image": "./assets/images/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#080808"
+      "backgroundColor": "#14141e"
     },
     "ios": {
       "supportsTablet": false,
@@ -19,7 +19,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#080808",
+        "backgroundColor": "#14141e",
         "foregroundImage": "./assets/images/adaptive-icon-foreground.png",
         "backgroundImage": "./assets/images/adaptive-icon-background.png",
         "monochromeImage": "./assets/images/adaptive-icon-monochrome.png"
@@ -39,7 +39,24 @@
           "root": "./src/app"
         }
       ],
-      "expo-font"
+      [
+        "expo-font",
+        {
+          "fonts": [
+            "./assets/fonts/BebasNeue-Regular.ttf",
+            "./assets/fonts/Syne-Regular.ttf",
+            "./assets/fonts/Syne-SemiBold.ttf",
+            "./assets/fonts/Syne-Bold.ttf"
+          ]
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Acesse suas fotos para adicionar ao treino",
+          "cameraPermission": "Tire fotos dos aparelhos da academia"
+        }
+      ]
     ]
   }
 }
