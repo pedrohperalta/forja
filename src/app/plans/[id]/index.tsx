@@ -1,3 +1,4 @@
+import { useRef } from 'react'
 import { View, Text, Pressable, ScrollView, TextInput, LayoutAnimation } from 'react-native'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import Svg, { Path } from 'react-native-svg'
@@ -16,6 +17,7 @@ export default function PlanDetailScreen(): React.JSX.Element {
   const reorderExercises = usePlanStore((s) => s.reorderExercises)
   const router = useRouter()
   const haptics = useHaptics()
+  const nameInputRef = useRef<TextInput>(null)
 
   const plan = plans.find((p) => p.id === id)
 
@@ -27,12 +29,14 @@ export default function PlanDetailScreen(): React.JSX.Element {
     )
   }
 
+  const isNewPlan = plan.name === '' && plan.exercises.length === 0
+
   const handleAddExercise = (): void => {
-    router.push(`/plans/${plan.id}/exercise`)
+    router.push({ pathname: '/plans/[id]/exercise', params: { id: plan.id } })
   }
 
   const handleEditExercise = (exerciseId: ExerciseId): void => {
-    router.push(`/plans/${plan.id}/exercise?exerciseId=${exerciseId}`)
+    router.push({ pathname: '/plans/[id]/exercise', params: { id: plan.id, exerciseId } })
   }
 
   const handleDeleteExercise = (exerciseId: ExerciseId): void => {
@@ -81,12 +85,14 @@ export default function PlanDetailScreen(): React.JSX.Element {
           </View>
           <View className="flex-1">
             <TextInput
+              ref={nameInputRef}
               className="font-display text-[32px] tracking-[1px] text-text"
               value={plan.name}
               onChangeText={handleNameChange}
               placeholder="Nome do plano"
               placeholderTextColor="#555"
               accessibilityLabel="Nome do plano"
+              autoFocus={isNewPlan}
             />
             <TextInput
               className="-mt-1 font-ui text-[13px] text-muted"

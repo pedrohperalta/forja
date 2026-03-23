@@ -17,12 +17,12 @@ export default function PlansScreen(): React.JSX.Element {
 
   const handleAddPlan = (): void => {
     haptics.light()
-    const id = addPlan('Novo Plano', '')
-    router.push(`/plans/${id}`)
+    const id = addPlan('', '')
+    router.push({ pathname: '/plans/[id]', params: { id } })
   }
 
   const handlePressPlan = (id: PlanId): void => {
-    router.push(`/plans/${id}`)
+    router.push({ pathname: '/plans/[id]', params: { id } })
   }
 
   const handleDeletePlan = (id: PlanId): void => {

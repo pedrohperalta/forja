@@ -105,8 +105,8 @@ describe('PlansScreen', () => {
 
     fireEvent.press(screen.getByText('NOVO PLANO'))
 
-    expect(addPlan).toHaveBeenCalledWith('Novo Plano', '')
-    expect(mockPush).toHaveBeenCalledWith('/plans/new-id')
+    expect(addPlan).toHaveBeenCalledWith('', '')
+    expect(mockPush).toHaveBeenCalledWith({ pathname: '/plans/[id]', params: { id: 'new-id' } })
   })
 
   it('navigates to plan detail when plan card is pressed', () => {
@@ -117,7 +117,7 @@ describe('PlansScreen', () => {
 
     fireEvent.press(screen.getByLabelText('Treino A, Peito / Ombros / Triceps'))
 
-    expect(mockPush).toHaveBeenCalledWith('/plans/p1')
+    expect(mockPush).toHaveBeenCalledWith({ pathname: '/plans/[id]', params: { id: 'p1' } })
   })
 
   it('calls removePlan after two-step delete', () => {
