@@ -28,7 +28,7 @@ export default function HomeScreen() {
     }
   }, [status, router])
 
-  const nextPlanId = getNextPlanId(lastDates)
+  const nextPlanId = getNextPlanId(PLAN_ENTRIES, lastDates)
   const isActive = status === 'active'
 
   const handleCardPress = (plan: Plan): void => {
