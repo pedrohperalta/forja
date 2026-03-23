@@ -1,0 +1,41 @@
+{
+  "id": "training_configuration",
+  "title": "Configuração de Treinos",
+  "slug": "training_configuration",
+  "createdAt": "2026-03-22T00:00:00.000Z",
+  "updatedAt": "2026-03-22T00:00:00.000Z",
+  "phase": "solution",
+  "status": "completed",
+  "phaseHistory": [
+    {
+      "phase": "discovery",
+      "status": "completed",
+      "startedAt": "2026-03-22T00:00:00.000Z",
+      "completedAt": "2026-03-22T00:00:00.000Z"
+    },
+    {
+      "phase": "solution",
+      "status": "completed",
+      "startedAt": "2026-03-22T00:00:00.000Z",
+      "completedAt": "2026-03-22T00:00:00.000Z"
+    }
+  ],
+  "s3Synced": false,
+  "originalInput": "A training configuration feature where users can create/edit/remove training days, exercises, reps, images, rest time, and every parameter needed when training changes over time.",
+  "versions": {
+    "discovery": {
+      "current": 2,
+      "history": [
+        { "version": 1, "createdAt": "2026-03-22T00:00:00.000Z" },
+        { "version": 2, "createdAt": "2026-03-22T00:00:00.000Z", "commentCount": 8 }
+      ]
+    },
+    "solution": {
+      "current": 2,
+      "history": [
+        { "version": 1, "createdAt": "2026-03-22T00:00:00.000Z" },
+        { "version": 2, "createdAt": "2026-03-22T00:00:00.000Z", "commentCount": 4 }
+      ]
+    }
+  }
+}

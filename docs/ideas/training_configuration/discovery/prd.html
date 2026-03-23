@@ -1,0 +1,1225 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PRD — Configuração de Treinos | Forja</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --stone-50: #fafaf9;
+    --stone-100: #f5f5f4;
+    --stone-200: #e7e5e4;
+    --stone-300: #d6d3d1;
+    --stone-400: #a8a29e;
+    --stone-500: #78716c;
+    --stone-600: #57534e;
+    --stone-700: #44403c;
+    --stone-800: #292524;
+    --stone-900: #1c1917;
+    --accent: #C2F000;
+    --accent-dim: rgba(194, 240, 0, 0.12);
+    --danger: #ef4444;
+    --warning: #f59e0b;
+    --p0: #ef4444;
+    --p1: #f59e0b;
+    --p2: #3b82f6;
+    --bg: #0e0e0e;
+    --surface: #1a1a1a;
+    --surface-2: #252525;
+    --border: #2a2a2a;
+    --text: #f5f5f4;
+    --text-med: #a8a29e;
+    --text-dim: #57534e;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    padding: 0;
+  }
+
+  /* Header */
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 32px 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-inner {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .header h1 {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--accent);
+    letter-spacing: -0.5px;
+  }
+  .header .meta {
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+  .review-toggle {
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    padding: 8px 20px;
+    border-radius: 100px;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .review-toggle:hover { opacity: 0.85; }
+  .review-toggle.active {
+    background: var(--danger);
+    color: white;
+  }
+
+  /* Main content */
+  .content {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 32px 120px;
+  }
+
+  /* Sections */
+  section {
+    margin-bottom: 48px;
+  }
+  .section-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+  h2 {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: var(--text);
+  }
+  h3 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: var(--text);
+  }
+  p, li {
+    font-size: 14px;
+    color: var(--text-med);
+    line-height: 1.7;
+  }
+  ul, ol {
+    padding-left: 20px;
+    margin-bottom: 16px;
+  }
+  li { margin-bottom: 6px; }
+
+  /* Cards */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 16px;
+  }
+  .card h3 { margin-bottom: 8px; }
+
+  /* Priority badges */
+  .badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  .badge-p0 { background: rgba(239,68,68,0.15); color: var(--p0); }
+  .badge-p1 { background: rgba(245,158,11,0.15); color: var(--p1); }
+  .badge-p2 { background: rgba(59,130,246,0.15); color: var(--p2); }
+  .badge-accent { background: var(--accent-dim); color: var(--accent); }
+
+  /* Feature grid */
+  .feature-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  @media (max-width: 640px) {
+    .feature-grid { grid-template-columns: 1fr; }
+  }
+
+  /* User story */
+  .story {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 12px 12px 0;
+    padding: 20px 24px;
+    margin-bottom: 12px;
+  }
+  .story .role {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+  .story p { color: var(--text); font-size: 14px; }
+
+  /* Acceptance criteria */
+  .criteria {
+    background: var(--surface-2);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 8px;
+    font-size: 13px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    color: var(--text-med);
+  }
+  .criteria strong { color: var(--accent); font-weight: 600; }
+
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 16px;
+    font-size: 13px;
+  }
+  th {
+    text-align: left;
+    padding: 10px 14px;
+    background: var(--surface-2);
+    color: var(--text-dim);
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-med);
+  }
+
+  /* Mockup frame */
+  .mockup-frame {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    margin: 24px 0;
+    max-width: 375px;
+  }
+  .mockup-status-bar {
+    background: var(--bg);
+    padding: 8px 24px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .mockup-content {
+    padding: 0 24px 32px;
+  }
+  .mockup-label {
+    font-size: 11px;
+    color: var(--text-dim);
+    text-align: center;
+    margin-top: 8px;
+    font-style: italic;
+  }
+
+  /* Mockup internal elements */
+  .m-hero { font-size: 28px; font-weight: 800; color: var(--text); margin: 16px 0 4px; font-family: 'Inter'; letter-spacing: -1px; }
+  .m-sub { font-size: 12px; color: var(--text-dim); margin-bottom: 20px; }
+  .m-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 10px;
+  }
+  .m-card-title { font-size: 14px; font-weight: 700; color: var(--text); }
+  .m-card-sub { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+  .m-card-meta { font-size: 10px; color: var(--text-dim); margin-top: 8px; display: flex; gap: 8px; }
+  .m-chip {
+    display: inline-block;
+    padding: 2px 8px;
+    background: var(--surface-2);
+    border-radius: 100px;
+    font-size: 10px;
+    color: var(--text-med);
+  }
+  .m-btn {
+    display: block;
+    text-align: center;
+    padding: 14px;
+    border-radius: 100px;
+    font-weight: 700;
+    font-size: 13px;
+    margin-top: 16px;
+  }
+  .m-btn-primary { background: var(--accent); color: var(--bg); }
+  .m-btn-secondary { background: transparent; border: 1px solid var(--border); color: var(--text-med); }
+  .m-input {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 13px;
+    color: var(--text);
+    width: 100%;
+    margin-bottom: 10px;
+  }
+  .m-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-dim); margin-bottom: 6px; }
+  .m-row { display: flex; gap: 8px; }
+  .m-row > * { flex: 1; }
+  .m-back { font-size: 12px; color: var(--text-med); margin-bottom: 12px; cursor: pointer; }
+  .m-section-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: var(--accent); margin: 16px 0 8px; }
+  .m-exercise-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .m-exercise-name { font-size: 13px; color: var(--text); font-weight: 500; }
+  .m-exercise-meta { font-size: 11px; color: var(--text-dim); }
+  .m-drag { color: var(--text-dim); font-size: 16px; cursor: grab; }
+  .m-fab {
+    width: 48px; height: 48px;
+    background: var(--accent);
+    color: var(--bg);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: 700;
+    position: absolute;
+    right: 24px;
+    bottom: 32px;
+  }
+  .m-empty { text-align: center; color: var(--text-dim); font-size: 13px; padding: 32px 0; }
+
+  /* Divider */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 48px 0;
+  }
+
+  /* Commentable highlight */
+  [data-c].commentable {
+    cursor: pointer;
+    position: relative;
+    transition: outline 0.15s, background 0.15s;
+    outline: 2px solid transparent;
+    border-radius: 4px;
+  }
+  [data-c].commentable:hover {
+    outline: 2px solid var(--accent);
+    background: rgba(194, 240, 0, 0.04);
+  }
+  [data-c].commentable.has-comment {
+    outline: 2px solid var(--warning);
+    background: rgba(245, 158, 11, 0.06);
+  }
+
+  /* Comment panel */
+  .comment-panel {
+    display: none;
+    position: fixed;
+    right: 0;
+    top: 0;
+    width: 360px;
+    height: 100vh;
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    z-index: 200;
+    flex-direction: column;
+  }
+  .comment-panel.open { display: flex; }
+  .comment-panel-header {
+    padding: 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .comment-panel-header h3 {
+    font-size: 14px;
+    font-weight: 700;
+    margin: 0;
+  }
+  .comment-panel-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+  }
+  .comment-panel-footer {
+    padding: 16px 20px;
+    border-top: 1px solid var(--border);
+  }
+  .comment-input {
+    width: 100%;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 13px;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    resize: vertical;
+    min-height: 60px;
+  }
+  .comment-input:focus { outline: none; border-color: var(--accent); }
+  .comment-submit {
+    margin-top: 8px;
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    padding: 8px 16px;
+    border-radius: 100px;
+    font-weight: 700;
+    font-size: 12px;
+    cursor: pointer;
+    width: 100%;
+  }
+  .comment-item {
+    background: var(--surface-2);
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 8px;
+  }
+  .comment-item-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 6px;
+  }
+  .comment-item-section {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+  .comment-item-time {
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+  .comment-item-text {
+    font-size: 13px;
+    color: var(--text-med);
+  }
+  .comment-item-delete {
+    font-size: 11px;
+    color: var(--danger);
+    cursor: pointer;
+    margin-top: 6px;
+    background: none;
+    border: none;
+    padding: 0;
+  }
+  .comment-count {
+    background: var(--warning);
+    color: var(--bg);
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 100px;
+    margin-left: 6px;
+  }
+  .export-btn {
+    background: var(--surface-2);
+    color: var(--text-med);
+    border: 1px solid var(--border);
+    padding: 6px 14px;
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .export-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .close-btn {
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    font-size: 20px;
+    cursor: pointer;
+  }
+  .no-comments {
+    text-align: center;
+    color: var(--text-dim);
+    font-size: 13px;
+    padding: 40px 0;
+  }
+
+  /* Risk table */
+  .risk-high { color: var(--danger); font-weight: 600; }
+  .risk-med { color: var(--warning); font-weight: 600; }
+  .risk-low { color: var(--p2); font-weight: 600; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-inner">
+    <div>
+      <h1>FORJA — Configuração de Treinos</h1>
+      <div class="meta">PRD v2 &middot; 22 Mar 2026 &middot; Feature</div>
+    </div>
+    <div style="display: flex; gap: 8px; align-items: center;">
+      <button class="export-btn" id="exportBtn" style="display:none;" onclick="exportComments()">Exportar Comentários</button>
+      <button class="review-toggle" id="reviewToggle" onclick="toggleReviewMode()">Review Mode</button>
+    </div>
+  </div>
+</div>
+
+<!-- Comment Panel -->
+<div class="comment-panel" id="commentPanel">
+  <div class="comment-panel-header">
+    <h3>Comentários <span class="comment-count" id="commentCount" style="display:none">0</span></h3>
+    <button class="close-btn" onclick="closePanel()">&times;</button>
+  </div>
+  <div class="comment-panel-body" id="commentList">
+    <div class="no-comments" id="noComments">Nenhum comentário ainda. Clique em elementos destacados para comentar.</div>
+  </div>
+  <div class="comment-panel-footer" id="commentForm" style="display:none">
+    <div style="font-size:11px;color:var(--accent);font-weight:700;margin-bottom:6px" id="commentTarget"></div>
+    <textarea class="comment-input" id="commentInput" placeholder="Deixe seu comentário..."></textarea>
+    <button class="comment-submit" onclick="submitComment()">Adicionar Comentário</button>
+  </div>
+</div>
+
+<!-- Content -->
+<div class="content">
+
+  <!-- 1. Overview -->
+  <section>
+    <div class="section-label" data-c="sec-overview">Visão Geral</div>
+    <h2 data-c="title-overview">Configuração Dinâmica de Treinos</h2>
+    <p data-c="desc-overview">Atualmente o Forja possui 3 planos de treino fixos (A, B, C) com 21 exercícios pré-definidos em código. Esta feature permite que o usuário crie, edite e remova treinos completos — incluindo exercícios, séries, repetições, tempo de descanso, categoria e equipamento — diretamente no app, sem depender de atualizações de código.</p>
+  </section>
+
+  <!-- 2. Problem -->
+  <section>
+    <div class="section-label" data-c="sec-problem">Problema</div>
+    <h2 data-c="title-problem">Por que isso importa</h2>
+    <div class="card" data-c="problem-1">
+      <h3>Treinos são estáticos</h3>
+      <p>Qualquer alteração nos treinos (trocar exercício, ajustar séries, adicionar um dia de treino) exige mudança no código-fonte e rebuild do app. Isso bloqueia o uso real no dia a dia.</p>
+    </div>
+    <div class="card" data-c="problem-2">
+      <h3>Limite fixo de 3 treinos</h3>
+      <p>O modelo atual suporta apenas 3 planos (A/B/C). Usuários com splits de 4, 5 ou 6 dias não conseguem usar o app como sua ferramenta principal.</p>
+    </div>
+    <div class="card" data-c="problem-3">
+      <h3>Evolução ao longo do tempo</h3>
+      <p>Treinos mudam frequentemente — a cada mesociclo, troca de foco ou avaliação com personal. O usuário precisa atualizar seus treinos de forma rápida e sem fricção.</p>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 3. User Stories -->
+  <section>
+    <div class="section-label" data-c="sec-stories">Histórias de Usuário</div>
+    <h2 data-c="title-stories">O que o usuário precisa fazer</h2>
+
+    <div class="story" data-c="story-1">
+      <div class="role">Como praticante de musculação</div>
+      <p>Quero criar meus próprios treinos com os exercícios que meu personal passou, para que o app reflita exatamente o que faço na academia.</p>
+    </div>
+
+    <div class="story" data-c="story-2">
+      <div class="role">Como praticante de musculação</div>
+      <p>Quero editar um treino existente (trocar exercício, mudar séries/reps, ajustar descanso) sem perder meu histórico de treinos anteriores.</p>
+    </div>
+
+    <div class="story" data-c="story-3">
+      <div class="role">Como praticante de musculação</div>
+      <p>Quero adicionar ou remover dias de treino livremente (ex: passar de ABC para ABCDE) conforme minha rotina muda.</p>
+    </div>
+
+    <div class="story" data-c="story-4">
+      <div class="role">Como praticante de musculação</div>
+      <p>Quero reordenar os exercícios dentro de um treino para refletir a sequência correta que faço na academia.</p>
+    </div>
+
+    <div class="story" data-c="story-5">
+      <div class="role">Como praticante de musculação</div>
+      <p>Quero configurar tempo de descanso por exercício, já que exercícios compostos precisam de mais descanso que isoladores.</p>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 4. Features -->
+  <section>
+    <div class="section-label" data-c="sec-features">Funcionalidades</div>
+    <h2 data-c="title-features">Escopo da Feature</h2>
+
+    <div class="feature-grid">
+      <div class="card" data-c="feat-create-plan">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <h3 style="margin:0">Criar Treino</h3>
+          <span class="badge badge-p0">P0</span>
+        </div>
+        <p>Criar um novo dia de treino com nome e foco muscular. Sem limite de quantidade. IDs gerados automaticamente em sequência (A, B, C, D...).</p>
+      </div>
+
+      <div class="card" data-c="feat-edit-plan">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <h3 style="margin:0">Editar Treino</h3>
+          <span class="badge badge-p0">P0</span>
+        </div>
+        <p>Alterar nome e foco de um treino existente. As mudanças afetam apenas treinos futuros — o histórico permanece imutável.</p>
+      </div>
+
+      <div class="card" data-c="feat-delete-plan">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <h3 style="margin:0">Remover Treino</h3>
+          <span class="badge badge-p0">P0</span>
+        </div>
+        <p>Excluir um dia de treino com confirmação em duas etapas (padrão Forja: APAGAR → CONFIRMAR). O histórico associado é preservado.</p>
+      </div>
+
+      <div class="card" data-c="feat-add-exercise">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <h3 style="margin:0">Adicionar Exercício</h3>
+          <span class="badge badge-p0">P0</span>
+        </div>
+        <p>Adicionar exercícios com nome digitado livremente (sem biblioteca fixa). Configurar séries, repetições, tempo de descanso, categoria (seletor com 12 grupos musculares) e equipamento.</p>
+      </div>
+
+      <div class="card" data-c="feat-edit-exercise">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <h3 style="margin:0">Editar Exercício</h3>
+          <span class="badge badge-p0">P0</span>
+        </div>
+        <p>Modificar qualquer parâmetro de um exercício existente: nome, séries, reps, descanso, categoria, equipamento.</p>
+      </div>
+
+      <div class="card" data-c="feat-remove-exercise">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <h3 style="margin:0">Remover Exercício</h3>
+          <span class="badge badge-p0">P0</span>
+        </div>
+        <p>Remover um exercício de um treino. Confirmação em duas etapas. Fotos de equipamento associadas são preservadas.</p>
+      </div>
+
+      <div class="card" data-c="feat-reorder">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <h3 style="margin:0">Reordenar Exercícios</h3>
+          <span class="badge badge-p1">P1</span>
+        </div>
+        <p>Arrastar exercícios para reorganizar a ordem dentro de um treino. A ordem define a sequência durante a execução do treino.</p>
+      </div>
+
+      <div class="card" data-c="feat-rest-per-exercise">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <h3 style="margin:0">Descanso por Exercício</h3>
+          <span class="badge badge-p1">P1</span>
+        </div>
+        <p>Configurar tempo de descanso individual por exercício (padrão: 60s). O rest timer usa esse valor em vez do fixo atual.</p>
+      </div>
+
+      <div class="card" data-c="feat-equipment-photo">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <h3 style="margin:0">Foto de Equipamento</h3>
+          <span class="badge badge-p2">P2</span>
+        </div>
+        <p>Tirar ou trocar foto do equipamento diretamente na tela de configuração do exercício (reusa a feature existente).</p>
+      </div>
+
+      <div class="card" data-c="feat-empty-state">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <h3 style="margin:0">Estado Vazio</h3>
+          <span class="badge badge-p1">P1</span>
+        </div>
+        <p>Quando não há treinos configurados, a home exibe mensagem convidando o usuário a criar seu primeiro treino, com link direto para a tela de configuração.</p>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 5. Navigation & Screens -->
+  <section>
+    <div class="section-label" data-c="sec-nav">Navegação</div>
+    <h2 data-c="title-nav">Telas e Fluxo</h2>
+
+    <div class="card" data-c="nav-overview">
+      <h3>Estrutura de Navegação</h3>
+      <p>Nova rota top-level <code>/plans</code> acessível a partir de um botão na home. Dentro dela, duas sub-rotas:</p>
+      <ul>
+        <li><strong>/plans</strong> — Lista de todos os treinos com opção de criar novo</li>
+        <li><strong>/plans/[id]</strong> — Detalhe/edição de um treino específico com lista de exercícios</li>
+      </ul>
+      <p>A tela de adicionar/editar exercício pode ser um bottom sheet ou modal dentro da tela de detalhe do plano.</p>
+    </div>
+  </section>
+
+  <!-- Mockup: Plans List -->
+  <section>
+    <div class="section-label" data-c="sec-mockup-list">Mockup</div>
+    <h2 data-c="title-mockup-list">Tela — Lista de Treinos</h2>
+
+    <div class="mockup-frame" data-c="mockup-plans-list" style="margin-left:auto;margin-right:auto">
+      <div class="mockup-status-bar">
+        <span>9:41</span>
+        <span>⦿ ▮▮ ⟩</span>
+      </div>
+      <div class="mockup-content">
+        <div class="m-back">‹ INÍCIO</div>
+        <div class="m-section-label">MEUS TREINOS</div>
+        <div class="m-hero">Treinos</div>
+        <div class="m-sub">3 treinos configurados</div>
+
+        <div class="m-card" style="display:flex;align-items:center;gap:12px">
+          <div style="width:3px;height:40px;background:var(--accent);border-radius:2px"></div>
+          <div style="flex:1">
+            <div class="m-card-title">Treino A</div>
+            <div class="m-card-sub">Peito / Ombros / Tríceps</div>
+            <div class="m-card-meta">
+              <span class="m-chip">7 exercícios</span>
+            </div>
+          </div>
+          <span style="color:var(--text-dim)">›</span>
+        </div>
+
+        <div class="m-card" style="display:flex;align-items:center;gap:12px">
+          <div style="width:3px;height:40px;background:var(--accent);border-radius:2px"></div>
+          <div style="flex:1">
+            <div class="m-card-title">Treino B</div>
+            <div class="m-card-sub">Costas / Bíceps</div>
+            <div class="m-card-meta">
+              <span class="m-chip">7 exercícios</span>
+            </div>
+          </div>
+          <span style="color:var(--text-dim)">›</span>
+        </div>
+
+        <div class="m-card" style="display:flex;align-items:center;gap:12px">
+          <div style="width:3px;height:40px;background:var(--accent);border-radius:2px"></div>
+          <div style="flex:1">
+            <div class="m-card-title">Treino C</div>
+            <div class="m-card-sub">Pernas</div>
+            <div class="m-card-meta">
+              <span class="m-chip">7 exercícios</span>
+            </div>
+          </div>
+          <span style="color:var(--text-dim)">›</span>
+        </div>
+
+        <div class="m-btn m-btn-primary">+ NOVO TREINO</div>
+      </div>
+    </div>
+    <div class="mockup-label">Lista de treinos — acesso via home</div>
+
+    <div class="card" data-c="guard-active-workout" style="margin-top:16px;border-left:3px solid var(--warning)">
+      <h3>⚠ Treino em andamento</h3>
+      <p>Quando há um treino ativo (botão "Continuar Treino" visível na home), toda a área de configuração fica bloqueada. O usuário não pode criar, editar ou remover treinos até finalizar ou descartar a sessão em andamento. Isso evita inconsistências entre o plano em execução e o plano salvo.</p>
+    </div>
+  </section>
+
+  <!-- Mockup: Plan Detail -->
+  <section>
+    <div class="section-label" data-c="sec-mockup-detail">Mockup</div>
+    <h2 data-c="title-mockup-detail">Tela — Detalhe do Treino</h2>
+
+    <div class="mockup-frame" data-c="mockup-plan-detail" style="margin-left:auto;margin-right:auto">
+      <div class="mockup-status-bar">
+        <span>9:41</span>
+        <span>⦿ ▮▮ ⟩</span>
+      </div>
+      <div class="mockup-content">
+        <div class="m-back">‹ MEUS TREINOS</div>
+        <div class="m-section-label">TREINO A</div>
+
+        <div style="margin-bottom:16px">
+          <div class="m-label">Nome</div>
+          <div class="m-input">Treino A</div>
+          <div class="m-label">Foco</div>
+          <div class="m-input">Peito / Ombros / Tríceps</div>
+        </div>
+
+        <div class="m-section-label">EXERCÍCIOS</div>
+
+        <div class="m-exercise-row">
+          <span class="m-drag">⠿</span>
+          <div style="flex:1;margin-left:10px">
+            <div class="m-exercise-name">Supino Reto Vertical</div>
+            <div class="m-exercise-meta">3×12 · 60s · Máquina</div>
+          </div>
+          <span style="color:var(--text-dim)">›</span>
+        </div>
+
+        <div class="m-exercise-row">
+          <span class="m-drag">⠿</span>
+          <div style="flex:1;margin-left:10px">
+            <div class="m-exercise-name">Crucifixo Articulado TS</div>
+            <div class="m-exercise-meta">3×12 · 60s · Máquina</div>
+          </div>
+          <span style="color:var(--text-dim)">›</span>
+        </div>
+
+        <div class="m-exercise-row">
+          <span class="m-drag">⠿</span>
+          <div style="flex:1;margin-left:10px">
+            <div class="m-exercise-name">Supino 45 Bilateral</div>
+            <div class="m-exercise-meta">3×10 · 60s · Halter</div>
+          </div>
+          <span style="color:var(--text-dim)">›</span>
+        </div>
+
+        <div class="m-exercise-row" style="border:none">
+          <span class="m-drag">⠿</span>
+          <div style="flex:1;margin-left:10px">
+            <div class="m-exercise-name">Elevação Frontal</div>
+            <div class="m-exercise-meta">3×12 · 60s · Halter</div>
+          </div>
+          <span style="color:var(--text-dim)">›</span>
+        </div>
+
+        <div style="text-align:center;color:var(--text-dim);font-size:11px;padding:4px 0">+ 3 exercícios</div>
+
+        <div class="m-btn m-btn-primary">+ ADICIONAR EXERCÍCIO</div>
+        <div class="m-btn m-btn-secondary" style="margin-top:8px;color:var(--danger);border-color:rgba(239,68,68,0.3)">APAGAR TREINO</div>
+      </div>
+    </div>
+    <div class="mockup-label">Detalhe do treino — exercícios reordenáveis</div>
+  </section>
+
+  <!-- Mockup: Add/Edit Exercise -->
+  <section>
+    <div class="section-label" data-c="sec-mockup-exercise">Mockup</div>
+    <h2 data-c="title-mockup-exercise">Tela — Adicionar / Editar Exercício</h2>
+
+    <div class="mockup-frame" data-c="mockup-exercise-form" style="margin-left:auto;margin-right:auto">
+      <div class="mockup-status-bar">
+        <span>9:41</span>
+        <span>⦿ ▮▮ ⟩</span>
+      </div>
+      <div class="mockup-content">
+        <div class="m-back">‹ TREINO A</div>
+        <div class="m-section-label">NOVO EXERCÍCIO</div>
+
+        <div style="margin-top:12px">
+          <div class="m-label">Nome do Exercício</div>
+          <div class="m-input" style="color:var(--text-dim)">Ex: Supino Reto</div>
+
+          <div class="m-row">
+            <div>
+              <div class="m-label">Séries</div>
+              <div class="m-input" style="text-align:center">3</div>
+            </div>
+            <div>
+              <div class="m-label">Repetições</div>
+              <div class="m-input" style="text-align:center">12</div>
+            </div>
+          </div>
+
+          <div class="m-label">Descanso (segundos)</div>
+          <div class="m-input" style="text-align:center">60</div>
+
+          <div class="m-row">
+            <div>
+              <div class="m-label">Categoria</div>
+              <div class="m-input" style="display:flex;justify-content:space-between;align-items:center">
+                <span style="color:var(--text-dim)">Selecionar</span>
+                <span style="color:var(--text-dim);font-size:10px">▼</span>
+              </div>
+              <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;margin-bottom:8px">
+                <span class="m-chip" style="font-size:9px">Peito</span>
+                <span class="m-chip" style="font-size:9px">Costas</span>
+                <span class="m-chip" style="font-size:9px">Ombros</span>
+                <span class="m-chip" style="font-size:9px">Bíceps</span>
+                <span class="m-chip" style="font-size:9px">Tríceps</span>
+                <span class="m-chip" style="font-size:9px">Quadríceps</span>
+                <span class="m-chip" style="font-size:9px">Posterior</span>
+                <span class="m-chip" style="font-size:9px">Glúteos</span>
+                <span class="m-chip" style="font-size:9px">Panturrilha</span>
+                <span class="m-chip" style="font-size:9px">Abdômen</span>
+                <span class="m-chip" style="font-size:9px">Antebraço</span>
+                <span class="m-chip" style="font-size:9px">Trapézio</span>
+              </div>
+            </div>
+            <div>
+              <div class="m-label">Equipamento</div>
+              <div class="m-input" style="color:var(--text-dim)">Ex: Halter</div>
+            </div>
+          </div>
+
+          <div class="m-label" style="margin-top:8px">Foto do Equipamento</div>
+          <div style="background:var(--surface-2);border:1px dashed var(--border);border-radius:8px;padding:20px;text-align:center;color:var(--text-dim);font-size:12px;margin-bottom:16px">
+            📷 Toque para tirar foto
+          </div>
+        </div>
+
+        <div class="m-btn m-btn-primary">SALVAR EXERCÍCIO</div>
+      </div>
+    </div>
+    <div class="mockup-label">Formulário de exercício — todos os parâmetros configuráveis</div>
+  </section>
+
+  <!-- Mockup: Empty State -->
+  <section>
+    <div class="section-label" data-c="sec-mockup-empty">Mockup</div>
+    <h2 data-c="title-mockup-empty">Home — Estado Vazio</h2>
+
+    <div class="mockup-frame" data-c="mockup-empty-state" style="margin-left:auto;margin-right:auto">
+      <div class="mockup-status-bar">
+        <span>9:41</span>
+        <span>⦿ ▮▮ ⟩</span>
+      </div>
+      <div class="mockup-content">
+        <div class="m-hero" style="font-size:36px">FORJA</div>
+        <div class="m-sub">Seu diário de treino</div>
+
+        <div class="m-empty" style="padding:48px 0">
+          <div style="font-size:32px;margin-bottom:12px">🏋️</div>
+          <div style="font-size:14px;color:var(--text-med);font-weight:500">Nenhum treino configurado</div>
+          <div style="font-size:12px;color:var(--text-dim);margin-top:4px">Crie seu primeiro treino para começar</div>
+        </div>
+
+        <div class="m-btn m-btn-primary">CONFIGURAR TREINOS</div>
+      </div>
+    </div>
+    <div class="mockup-label">Home quando não há treinos — CTA direto para configuração</div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 7. Acceptance Criteria -->
+  <section>
+    <div class="section-label" data-c="sec-ac">Critérios de Aceitação</div>
+    <h2 data-c="title-ac">Validação</h2>
+
+    <h3 data-c="ac-create-plan-title">Criar Treino</h3>
+    <div class="criteria" data-c="ac-create-plan-1">
+      <strong>Dado</strong> que o usuário está na lista de treinos<br>
+      <strong>Quando</strong> toca em "Novo Treino" e preenche nome e foco<br>
+      <strong>Então</strong> um novo plano é criado com ID sequencial e aparece na lista
+    </div>
+    <div class="criteria" data-c="ac-create-plan-2">
+      <strong>Dado</strong> que o usuário cria um treino<br>
+      <strong>Quando</strong> volta para a home<br>
+      <strong>Então</strong> o novo treino aparece como card disponível para iniciar
+    </div>
+
+    <h3 data-c="ac-edit-plan-title" style="margin-top:20px">Editar Treino</h3>
+    <div class="criteria" data-c="ac-edit-plan-1">
+      <strong>Dado</strong> que o usuário edita o nome de um treino<br>
+      <strong>Quando</strong> inicia um treino com esse plano<br>
+      <strong>Então</strong> o novo nome aparece durante a execução
+    </div>
+    <div class="criteria" data-c="ac-edit-plan-2">
+      <strong>Dado</strong> que o usuário editou um treino<br>
+      <strong>Quando</strong> visualiza o histórico de treinos anteriores<br>
+      <strong>Então</strong> os treinos anteriores mantêm o nome original (histórico imutável)
+    </div>
+
+    <h3 data-c="ac-delete-plan-title" style="margin-top:20px">Remover Treino</h3>
+    <div class="criteria" data-c="ac-delete-plan-1">
+      <strong>Dado</strong> que o usuário toca "Apagar Treino"<br>
+      <strong>Quando</strong> confirma a exclusão (CONFIRMAR)<br>
+      <strong>Então</strong> o treino é removido da lista e da home
+    </div>
+    <div class="criteria" data-c="ac-delete-plan-2">
+      <strong>Dado</strong> que o usuário removeu um treino com histórico<br>
+      <strong>Quando</strong> acessa a tela de histórico<br>
+      <strong>Então</strong> os treinos realizados com esse plano ainda aparecem normalmente
+    </div>
+
+    <h3 data-c="ac-exercise-title" style="margin-top:20px">Gerenciar Exercícios</h3>
+    <div class="criteria" data-c="ac-exercise-1">
+      <strong>Dado</strong> que o usuário adiciona um exercício com nome, 3 séries, 12 reps, 90s descanso<br>
+      <strong>Quando</strong> inicia o treino<br>
+      <strong>Então</strong> o exercício aparece na fila com 3 séries e o rest timer usa 90 segundos
+    </div>
+    <div class="criteria" data-c="ac-exercise-2">
+      <strong>Dado</strong> que o usuário reordena exercícios no treino<br>
+      <strong>Quando</strong> inicia o treino<br>
+      <strong>Então</strong> a fila de exercícios segue a nova ordem
+    </div>
+
+    <h3 data-c="ac-empty-title" style="margin-top:20px">Estado Vazio</h3>
+    <div class="criteria" data-c="ac-empty-1">
+      <strong>Dado</strong> que não há treinos configurados<br>
+      <strong>Quando</strong> o usuário abre a home<br>
+      <strong>Então</strong> vê mensagem de boas-vindas com CTA para configurar treinos
+    </div>
+
+    <h3 data-c="ac-migration-title" style="margin-top:20px">Migração</h3>
+    <div class="criteria" data-c="ac-migration-1">
+      <strong>Dado</strong> que o usuário atualiza o app da versão com planos fixos<br>
+      <strong>Quando</strong> abre o app pela primeira vez<br>
+      <strong>Então</strong> os 3 planos ABC são migrados automaticamente para o planStore
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 8. Risks -->
+  <section>
+    <div class="section-label" data-c="sec-risks">Riscos e Mitigação</div>
+    <h2 data-c="title-risks">O que pode dar errado</h2>
+
+    <table data-c="risk-table">
+      <tr><th>Risco</th><th>Severidade</th><th>Mitigação</th></tr>
+      <tr>
+        <td>Perda de treinos existentes ao migrar para o novo formato</td>
+        <td class="risk-high">Alta</td>
+        <td>Manter os treinos originais como backup até confirmar que a migração foi bem-sucedida. Testar extensivamente antes de liberar.</td>
+      </tr>
+      <tr>
+        <td>Edição acidental durante treino em andamento</td>
+        <td class="risk-med">Média</td>
+        <td>Bloquear toda a área de configuração enquanto houver sessão ativa. Exibir aviso claro ao usuário.</td>
+      </tr>
+      <tr>
+        <td>Histórico inconsistente após remoção de treino</td>
+        <td class="risk-low">Baixa</td>
+        <td>O histórico registra uma "foto" do treino no momento da conclusão. Remover um plano não afeta registros passados.</td>
+      </tr>
+      <tr>
+        <td>Reordenação de exercícios pode ser confusa no mobile</td>
+        <td class="risk-med">Média</td>
+        <td>Oferecer drag-and-drop como interação principal, com botões de mover como alternativa acessível.</td>
+      </tr>
+      <tr>
+        <td>Usuário cria muitos treinos e perde a visão geral</td>
+        <td class="risk-low">Baixa</td>
+        <td>A lista de treinos é simples e rolável. Avaliar futuramente se limitar ou agrupar faz sentido com base no uso real.</td>
+      </tr>
+    </table>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 9. Out of Scope -->
+  <section>
+    <div class="section-label" data-c="sec-oos">Fora do Escopo</div>
+    <h2 data-c="title-oos">O que NÃO está incluído</h2>
+
+    <div class="card" data-c="oos-items">
+      <ul>
+        <li><strong>Biblioteca de exercícios pré-definida</strong> — exercícios são criados manualmente pelo usuário</li>
+        <li><strong>Templates compartilháveis</strong> — sem export/import de planos entre usuários</li>
+        <li><strong>Programação periódica / mesociclos</strong> — sem agendamento automático de quando trocar treinos</li>
+        <li><strong>Imagens de demonstração de exercícios</strong> — apenas fotos de equipamento (câmera do device)</li>
+        <li><strong>Sync com backend / cloud</strong> — todos os dados permanecem locais no dispositivo</li>
+        <li><strong>Duplicar treino</strong> — pode ser adicionado como melhoria futura</li>
+      </ul>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 10. Considerações -->
+  <section>
+    <div class="section-label" data-c="sec-tech">Considerações</div>
+    <h2 data-c="title-tech">Pontos de Atenção</h2>
+
+    <div class="card" data-c="tech-migration">
+      <h3>Migração dos treinos existentes</h3>
+      <p>Usuários que já possuem os 3 treinos pré-definidos (A, B, C) devem ter esses treinos automaticamente migrados para o novo formato editável na primeira abertura do app após a atualização. A transição deve ser transparente — o usuário não precisa recriar nada.</p>
+    </div>
+
+    <div class="card" data-c="tech-rest">
+      <h3>Timer de descanso personalizado</h3>
+      <p>O timer de descanso entre séries atualmente é fixo em 60 segundos para todos os exercícios. Com esta feature, o tempo passa a respeitar o valor configurado por exercício, permitindo descansos maiores para exercícios compostos e menores para isoladores.</p>
+    </div>
+
+    <div class="card" data-c="tech-history">
+      <h3>Proteção do histórico</h3>
+      <p>O histórico de treinos realizados já funciona como um "snapshot" do momento — registra o nome do treino, foco e exercícios como eram na hora da execução. Isso já garante que edições futuras não alterem registros passados.</p>
+    </div>
+
+    <div class="card" data-c="tech-categories">
+      <h3>Categorias musculares</h3>
+      <p>O seletor de categorias oferece 12 opções pré-definidas cobrindo os principais grupos musculares: Peito, Costas, Ombros, Bíceps, Tríceps, Quadríceps, Posterior, Glúteos, Panturrilha, Abdômen, Antebraço e Trapézio. Essa lista pode ser expandida no futuro conforme necessidade dos usuários.</p>
+    </div>
+  </section>
+
+</div>
+
+<!-- Commenting System JS -->
+<script>
+const STORAGE_KEY = 'prd-comments-training_configuration-v2';
+let reviewMode = false;
+let activeTarget = null;
+let comments = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+
+function toggleReviewMode() {
+  reviewMode = !reviewMode;
+  const btn = document.getElementById('reviewToggle');
+  const exportBtn = document.getElementById('exportBtn');
+  const panel = document.getElementById('commentPanel');
+
+  if (reviewMode) {
+    btn.textContent = 'Exit Review';
+    btn.classList.add('active');
+    exportBtn.style.display = 'inline-block';
+    panel.classList.add('open');
+    document.querySelectorAll('[data-c]').forEach(el => {
+      el.classList.add('commentable');
+      el.addEventListener('click', onElementClick);
+    });
+  } else {
+    btn.textContent = 'Review Mode';
+    btn.classList.remove('active');
+    exportBtn.style.display = 'none';
+    panel.classList.remove('open');
+    document.querySelectorAll('[data-c]').forEach(el => {
+      el.classList.remove('commentable');
+      el.removeEventListener('click', onElementClick);
+    });
+  }
+  updateCommentHighlights();
+}
+
+function onElementClick(e) {
+  e.stopPropagation();
+  const target = e.currentTarget.getAttribute('data-c');
+  activeTarget = target;
+  document.getElementById('commentTarget').textContent = '#' + target;
+  document.getElementById('commentForm').style.display = 'block';
+  document.getElementById('commentInput').value = '';
+  document.getElementById('commentInput').focus();
+  renderComments();
+}
+
+function submitComment() {
+  const input = document.getElementById('commentInput');
+  const text = input.value.trim();
+  if (!text || !activeTarget) return;
+
+  comments.push({
+    id: Date.now(),
+    target: activeTarget,
+    text: text,
+    timestamp: new Date().toISOString()
+  });
+
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(comments));
+  input.value = '';
+  renderComments();
+  updateCommentHighlights();
+}
+
+function deleteComment(id) {
+  comments = comments.filter(c => c.id !== id);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(comments));
+  renderComments();
+  updateCommentHighlights();
+}
+
+function renderComments() {
+  const list = document.getElementById('commentList');
+  const noComments = document.getElementById('noComments');
+  const countEl = document.getElementById('commentCount');
+
+  if (comments.length === 0) {
+    list.innerHTML = '<div class="no-comments">Nenhum comentário ainda. Clique em elementos destacados para comentar.</div>';
+    countEl.style.display = 'none';
+    return;
+  }
+
+  countEl.style.display = 'inline';
+  countEl.textContent = comments.length;
+
+  const filtered = activeTarget
+    ? [
+        ...comments.filter(c => c.target === activeTarget),
+        ...comments.filter(c => c.target !== activeTarget)
+      ]
+    : comments;
+
+  list.innerHTML = filtered.map(c => `
+    <div class="comment-item" ${c.target === activeTarget ? 'style="border-left:2px solid var(--accent)"' : ''}>
+      <div class="comment-item-header">
+        <span class="comment-item-section">#${c.target}</span>
+        <span class="comment-item-time">${new Date(c.timestamp).toLocaleString('pt-BR')}</span>
+      </div>
+      <div class="comment-item-text">${c.text}</div>
+      <button class="comment-item-delete" onclick="deleteComment(${c.id})">Remover</button>
+    </div>
+  `).join('');
+}
+
+function updateCommentHighlights() {
+  const targets = new Set(comments.map(c => c.target));
+  document.querySelectorAll('[data-c]').forEach(el => {
+    if (targets.has(el.getAttribute('data-c'))) {
+      el.classList.add('has-comment');
+    } else {
+      el.classList.remove('has-comment');
+    }
+  });
+}
+
+function closePanel() {
+  document.getElementById('commentPanel').classList.remove('open');
+  activeTarget = null;
+  document.getElementById('commentForm').style.display = 'none';
+}
+
+function exportComments() {
+  if (comments.length === 0) {
+    alert('Nenhum comentário para exportar.');
+    return;
+  }
+
+  let output = '# PRD Review Comments\n\n';
+  comments.forEach((c, i) => {
+    output += `## #${i + 1} — ${c.target}\n`;
+    output += `${c.text}\n\n`;
+  });
+
+  navigator.clipboard.writeText(output).then(() => {
+    alert('Comentários copiados para o clipboard! Cole de volta no Claude para revisões.');
+  }).catch(() => {
+    const textarea = document.createElement('textarea');
+    textarea.value = output;
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textarea);
+    alert('Comentários copiados para o clipboard!');
+  });
+}
+
+// Init highlights
+updateCommentHighlights();
+
+// Enter key to submit
+document.getElementById('commentInput')?.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    submitComment();
+  }
+});
+</script>
+
+</body>
+</html>
