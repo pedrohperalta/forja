@@ -1,0 +1,9 @@
+[
+  {
+    "name": "forja",
+    "owner": "local",
+    "defaultBranch": "main",
+    "scope": "Repositório único — app mobile React Native (Expo). Todas as mudanças são locais.",
+    "dependsOn": []
+  }
+]

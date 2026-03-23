@@ -1,0 +1,1243 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Solution Design — Configuração de Treinos | Forja</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<style>
+  :root {
+    --stone-50: #fafaf9;
+    --stone-100: #f5f5f4;
+    --stone-200: #e7e5e4;
+    --stone-300: #d6d3d1;
+    --stone-400: #a8a29e;
+    --stone-500: #78716c;
+    --stone-600: #57534e;
+    --stone-700: #44403c;
+    --stone-800: #292524;
+    --stone-900: #1c1917;
+    --accent: #C2F000;
+    --accent-dim: rgba(194, 240, 0, 0.12);
+    --danger: #ef4444;
+    --warning: #f59e0b;
+    --p0: #ef4444;
+    --p1: #f59e0b;
+    --p2: #3b82f6;
+    --bg: #0e0e0e;
+    --surface: #1a1a1a;
+    --surface-2: #252525;
+    --border: #2a2a2a;
+    --text: #f5f5f4;
+    --text-med: #a8a29e;
+    --text-dim: #57534e;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    padding: 0;
+  }
+
+  /* Header */
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 32px 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-inner {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .header h1 {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--accent);
+    letter-spacing: -0.5px;
+  }
+  .header .meta {
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+  .review-toggle {
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    padding: 8px 20px;
+    border-radius: 100px;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .review-toggle:hover { opacity: 0.85; }
+  .review-toggle.active {
+    background: var(--danger);
+    color: white;
+  }
+
+  /* Main content */
+  .content {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 40px 32px 120px;
+  }
+
+  /* Sections */
+  section { margin-bottom: 48px; }
+  .section-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+  h2 {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: var(--text);
+  }
+  h3 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: var(--text);
+  }
+  h4 {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--text);
+  }
+  p, li {
+    font-size: 14px;
+    color: var(--text-med);
+    line-height: 1.7;
+  }
+  ul, ol {
+    padding-left: 20px;
+    margin-bottom: 16px;
+  }
+  li { margin-bottom: 6px; }
+  code {
+    background: var(--surface-2);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 13px;
+    color: var(--accent);
+  }
+  pre {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    overflow-x: auto;
+    margin-bottom: 16px;
+  }
+  pre code {
+    background: none;
+    padding: 0;
+    font-size: 12px;
+    color: var(--text-med);
+    line-height: 1.6;
+  }
+
+  /* Cards */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 16px;
+  }
+  .card h3 { margin-bottom: 8px; }
+  .card h4 { margin-bottom: 6px; }
+
+  /* Priority badges */
+  .badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  .badge-p0 { background: rgba(239,68,68,0.15); color: var(--p0); }
+  .badge-p1 { background: rgba(245,158,11,0.15); color: var(--p1); }
+  .badge-p2 { background: rgba(59,130,246,0.15); color: var(--p2); }
+  .badge-accent { background: var(--accent-dim); color: var(--accent); }
+  .badge-new { background: rgba(16,185,129,0.15); color: #10b981; }
+  .badge-change { background: rgba(245,158,11,0.15); color: var(--warning); }
+  .badge-keep { background: rgba(59,130,246,0.15); color: var(--p2); }
+
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 16px;
+    font-size: 13px;
+  }
+  th {
+    text-align: left;
+    padding: 10px 14px;
+    background: var(--surface-2);
+    color: var(--text-dim);
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-med);
+  }
+
+  /* Mermaid diagrams */
+  .mermaid-container {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 16px;
+    overflow-x: auto;
+  }
+  .mermaid { text-align: center; }
+
+  /* Divider */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 48px 0;
+  }
+
+  /* Phase cards */
+  .phase-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 12px;
+  }
+  .phase-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  .phase-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .task-list { list-style: none; padding-left: 0; }
+  .task-list li {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .task-list li:last-child { border-bottom: none; }
+  .task-id {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-dim);
+    min-width: 40px;
+  }
+  .task-desc {
+    font-size: 13px;
+    color: var(--text-med);
+    flex: 1;
+  }
+  .task-file {
+    font-size: 11px;
+    color: var(--text-dim);
+    font-family: monospace;
+  }
+
+  /* File tree */
+  .file-tree {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 12px;
+    color: var(--text-med);
+    line-height: 1.8;
+  }
+  .file-tree .new { color: #10b981; }
+  .file-tree .changed { color: var(--warning); }
+  .file-tree .deleted { color: var(--danger); }
+  .file-tree .indent { padding-left: 20px; }
+  .file-tree .indent2 { padding-left: 40px; }
+  .file-tree .indent3 { padding-left: 60px; }
+
+  /* Commentable highlight */
+  [data-c].commentable {
+    cursor: pointer;
+    position: relative;
+    transition: outline 0.15s, background 0.15s;
+    outline: 2px solid transparent;
+    border-radius: 4px;
+  }
+  [data-c].commentable:hover {
+    outline: 2px solid var(--accent);
+    background: rgba(194, 240, 0, 0.04);
+  }
+  [data-c].commentable.has-comment {
+    outline: 2px solid var(--warning);
+    background: rgba(245, 158, 11, 0.06);
+  }
+
+  /* Comment panel */
+  .comment-panel {
+    display: none;
+    position: fixed;
+    right: 0;
+    top: 0;
+    width: 360px;
+    height: 100vh;
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    z-index: 200;
+    flex-direction: column;
+  }
+  .comment-panel.open { display: flex; }
+  .comment-panel-header {
+    padding: 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .comment-panel-header h3 {
+    font-size: 14px;
+    font-weight: 700;
+    margin: 0;
+  }
+  .comment-panel-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+  }
+  .comment-panel-footer {
+    padding: 16px 20px;
+    border-top: 1px solid var(--border);
+  }
+  .comment-input {
+    width: 100%;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 13px;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    resize: vertical;
+    min-height: 60px;
+  }
+  .comment-input:focus { outline: none; border-color: var(--accent); }
+  .comment-submit {
+    margin-top: 8px;
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    padding: 8px 16px;
+    border-radius: 100px;
+    font-weight: 700;
+    font-size: 12px;
+    cursor: pointer;
+    width: 100%;
+  }
+  .comment-item {
+    background: var(--surface-2);
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 8px;
+  }
+  .comment-item-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 6px;
+  }
+  .comment-item-section { font-size: 11px; font-weight: 700; color: var(--accent); }
+  .comment-item-time { font-size: 11px; color: var(--text-dim); }
+  .comment-item-text { font-size: 13px; color: var(--text-med); }
+  .comment-item-delete {
+    font-size: 11px;
+    color: var(--danger);
+    cursor: pointer;
+    margin-top: 6px;
+    background: none;
+    border: none;
+    padding: 0;
+  }
+  .comment-count {
+    background: var(--warning);
+    color: var(--bg);
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 100px;
+    margin-left: 6px;
+  }
+  .export-btn {
+    background: var(--surface-2);
+    color: var(--text-med);
+    border: 1px solid var(--border);
+    padding: 6px 14px;
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .export-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .close-btn {
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    font-size: 20px;
+    cursor: pointer;
+  }
+  .no-comments {
+    text-align: center;
+    color: var(--text-dim);
+    font-size: 13px;
+    padding: 40px 0;
+  }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-inner">
+    <div>
+      <h1>SOLUTION DESIGN — Configuração de Treinos</h1>
+      <div class="meta">v2 &middot; 22 Mar 2026 &middot; Forja</div>
+    </div>
+    <div style="display: flex; gap: 8px; align-items: center;">
+      <button class="export-btn" id="exportBtn" style="display:none;" onclick="exportComments()">Exportar Comentários</button>
+      <button class="review-toggle" id="reviewToggle" onclick="toggleReviewMode()">Review Mode</button>
+    </div>
+  </div>
+</div>
+
+<!-- Comment Panel -->
+<div class="comment-panel" id="commentPanel">
+  <div class="comment-panel-header">
+    <h3>Comentários <span class="comment-count" id="commentCount" style="display:none">0</span></h3>
+    <button class="close-btn" onclick="closePanel()">&times;</button>
+  </div>
+  <div class="comment-panel-body" id="commentList">
+    <div class="no-comments" id="noComments">Nenhum comentário ainda. Clique em elementos destacados para comentar.</div>
+  </div>
+  <div class="comment-panel-footer" id="commentForm" style="display:none">
+    <div style="font-size:11px;color:var(--accent);font-weight:700;margin-bottom:6px" id="commentTarget"></div>
+    <textarea class="comment-input" id="commentInput" placeholder="Deixe seu comentário..."></textarea>
+    <button class="comment-submit" onclick="submitComment()">Adicionar Comentário</button>
+  </div>
+</div>
+
+<!-- Content -->
+<div class="content">
+
+  <!-- ==================== 1. PROBLEMA ==================== -->
+  <section>
+    <div class="section-label" data-c="sec-problem">Problema</div>
+    <h2 data-c="title-problem">Treinos fixos impedem o uso real do app</h2>
+    <p data-c="desc-problem">O Forja possui 3 planos de treino (A, B, C) com 21 exercícios definidos diretamente no código-fonte (<code>src/constants/plans.ts</code>). Para alterar qualquer parâmetro — trocar um exercício, ajustar séries, mudar o split — é necessário modificar código e reconstruir o app. Isso torna o Forja inutilizável como ferramenta de treino real, onde mudanças acontecem a cada mesociclo ou avaliação com personal.</p>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ==================== 2. OBJETIVO ==================== -->
+  <section>
+    <div class="section-label" data-c="sec-objective">Objetivo</div>
+    <h2 data-c="title-objective">Permitir configuração completa de treinos pelo usuário</h2>
+    <div class="card" data-c="objectives">
+      <ul>
+        <li>Criar, editar e remover qualquer número de dias de treino</li>
+        <li>Adicionar exercícios com nome livre, configurando séries, repetições, descanso, categoria (seletor) e equipamento</li>
+        <li>Reordenar exercícios via drag-and-drop</li>
+        <li>Manter histórico imutável — edições não alteram treinos já realizados</li>
+        <li>Novos usuários veem a home com estado vazio e CTA para criar seu primeiro treino</li>
+        <li>Bloquear configuração durante treino ativo</li>
+        <li>Timestamps (<code>createdAt</code>/<code>updatedAt</code>) em planos e exercícios — preparação para futura sincronização via API com interface web</li>
+      </ul>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ==================== 3. SOLUÇÃO PROPOSTA ==================== -->
+  <section>
+    <div class="section-label" data-c="sec-solution">Solução Proposta</div>
+    <h2 data-c="title-solution">Arquitetura da Solução</h2>
+
+    <!-- 3.1 Architecture Overview -->
+    <div class="card" data-c="arch-overview">
+      <h3>Visão Geral</h3>
+      <p>A solução adiciona um novo store dedicado (<code>planStore</code>) para gerenciar planos de treino mutáveis, 3 novas telas de configuração, e ajustes pontuais na home e no fluxo de treino existente para consumir planos dinâmicos em vez de constantes.</p>
+    </div>
+
+    <!-- Architecture Diagram -->
+    <div class="mermaid-container" data-c="arch-diagram">
+      <div class="mermaid">
+graph TB
+    subgraph "Novas Telas"
+        PL["/plans — Lista de Treinos"]
+        PD["/plans/[id] — Detalhe do Treino"]
+        PE["/plans/exercise — Form Exercício"]
+    end
+
+    subgraph "Telas Existentes (modificadas)"
+        HOME["/ — Home"]
+        REST["/(workout)/rest"]
+    end
+
+    subgraph "Stores"
+        PS["planStore (NOVO)"]
+        WS["workoutStore"]
+        AS["appStore"]
+    end
+
+    subgraph "Persistência"
+        MMKV["MMKV"]
+    end
+
+    HOME -->|lê planos| PS
+    HOME -->|navega| PL
+    PL -->|navega| PD
+    PD -->|navega| PE
+    PD -->|CRUD exercícios| PS
+    PE -->|salva exercício| PS
+    PL -->|CRUD planos| PS
+    HOME -->|startWorkout| WS
+    REST -->|lê restSeconds| WS
+    WS -->|snapshot ao completar| AS
+    PS --> MMKV
+    WS --> MMKV
+    AS --> MMKV
+      </div>
+    </div>
+
+    <!-- 3.2 Data Model -->
+    <h3 data-c="title-data-model">Modelo de Dados</h3>
+
+    <div class="card" data-c="type-exercise">
+      <h4>Exercise <span class="badge badge-change">ALTERADO</span></h4>
+      <pre><code>type Exercise = {
+  id: ExerciseId          // UUID gerado na criação
+  name: string            // nome livre digitado pelo usuário
+  category: string        // seletor: Peito, Costas, Ombros, etc.
+  equipment: string       // texto livre: Halter, Máquina, etc.
+  reps: string            // range: "10-12" ou número: "15"
+  sets: number            // número de séries
+  restSeconds: number     // ← NOVO — tempo de descanso (padrão: 60)
+  createdAt: string       // ← NOVO — ISO timestamp
+  updatedAt: string       // ← NOVO — ISO timestamp
+}</code></pre>
+      <p>Campos <code>restSeconds</code>, <code>createdAt</code> e <code>updatedAt</code> adicionados. <code>updatedAt</code> é atualizado a cada edição do exercício. Timestamps preparam para futura sincronização via API.</p>
+    </div>
+
+    <div class="card" data-c="type-plan">
+      <h4>Plan <span class="badge badge-change">ALTERADO</span></h4>
+      <pre><code>type Plan = {
+  id: PlanId              // UUID (branded type)
+  label: string           // indicador visual: "A", "B", "C", "D"...
+  name: string            // nome dado pelo usuário: "Treino A"
+  focus: string           // foco muscular: "Peito / Ombros / Tríceps"
+  exercises: Exercise[]   // lista ordenada
+  createdAt: string       // ← NOVO — ISO timestamp
+  updatedAt: string       // ← NOVO — ISO timestamp
+}</code></pre>
+      <p>Campos <code>label</code>, <code>createdAt</code> e <code>updatedAt</code> adicionados. O <code>id</code> passa a ser UUID em vez de letra simples. <code>updatedAt</code> é atualizado a cada mudança no plano (incluindo edição de exercícios). Timestamps preparam para futura sincronização via API com interface web.</p>
+    </div>
+
+    <div class="card" data-c="type-plan-store">
+      <h4>PlanState (novo store) <span class="badge badge-new">NOVO</span></h4>
+      <pre><code>interface PlanState {
+  plans: Plan[]
+  nextLabel: string       // próxima letra disponível ("A", "B"...)
+
+  // Ações — planos
+  addPlan: (name: string, focus: string) => PlanId
+  updatePlan: (id: PlanId, changes: Partial&lt;Pick&lt;Plan, 'name' | 'focus'&gt;&gt;) => void
+  removePlan: (id: PlanId) => void
+
+  // Ações — exercícios
+  addExercise: (planId: PlanId, exercise: Omit&lt;Exercise, 'id' | 'createdAt' | 'updatedAt'&gt;) => void
+  updateExercise: (planId: PlanId, exerciseId: ExerciseId, changes: Partial&lt;Exercise&gt;) => void
+  removeExercise: (planId: PlanId, exerciseId: ExerciseId) => void
+  reorderExercises: (planId: PlanId, orderedIds: ExerciseId[]) => void
+}</code></pre>
+      <p>Todas as ações que modificam dados atualizam automaticamente o <code>updatedAt</code> do plano e/ou exercício afetado. <code>createdAt</code> e <code>updatedAt</code> são gerados pelo store — nunca passados pelo caller.</p>
+      <p>Store dedicado com persistência MMKV independente. Chave: <code>'plan-store'</code>. Versão: 1.</p>
+    </div>
+
+    <!-- 3.3 Estado Inicial -->
+    <div class="card" data-c="migration-strategy">
+      <h3>Estado Inicial — Sem Migração</h3>
+      <p>O <code>planStore</code> inicia vazio. Não há migração automática dos 3 planos fixos anteriores — os usuários criam seus treinos manualmente.</p>
+      <ul>
+        <li>Na primeira abertura, a home exibe o empty state com CTA para criar treinos</li>
+        <li>A constante <code>PLANS</code> em <code>constants/plans.ts</code> pode ser removida assim que a home passar a ler do planStore</li>
+        <li>O <code>nextLabel</code> inicia em "A"</li>
+      </ul>
+    </div>
+
+    <!-- 3.4 ID Strategy -->
+    <div class="card" data-c="id-strategy">
+      <h3>Estratégia de IDs</h3>
+      <table>
+        <tr><th>Entidade</th><th>Formato</th><th>Geração</th></tr>
+        <tr>
+          <td>PlanId</td>
+          <td>UUID v4 (branded)</td>
+          <td><code>crypto.randomUUID()</code> ou fallback <code>Date.now().toString(36)</code></td>
+        </tr>
+        <tr>
+          <td>ExerciseId</td>
+          <td>UUID v4 (branded)</td>
+          <td>Mesmo mecanismo. IDs de exercícios migrados permanecem os originais (kebab-case).</td>
+        </tr>
+        <tr>
+          <td>Plan.label</td>
+          <td>Letra sequencial ("A", "B"...)</td>
+          <td>Incrementa a partir de <code>nextLabel</code> no store. Nunca reutiliza letras de planos deletados.</td>
+        </tr>
+        <tr>
+          <td>WorkoutId</td>
+          <td><code>${planId}-${startedAt}</code></td>
+          <td>Sem mudança — usa o novo UUID do plano.</td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- 3.5 Navigation -->
+    <h3 data-c="title-navigation">Estrutura de Navegação</h3>
+
+    <div class="mermaid-container" data-c="nav-diagram">
+      <div class="mermaid">
+flowchart LR
+    HOME["/ (Home)"] -->|"⚙ Meus Treinos"| PLANS["/plans"]
+    HOME -->|"Iniciar Treino"| EXERCISE["/(workout)/exercise"]
+    PLANS -->|"Toca plano"| DETAIL["/plans/[id]"]
+    DETAIL -->|"+ Exercício"| FORM["/plans/exercise"]
+    DETAIL -->|"Toca exercício"| FORM
+    FORM -->|"Salvar"| DETAIL
+    PLANS -->|"‹ Voltar"| HOME
+    DETAIL -->|"‹ Voltar"| PLANS
+      </div>
+    </div>
+
+    <div class="card" data-c="nav-routes">
+      <h4>Novas Rotas</h4>
+      <table>
+        <tr><th>Rota</th><th>Arquivo</th><th>Descrição</th></tr>
+        <tr><td><code>/plans</code></td><td><code>src/app/plans/index.tsx</code></td><td>Lista de treinos com botão "Novo Treino"</td></tr>
+        <tr><td><code>/plans/[id]</code></td><td><code>src/app/plans/[id].tsx</code></td><td>Detalhe do treino com lista de exercícios (drag-and-drop)</td></tr>
+        <tr><td><code>/plans/exercise</code></td><td><code>src/app/plans/exercise.tsx</code></td><td>Formulário de criar/editar exercício (push navigation)</td></tr>
+      </table>
+      <p>Parâmetros passados via query/route params: <code>planId</code> para identificar o treino, <code>exerciseId</code> (opcional) para modo edição.</p>
+    </div>
+
+    <!-- 3.7 Guard: Active Workout -->
+    <div class="card" data-c="guard-active">
+      <h3>Bloqueio Durante Treino Ativo</h3>
+      <p>Quando <code>workoutStore.status === 'active'</code>:</p>
+      <ul>
+        <li>O botão "Meus Treinos" na home fica desabilitado (opacity + disabled)</li>
+        <li>Se o usuário navegar diretamente para <code>/plans</code>, é redirecionado para home</li>
+        <li>Mesma estratégia de guard usada no layout <code>(workout)/_layout.tsx</code></li>
+      </ul>
+    </div>
+
+    <!-- 3.8 Rest Timer Change -->
+    <div class="card" data-c="rest-timer-change">
+      <h3>Timer de Descanso Dinâmico</h3>
+      <p>Atualmente <code>REST_DURATION_SECONDS = 60</code> é uma constante no módulo <code>rest.tsx</code>.</p>
+      <p><strong>Mudança:</strong></p>
+      <ul>
+        <li>O <code>workoutStore</code> já tem acesso ao exercício atual via <code>getCurrentExercise(queue, skippedIds)</code></li>
+        <li>Adicionar um selector <code>currentRestSeconds</code> que retorna <code>currentExercise.restSeconds ?? 60</code></li>
+        <li>A tela <code>rest.tsx</code> lê esse valor do store em vez de usar constante</li>
+        <li>O hook <code>useRestTimer</code> já aceita <code>durationSeconds</code> como parâmetro — nenhuma mudança necessária no hook</li>
+      </ul>
+    </div>
+
+    <!-- 3.9 Home Screen Changes -->
+    <div class="card" data-c="home-changes">
+      <h3>Mudanças na Home</h3>
+      <ul>
+        <li><strong>Fonte de dados:</strong> ler planos exclusivamente do <code>planStore.plans</code> (constante <code>PLANS</code> removida)</li>
+        <li><strong>Botão de configuração:</strong> adicionar botão "Meus Treinos" (pill, secondary) acima da lista de cards</li>
+        <li><strong>Estado vazio:</strong> quando <code>plans.length === 0</code>, exibir mensagem de boas-vindas com CTA para <code>/plans</code></li>
+        <li><strong>getNextPlanId:</strong> atualizar utilitário para trabalhar com array de planos em vez de chaves fixas A/B/C</li>
+      </ul>
+    </div>
+
+    <!-- 3.10 Category Selector -->
+    <div class="card" data-c="category-selector">
+      <h3>Seletor de Categorias</h3>
+      <p>Lista fixa de 12 categorias musculares como constante em <code>src/constants/categories.ts</code>:</p>
+      <pre><code>export const MUSCLE_CATEGORIES = [
+  'Peito', 'Costas', 'Ombros', 'Bíceps', 'Tríceps',
+  'Quadríceps', 'Posterior', 'Glúteos', 'Panturrilha',
+  'Abdômen', 'Antebraço', 'Trapézio',
+] as const</code></pre>
+      <p>Renderizado como chips selecionáveis (pill shape) no formulário de exercício. Seleção única.</p>
+    </div>
+
+    <!-- 3.11 Drag and Drop -->
+    <div class="card" data-c="drag-drop">
+      <h3>Drag-and-Drop para Reordenação</h3>
+      <p>Usar <code>react-native-draggable-flatlist</code> na tela de detalhe do treino (<code>/plans/[id]</code>).</p>
+      <ul>
+        <li>Ativação por press longo no handle de drag (ícone ⠿)</li>
+        <li>Compatível com Reanimated 4 e React Native New Architecture</li>
+        <li>Ao soltar, chamar <code>planStore.reorderExercises(planId, newOrder)</code></li>
+        <li>Haptic feedback (light) ao iniciar drag via <code>useHaptics</code></li>
+      </ul>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ==================== 4. ARQUIVOS AFETADOS ==================== -->
+  <section>
+    <div class="section-label" data-c="sec-files">Arquivos Afetados</div>
+    <h2 data-c="title-files">Mapa de Mudanças</h2>
+
+    <div class="card" data-c="file-tree">
+      <div class="file-tree">
+        <div>src/</div>
+        <div class="indent"><span class="new">app/plans/index.tsx</span> — NOVO — lista de treinos</div>
+        <div class="indent"><span class="new">app/plans/[id].tsx</span> — NOVO — detalhe do treino</div>
+        <div class="indent"><span class="new">app/plans/exercise.tsx</span> — NOVO — form de exercício</div>
+        <div class="indent"><span class="changed">app/index.tsx</span> — ALTERADO — consumir planStore, botão config, empty state</div>
+        <div class="indent"><span class="changed">app/(workout)/rest.tsx</span> — ALTERADO — rest dinâmico do store</div>
+        <div class="indent"><span class="new">stores/planStore.ts</span> — NOVO — CRUD de planos com MMKV</div>
+        <div class="indent"><span class="changed">types/workout.ts</span> — ALTERADO — Exercise.restSeconds/createdAt/updatedAt, Plan.label/createdAt/updatedAt</div>
+        <div class="indent"><span class="new">schemas/plan.ts</span> — NOVO — validação Zod para Plan/Exercise</div>
+        <div class="indent"><span class="new">constants/categories.ts</span> — NOVO — lista de categorias musculares</div>
+        <div class="indent"><span class="deleted">constants/plans.ts</span> — REMOVIDO — planos fixos não são mais necessários</div>
+        <div class="indent"><span class="changed">utils/getNextPlanId.ts</span> — ALTERADO — aceitar Plan[] dinâmico</div>
+        <div class="indent"><span class="new">components/PlanCard.tsx</span> — NOVO — card de plano na lista de config</div>
+        <div class="indent"><span class="new">components/ExerciseRow.tsx</span> — NOVO — linha draggable de exercício</div>
+        <div class="indent"><span class="new">components/CategorySelector.tsx</span> — NOVO — chips de categoria</div>
+        <div class="indent"><span class="new">components/EmptyPlans.tsx</span> — NOVO — empty state da home</div>
+        <div class="indent"><span class="changed">components/WorkoutCard.tsx</span> — ALTERADO — aceitar Plan.label</div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ==================== 5. ESTRATÉGIA DE TESTES ==================== -->
+  <section>
+    <div class="section-label" data-c="sec-tests">Estratégia de Testes</div>
+    <h2 data-c="title-tests">Cobertura de Testes</h2>
+
+    <div class="card" data-c="test-store">
+      <h4>planStore — Testes de Store</h4>
+      <p>Arquivo: <code>src/stores/planStore.test.ts</code> (colocado)</p>
+      <ul>
+        <li>CRUD completo de planos (add, update, remove)</li>
+        <li>CRUD de exercícios dentro de planos</li>
+        <li>Reordenação de exercícios</li>
+        <li>Geração sequencial de labels (A → B → C...)</li>
+        <li>Labels não reutilizados após deleção</li>
+        <li><code>createdAt</code> setado na criação, <code>updatedAt</code> atualizado em cada mutação</li>
+        <li>Store inicia vazio (sem migração de planos fixos)</li>
+        <li>Persistência MMKV (serialize → deserialize)</li>
+      </ul>
+    </div>
+
+    <div class="card" data-c="test-screens">
+      <h4>Telas — Testes de Integração</h4>
+      <p>Diretório: <code>__tests__/screens/</code></p>
+      <ul>
+        <li><code>plans.test.tsx</code> — lista de treinos, criação, deleção com confirmação</li>
+        <li><code>plan-detail.test.tsx</code> — edição de nome/foco, lista de exercícios</li>
+        <li><code>plan-exercise.test.tsx</code> — formulário de exercício, validação de campos</li>
+        <li><code>home.test.tsx</code> — atualizar testes existentes para usar planStore</li>
+      </ul>
+    </div>
+
+    <div class="card" data-c="test-components">
+      <h4>Componentes — Testes Unitários</h4>
+      <p>Colocados junto aos componentes.</p>
+      <ul>
+        <li><code>CategorySelector.test.tsx</code> — renderiza 12 categorias, seleção única</li>
+        <li><code>EmptyPlans.test.tsx</code> — renderiza CTA quando sem planos</li>
+        <li><code>ExerciseRow.test.tsx</code> — exibe dados, responde a tap</li>
+      </ul>
+    </div>
+
+    <div class="card" data-c="test-migration">
+      <h4>Timestamps — Testes Críticos</h4>
+      <ul>
+        <li>Plano criado tem <code>createdAt === updatedAt</code></li>
+        <li>Exercício criado tem <code>createdAt === updatedAt</code></li>
+        <li>Atualizar plano (nome/foco) atualiza <code>plan.updatedAt</code></li>
+        <li>Adicionar/editar/remover exercício atualiza <code>plan.updatedAt</code></li>
+        <li>Editar exercício atualiza <code>exercise.updatedAt</code> mas não <code>exercise.createdAt</code></li>
+      </ul>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ==================== 6. MÉTRICAS ==================== -->
+  <section>
+    <div class="section-label" data-c="sec-metrics">Métricas de Sucesso</div>
+    <h2 data-c="title-metrics">Como medir</h2>
+
+    <div class="card" data-c="metrics-list">
+      <table>
+        <tr><th>Métrica</th><th>Alvo</th><th>Como medir</th></tr>
+        <tr>
+          <td>Planos customizados criados</td>
+          <td>≥ 1 por usuário ativo</td>
+          <td>Contagem de planos no planStore (excluindo migrados)</td>
+        </tr>
+        <tr>
+          <td>Primeiro treino criado em &lt; 2 min</td>
+          <td>100% dos usuários</td>
+          <td>Tempo entre abrir "Meus Treinos" e salvar primeiro plano com exercícios</td>
+        </tr>
+        <tr>
+          <td>Treinos iniciados a partir de planos custom</td>
+          <td>Crescente semana a semana</td>
+          <td>Proporção de WorkoutSessions com planId de planos custom</td>
+        </tr>
+        <tr>
+          <td>Zero bugs de histórico</td>
+          <td>0 sessões órfãs ou corrompidas</td>
+          <td>Validação Zod no carregamento do histórico</td>
+        </tr>
+      </table>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ==================== 7. DÍVIDA TÉCNICA ==================== -->
+  <section>
+    <div class="section-label" data-c="sec-debt">Dívida Técnica</div>
+    <h2 data-c="title-debt">O que introduzimos ou resolvemos</h2>
+
+    <div class="card" data-c="debt-resolved">
+      <h4>Resolvida</h4>
+      <ul>
+        <li><strong>Planos hardcoded</strong> — a constante <code>PLANS</code> era a única fonte de dados. Agora planos vivem em store persistido, eliminando a necessidade de rebuild para qualquer mudança.</li>
+        <li><strong>Rest timer fixo</strong> — os 60s hardcoded passam a ser configuráveis por exercício.</li>
+      </ul>
+    </div>
+
+    <div class="card" data-c="debt-introduced">
+      <h4>Introduzida</h4>
+      <ul>
+        <li><strong>Dependência: react-native-draggable-flatlist</strong> — nova dependência externa para reordenação. Bem mantida e compatível com o stack atual.</li>
+        <li><strong>Dados apenas locais (sem backup)</strong> — planos vivem só no MMKV do dispositivo. Perda de dados possível em reinstalação. Será resolvido pela sincronização via API (futura).</li>
+        <li><strong>Timestamps sem sync</strong> — <code>createdAt</code>/<code>updatedAt</code> existem nos dados mas ainda não são usados para sincronização. Preparação intencional para a futura interface web + API.</li>
+      </ul>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ==================== 8. DEPENDÊNCIAS ==================== -->
+  <section>
+    <div class="section-label" data-c="sec-deps">Dependências</div>
+    <h2 data-c="title-deps">Dependências Externas</h2>
+
+    <div class="card" data-c="dep-new">
+      <h4>Nova Dependência</h4>
+      <table>
+        <tr><th>Pacote</th><th>Versão</th><th>Motivo</th></tr>
+        <tr>
+          <td><code>react-native-draggable-flatlist</code></td>
+          <td>^4.x</td>
+          <td>Reordenação de exercícios via drag-and-drop. Usa Reanimated internamente, já presente no projeto.</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="card" data-c="dep-existing">
+      <h4>Dependências Existentes Utilizadas</h4>
+      <table>
+        <tr><th>Pacote</th><th>Uso</th></tr>
+        <tr><td><code>react-native-mmkv</code></td><td>Persistência do novo planStore</td></tr>
+        <tr><td><code>zustand</code></td><td>State management do planStore</td></tr>
+        <tr><td><code>zod</code></td><td>Validação de schemas para planos e exercícios</td></tr>
+        <tr><td><code>expo-router</code></td><td>Novas rotas /plans/*</td></tr>
+        <tr><td><code>react-native-reanimated</code></td><td>Animações na UI de config + drag-and-drop</td></tr>
+        <tr><td><code>expo-haptics</code></td><td>Feedback tátil no drag</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ==================== 9. IMPACTO NO PRODUTO ==================== -->
+  <section>
+    <div class="section-label" data-c="sec-impact">Impacto no Produto</div>
+    <h2 data-c="title-impact">O que muda para o usuário</h2>
+
+    <div class="card" data-c="impact-positive">
+      <h4>Ganhos</h4>
+      <ul>
+        <li>App se torna realmente utilizável — treinos refletem a realidade do usuário</li>
+        <li>Flexibilidade total: de 2-day split a 6-day PPL</li>
+        <li>Descanso personalizado por exercício melhora a experiência durante o treino</li>
+        <li>Migração transparente — zero fricção para usuários existentes</li>
+      </ul>
+    </div>
+
+    <div class="card" data-c="impact-risk">
+      <h4>Riscos para o Usuário</h4>
+      <ul>
+        <li>Edição acidental durante treino → inconsistência entre plano e sessão</li>
+        <li>Perda de dados do MMKV (crash, reinstalação) → planos criados manualmente são perdidos</li>
+      </ul>
+      <p>Mitigados: configuração bloqueada durante treino ativo. Futuramente, a sincronização via API com interface web garantirá backup dos dados.</p>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ==================== 10. TAREFAS ==================== -->
+  <section>
+    <div class="section-label" data-c="sec-tasks">Tarefas de Implementação</div>
+    <h2 data-c="title-tasks">Plano de Execução</h2>
+
+    <p data-c="tasks-intro">Dividido em 4 fases sequenciais. Cada fase entrega valor incremental e pode ser testada independentemente. Segue TDD estrito — testes primeiro, implementação depois.</p>
+
+    <!-- Phase 1 -->
+    <div class="phase-card" data-c="phase-1">
+      <div class="phase-header">
+        <span class="phase-title">Fase 1 — Fundação de Dados</span>
+        <span class="badge badge-p0">P0</span>
+      </div>
+      <p style="font-size:13px;color:var(--text-dim);margin-bottom:12px">Tipos, store, schemas, migração. Nenhuma UI ainda.</p>
+      <ul class="task-list">
+        <li>
+          <span class="task-id">1.1</span>
+          <span class="task-desc">Adicionar <code>restSeconds</code>, <code>createdAt</code>, <code>updatedAt</code> ao tipo Exercise e <code>label</code>, <code>createdAt</code>, <code>updatedAt</code> ao tipo Plan</span>
+          <span class="task-file">types/workout.ts</span>
+        </li>
+        <li>
+          <span class="task-id">1.2</span>
+          <span class="task-desc">Criar schemas Zod para Plan e Exercise (validação runtime, incluindo timestamps)</span>
+          <span class="task-file">schemas/plan.ts</span>
+        </li>
+        <li>
+          <span class="task-id">1.3</span>
+          <span class="task-desc">Criar planStore com CRUD completo + persistência MMKV (store inicia vazio, sem migração)</span>
+          <span class="task-file">stores/planStore.ts</span>
+        </li>
+        <li>
+          <span class="task-id">1.4</span>
+          <span class="task-desc">Criar constante MUSCLE_CATEGORIES</span>
+          <span class="task-file">constants/categories.ts</span>
+        </li>
+        <li>
+          <span class="task-id">1.5</span>
+          <span class="task-desc">Remover <code>constants/plans.ts</code> (planos fixos não são mais necessários)</span>
+          <span class="task-file">constants/plans.ts</span>
+        </li>
+        <li>
+          <span class="task-id">1.6</span>
+          <span class="task-desc">Atualizar <code>getNextPlanId</code> para aceitar Plan[] dinâmico</span>
+          <span class="task-file">utils/getNextPlanId.ts</span>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Phase 2 -->
+    <div class="phase-card" data-c="phase-2">
+      <div class="phase-header">
+        <span class="phase-title">Fase 2 — Telas de Configuração</span>
+        <span class="badge badge-p0">P0</span>
+      </div>
+      <p style="font-size:13px;color:var(--text-dim);margin-bottom:12px">UI completa de criação/edição de treinos e exercícios.</p>
+      <ul class="task-list">
+        <li>
+          <span class="task-id">2.1</span>
+          <span class="task-desc">Criar componente PlanCard (card de plano para lista)</span>
+          <span class="task-file">components/PlanCard.tsx</span>
+        </li>
+        <li>
+          <span class="task-id">2.2</span>
+          <span class="task-desc">Criar tela /plans (lista de treinos + criar novo + deletar com confirmação)</span>
+          <span class="task-file">app/plans/index.tsx</span>
+        </li>
+        <li>
+          <span class="task-id">2.3</span>
+          <span class="task-desc">Criar componente ExerciseRow (linha draggable com dados do exercício)</span>
+          <span class="task-file">components/ExerciseRow.tsx</span>
+        </li>
+        <li>
+          <span class="task-id">2.4</span>
+          <span class="task-desc">Instalar <code>react-native-draggable-flatlist</code></span>
+          <span class="task-file">package.json</span>
+        </li>
+        <li>
+          <span class="task-id">2.5</span>
+          <span class="task-desc">Criar tela /plans/[id] (detalhe do treino, edição nome/foco, lista drag-and-drop, deletar treino)</span>
+          <span class="task-file">app/plans/[id].tsx</span>
+        </li>
+        <li>
+          <span class="task-id">2.6</span>
+          <span class="task-desc">Criar componente CategorySelector (chips selecionáveis)</span>
+          <span class="task-file">components/CategorySelector.tsx</span>
+        </li>
+        <li>
+          <span class="task-id">2.7</span>
+          <span class="task-desc">Criar tela /plans/exercise (form completo: nome, séries, reps, descanso, categoria, equipamento, foto)</span>
+          <span class="task-file">app/plans/exercise.tsx</span>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Phase 3 -->
+    <div class="phase-card" data-c="phase-3">
+      <div class="phase-header">
+        <span class="phase-title">Fase 3 — Integração com Fluxo Existente</span>
+        <span class="badge badge-p0">P0</span>
+      </div>
+      <p style="font-size:13px;color:var(--text-dim);margin-bottom:12px">Conectar planos dinâmicos ao fluxo de treino e à home.</p>
+      <ul class="task-list">
+        <li>
+          <span class="task-id">3.1</span>
+          <span class="task-desc">Atualizar home para ler planos do planStore (substituir PLANS constante)</span>
+          <span class="task-file">app/index.tsx</span>
+        </li>
+        <li>
+          <span class="task-id">3.2</span>
+          <span class="task-desc">Adicionar botão "Meus Treinos" na home + guard quando treino ativo</span>
+          <span class="task-file">app/index.tsx</span>
+        </li>
+        <li>
+          <span class="task-id">3.3</span>
+          <span class="task-desc">Criar componente EmptyPlans (empty state da home)</span>
+          <span class="task-file">components/EmptyPlans.tsx</span>
+        </li>
+        <li>
+          <span class="task-id">3.4</span>
+          <span class="task-desc">Atualizar rest.tsx para usar restSeconds do exercício atual via store</span>
+          <span class="task-file">app/(workout)/rest.tsx</span>
+        </li>
+        <li>
+          <span class="task-id">3.5</span>
+          <span class="task-desc">Atualizar WorkoutCard para exibir Plan.label</span>
+          <span class="task-file">components/WorkoutCard.tsx</span>
+        </li>
+        <li>
+          <span class="task-id">3.6</span>
+          <span class="task-desc">Atualizar testes existentes da home e rest para usar planStore</span>
+          <span class="task-file">__tests__/screens/home.test.tsx, rest.test.tsx</span>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Phase 4 -->
+    <div class="phase-card" data-c="phase-4">
+      <div class="phase-header">
+        <span class="phase-title">Fase 4 — Polimento</span>
+        <span class="badge badge-p1">P1</span>
+      </div>
+      <p style="font-size:13px;color:var(--text-dim);margin-bottom:12px">UX refinements e edge cases.</p>
+      <ul class="task-list">
+        <li>
+          <span class="task-id">4.1</span>
+          <span class="task-desc">Haptic feedback no drag-and-drop e ações destrutivas</span>
+          <span class="task-file">app/plans/[id].tsx</span>
+        </li>
+        <li>
+          <span class="task-id">4.2</span>
+          <span class="task-desc">Animações de entrada/saída nas listas (Reanimated layout animations)</span>
+          <span class="task-file">components/PlanCard.tsx, ExerciseRow.tsx</span>
+        </li>
+        <li>
+          <span class="task-id">4.3</span>
+          <span class="task-desc">Validação de formulário (nome obrigatório, séries ≥ 1, reps ≥ 1)</span>
+          <span class="task-file">app/plans/exercise.tsx</span>
+        </li>
+        <li>
+          <span class="task-id">4.4</span>
+          <span class="task-desc">Teste end-to-end: criar plano → adicionar exercícios → iniciar treino → completar → verificar histórico</span>
+          <span class="task-file">__tests__/screens/</span>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ==================== 11. AUTORES ==================== -->
+  <section>
+    <div class="section-label" data-c="sec-authors">Autores</div>
+    <p data-c="authors">Solution design criado por Claude (AI) com input e revisão de Pedro Peralta.</p>
+  </section>
+
+</div>
+
+<!-- Commenting System JS -->
+<script>
+const STORAGE_KEY = 'solution-comments-training_configuration-v2';
+let reviewMode = false;
+let activeTarget = null;
+let comments = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+
+mermaid.initialize({
+  startOnLoad: true,
+  theme: 'dark',
+  themeVariables: {
+    primaryColor: '#1a1a1a',
+    primaryTextColor: '#f5f5f4',
+    primaryBorderColor: '#2a2a2a',
+    lineColor: '#C2F000',
+    secondaryColor: '#252525',
+    tertiaryColor: '#1a1a1a',
+    fontFamily: 'Inter, sans-serif',
+    fontSize: '13px',
+  }
+});
+
+function toggleReviewMode() {
+  reviewMode = !reviewMode;
+  const btn = document.getElementById('reviewToggle');
+  const exportBtn = document.getElementById('exportBtn');
+  const panel = document.getElementById('commentPanel');
+
+  if (reviewMode) {
+    btn.textContent = 'Exit Review';
+    btn.classList.add('active');
+    exportBtn.style.display = 'inline-block';
+    panel.classList.add('open');
+    document.querySelectorAll('[data-c]').forEach(el => {
+      el.classList.add('commentable');
+      el.addEventListener('click', onElementClick);
+    });
+  } else {
+    btn.textContent = 'Review Mode';
+    btn.classList.remove('active');
+    exportBtn.style.display = 'none';
+    panel.classList.remove('open');
+    document.querySelectorAll('[data-c]').forEach(el => {
+      el.classList.remove('commentable');
+      el.removeEventListener('click', onElementClick);
+    });
+  }
+  updateCommentHighlights();
+}
+
+function onElementClick(e) {
+  e.stopPropagation();
+  const target = e.currentTarget.getAttribute('data-c');
+  activeTarget = target;
+  document.getElementById('commentTarget').textContent = '#' + target;
+  document.getElementById('commentForm').style.display = 'block';
+  document.getElementById('commentInput').value = '';
+  document.getElementById('commentInput').focus();
+  renderComments();
+}
+
+function submitComment() {
+  const input = document.getElementById('commentInput');
+  const text = input.value.trim();
+  if (!text || !activeTarget) return;
+  comments.push({ id: Date.now(), target: activeTarget, text: text, timestamp: new Date().toISOString() });
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(comments));
+  input.value = '';
+  renderComments();
+  updateCommentHighlights();
+}
+
+function deleteComment(id) {
+  comments = comments.filter(c => c.id !== id);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(comments));
+  renderComments();
+  updateCommentHighlights();
+}
+
+function renderComments() {
+  const list = document.getElementById('commentList');
+  const countEl = document.getElementById('commentCount');
+  if (comments.length === 0) {
+    list.innerHTML = '<div class="no-comments">Nenhum comentário ainda. Clique em elementos destacados para comentar.</div>';
+    countEl.style.display = 'none';
+    return;
+  }
+  countEl.style.display = 'inline';
+  countEl.textContent = comments.length;
+  const filtered = activeTarget
+    ? [...comments.filter(c => c.target === activeTarget), ...comments.filter(c => c.target !== activeTarget)]
+    : comments;
+  list.innerHTML = filtered.map(c => `
+    <div class="comment-item" ${c.target === activeTarget ? 'style="border-left:2px solid var(--accent)"' : ''}>
+      <div class="comment-item-header">
+        <span class="comment-item-section">#${c.target}</span>
+        <span class="comment-item-time">${new Date(c.timestamp).toLocaleString('pt-BR')}</span>
+      </div>
+      <div class="comment-item-text">${c.text}</div>
+      <button class="comment-item-delete" onclick="deleteComment(${c.id})">Remover</button>
+    </div>
+  `).join('');
+}
+
+function updateCommentHighlights() {
+  const targets = new Set(comments.map(c => c.target));
+  document.querySelectorAll('[data-c]').forEach(el => {
+    if (targets.has(el.getAttribute('data-c'))) {
+      el.classList.add('has-comment');
+    } else {
+      el.classList.remove('has-comment');
+    }
+  });
+}
+
+function closePanel() {
+  document.getElementById('commentPanel').classList.remove('open');
+  activeTarget = null;
+  document.getElementById('commentForm').style.display = 'none';
+}
+
+function exportComments() {
+  if (comments.length === 0) { alert('Nenhum comentário para exportar.'); return; }
+  let output = '# Solution Design Review Comments\n\n';
+  comments.forEach((c, i) => { output += `## #${i + 1} — ${c.target}\n${c.text}\n\n`; });
+  navigator.clipboard.writeText(output).then(() => {
+    alert('Comentários copiados para o clipboard! Cole de volta no Claude para revisões.');
+  }).catch(() => {
+    const ta = document.createElement('textarea'); ta.value = output;
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+    document.body.removeChild(ta); alert('Comentários copiados para o clipboard!');
+  });
+}
+
+updateCommentHighlights();
+document.getElementById('commentInput')?.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submitComment(); }
+});
+</script>
+
+</body>
+</html>
