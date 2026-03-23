@@ -4,13 +4,13 @@ import { useRouter } from 'expo-router'
 
 import { useWorkoutStore } from '@/stores/workoutStore'
 import { useAppStore } from '@/stores/appStore'
+import { usePlanStore } from '@/stores/planStore'
 import { PLANS } from '@/constants/plans'
 import { getNextPlanId } from '@/utils/getNextPlanId'
 import { WorkoutCard } from '@/components/WorkoutCard'
 import { HistoryChip } from '@/components/HistoryChip'
+import { EmptyPlans } from '@/components/EmptyPlans'
 import type { Plan } from '@/types'
-
-const PLAN_ENTRIES = Object.values(PLANS) as Plan[]
 
 export default function HomeScreen() {
   const router = useRouter()
@@ -21,6 +21,17 @@ export default function HomeScreen() {
   const lastDates = useAppStore((s) => s.lastDates)
   const historyLength = useAppStore((s) => s.history.length)
 
+  // Plans from planStore instead of hardcoded constant
+  const plans = usePlanStore((s) => s.plans)
+
+  // Seed step: if planStore is empty AND history exists, seed from PLANS constant
+  useEffect(() => {
+    const currentPlans = usePlanStore.getState().plans
+    if (currentPlans.length === 0 && historyLength > 0) {
+      usePlanStore.setState({ plans: Object.values(PLANS), nextLabel: 'D' })
+    }
+  }, [historyLength])
+
   // Auto-redirect to complete screen when status is 'completed'
   useEffect(() => {
     if (status === 'completed') {
@@ -28,7 +39,7 @@ export default function HomeScreen() {
     }
   }, [status, router])
 
-  const nextPlanId = getNextPlanId(PLAN_ENTRIES, lastDates)
+  const nextPlanId = getNextPlanId(plans, lastDates)
   const isActive = status === 'active'
 
   const handleCardPress = (plan: Plan): void => {
@@ -42,6 +53,22 @@ export default function HomeScreen() {
 
   const handleHistoryPress = (): void => {
     router.push('/history')
+  }
+
+  const handleMyPlansPress = (): void => {
+    router.push('/plans/')
+  }
+
+  // Empty state for new users with no plans and no history
+  if (plans.length === 0 && historyLength === 0) {
+    return (
+      <View className="flex-1 bg-background">
+        <View className="mt-14 px-6">
+          <Text className="font-ui text-[12px] uppercase tracking-[6px] text-muted">FORJA</Text>
+        </View>
+        <EmptyPlans />
+      </View>
+    )
   }
 
   return (
@@ -71,11 +98,11 @@ export default function HomeScreen() {
 
         {/* Workout cards */}
         <View className="mt-4 gap-3 px-6">
-          {PLAN_ENTRIES.map((plan) => (
+          {plans.map((plan) => (
             <WorkoutCard
               key={plan.id}
               planId={plan.id}
-              planName={plan.name}
+              planName={`${plan.label} ${plan.name}`}
               focus={plan.focus}
               lastDate={lastDates[plan.id]}
               isNext={plan.id === nextPlanId}
@@ -84,6 +111,22 @@ export default function HomeScreen() {
             />
           ))}
         </View>
+
+        {/* "Meus Treinos" button — hidden during active workout */}
+        {!isActive ? (
+          <View className="mt-6 px-6">
+            <Pressable
+              onPress={handleMyPlansPress}
+              accessibilityRole="button"
+              accessibilityLabel="Meus Treinos"
+              className="h-[46px] items-center justify-center rounded-pill border border-border-med"
+            >
+              <Text className="font-ui text-[13px] uppercase tracking-[2px] text-text-med">
+                MEUS TREINOS
+              </Text>
+            </Pressable>
+          </View>
+        ) : null}
       </ScrollView>
 
       {/* Sticky bottom CTA — thumb zone, always reachable */}
