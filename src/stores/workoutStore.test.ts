@@ -98,7 +98,11 @@ describe('workoutStore', () => {
 
     it('last set when all remaining are skipped returns {target:"checkpoint"}', () => {
       const plan = makePlan({
-        exercises: [makeExercise('ex-1', { sets: 1 }), makeExercise('ex-2', { sets: 1 }), makeExercise('ex-3', { sets: 1 })],
+        exercises: [
+          makeExercise('ex-1', { sets: 1 }),
+          makeExercise('ex-2', { sets: 1 }),
+          makeExercise('ex-3', { sets: 1 }),
+        ],
       })
       useWorkoutStore.getState().startWorkout(plan)
 
@@ -320,7 +324,7 @@ describe('workoutStore', () => {
           startedAt: 1000,
           completedAt: null,
         },
-        version: 1,
+        version: 2,
       }
       mockStorage.setItem('workout-store', JSON.stringify(persistedState))
 
@@ -344,6 +348,112 @@ describe('workoutStore', () => {
       expect(freshStore.getState().currentSets).toHaveLength(1)
       expect(freshStore.getState().startedAt).toBe(1000)
       expect(freshStore.getState().completedAt).toBeNull()
+    })
+  })
+
+  describe('migration v1 → v2', () => {
+    it('backfills restSeconds, timestamps, and label on activePlan and queue', async () => {
+      jest.resetModules()
+      jest.mock('@/storage/mmkv', () => require('@/storage/__mocks__/mmkv'))
+
+      const { mmkvStateStorage: mockStorage } =
+        require('@/storage/__mocks__/mmkv') as typeof import('@/storage/__mocks__/mmkv')
+
+      // V1 state: exercises lack restSeconds/timestamps, plan lacks label/timestamps
+      const v1State = {
+        state: {
+          status: 'active',
+          activePlan: {
+            id: 'A',
+            name: 'Treino A',
+            focus: 'Peito',
+            exercises: [
+              { id: 'ex-1', name: 'Supino', category: 'EMPH', equipment: 'Machine', reps: '10-15', sets: 3 },
+            ],
+          },
+          queue: [
+            { id: 'ex-2', name: 'Crucifixo', category: 'EMPH', equipment: 'Machine', reps: '10-15', sets: 3 },
+          ],
+          skippedIds: [],
+          currentSet: 1,
+          currentSets: [],
+          log: [],
+          startedAt: 1000,
+          completedAt: null,
+        },
+        version: 1,
+      }
+      mockStorage.setItem('workout-store', JSON.stringify(v1State))
+
+      const { useWorkoutStore: freshStore } =
+        require('@/stores/workoutStore') as typeof import('@/stores/workoutStore')
+
+      await new Promise<void>((resolve) => {
+        if (freshStore.persist.hasHydrated()) {
+          resolve()
+          return
+        }
+        const unsub = freshStore.persist.onFinishHydration(() => {
+          unsub()
+          resolve()
+        })
+      })
+
+      const state = freshStore.getState()
+
+      // activePlan should have backfilled fields
+      expect(state.activePlan?.label).toBe('T')
+      expect(state.activePlan?.createdAt).toBeTruthy()
+      expect(state.activePlan?.updatedAt).toBeTruthy()
+      expect(state.activePlan?.exercises[0]?.restSeconds).toBe(60)
+      expect(state.activePlan?.exercises[0]?.createdAt).toBeTruthy()
+      expect(state.activePlan?.exercises[0]?.updatedAt).toBeTruthy()
+
+      // queue should have backfilled fields
+      expect(state.queue[0]?.restSeconds).toBe(60)
+      expect(state.queue[0]?.createdAt).toBeTruthy()
+      expect(state.queue[0]?.updatedAt).toBeTruthy()
+    })
+
+    it('does not modify state when activePlan is null', async () => {
+      jest.resetModules()
+      jest.mock('@/storage/mmkv', () => require('@/storage/__mocks__/mmkv'))
+
+      const { mmkvStateStorage: mockStorage } =
+        require('@/storage/__mocks__/mmkv') as typeof import('@/storage/__mocks__/mmkv')
+
+      const v1State = {
+        state: {
+          status: 'idle',
+          activePlan: null,
+          queue: [],
+          skippedIds: [],
+          currentSet: 1,
+          currentSets: [],
+          log: [],
+          startedAt: null,
+          completedAt: null,
+        },
+        version: 1,
+      }
+      mockStorage.setItem('workout-store', JSON.stringify(v1State))
+
+      const { useWorkoutStore: freshStore } =
+        require('@/stores/workoutStore') as typeof import('@/stores/workoutStore')
+
+      await new Promise<void>((resolve) => {
+        if (freshStore.persist.hasHydrated()) {
+          resolve()
+          return
+        }
+        const unsub = freshStore.persist.onFinishHydration(() => {
+          unsub()
+          resolve()
+        })
+      })
+
+      expect(freshStore.getState().activePlan).toBeNull()
+      expect(freshStore.getState().queue).toEqual([])
     })
   })
 })

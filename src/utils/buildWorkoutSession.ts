@@ -29,6 +29,7 @@ export function buildWorkoutSession(
     id: `${activePlan.id}-${startedAt}` as WorkoutId,
     planId: activePlan.id,
     planName: activePlan.name,
+    planLabel: activePlan.label,
     focus: activePlan.focus,
     date: new Date(startedAt).toLocaleDateString('en-CA'),
     durationMinutes: Math.round((completedAt - startedAt) / 60000),

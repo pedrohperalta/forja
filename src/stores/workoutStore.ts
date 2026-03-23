@@ -178,8 +178,41 @@ export const useWorkoutStore = create<WorkoutState>()(
     {
       name: 'workout-store',
       storage: createJSONStorage(() => mmkvStateStorage),
-      version: 1,
-      migrate: (state) => state as WorkoutState,
+      version: 2,
+      migrate: (persisted, version) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const state = persisted as any
+
+        if (version === 1) {
+          const now = new Date().toISOString()
+
+          // Backfill exercise fields helper
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const backfillExercise = (ex: any) => ({
+            ...ex,
+            restSeconds: ex.restSeconds ?? 60,
+            createdAt: ex.createdAt ?? now,
+            updatedAt: ex.updatedAt ?? now,
+          })
+
+          if (state.activePlan) {
+            const namePrefix = state.activePlan.name?.charAt(0) ?? 'X'
+            state.activePlan = {
+              ...state.activePlan,
+              label: state.activePlan.label ?? (namePrefix === ' ' ? 'X' : namePrefix),
+              createdAt: state.activePlan.createdAt ?? now,
+              updatedAt: state.activePlan.updatedAt ?? now,
+              exercises: state.activePlan.exercises?.map(backfillExercise) ?? [],
+            }
+          }
+
+          if (state.queue?.length) {
+            state.queue = state.queue.map(backfillExercise)
+          }
+        }
+
+        return state as WorkoutState
+      },
       partialize: (state) => ({
         status: state.status,
         activePlan: state.activePlan,

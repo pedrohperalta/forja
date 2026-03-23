@@ -63,6 +63,7 @@ describe('buildWorkoutSession', () => {
 
     expect(session.planId).toBe('A')
     expect(session.planName).toBe('Treino A')
+    expect(session.planLabel).toBe('A')
     expect(session.focus).toBe('Peito / Ombros / Triceps')
     expect(session.exercises).toHaveLength(2)
     expect(session.exercises[0]?.name).toBe('Supino Reto')
