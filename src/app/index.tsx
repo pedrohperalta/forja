@@ -23,7 +23,6 @@ export default function HomeScreen() {
   // Plans from planStore instead of hardcoded constant
   const plans = usePlanStore((s) => s.plans)
 
-
   // Auto-redirect to complete screen when status is 'completed'
   useEffect(() => {
     if (status === 'completed') {

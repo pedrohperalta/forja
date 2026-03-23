@@ -139,7 +139,10 @@ describe('PlanDetailScreen', () => {
 
     fireEvent.press(screen.getByText('ADICIONAR EXERCICIO'))
 
-    expect(mockPush).toHaveBeenCalledWith({ pathname: '/plans/[id]/exercise', params: { id: 'plan-1' } })
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: '/plans/[id]/exercise',
+      params: { id: 'plan-1' },
+    })
   })
 
   it('navigates to exercise form in edit mode when edit is pressed', () => {
@@ -149,7 +152,10 @@ describe('PlanDetailScreen', () => {
 
     fireEvent.press(screen.getByLabelText('Editar exercicio'))
 
-    expect(mockPush).toHaveBeenCalledWith({ pathname: '/plans/[id]/exercise', params: { id: 'plan-1', exerciseId: 'ex-1' } })
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: '/plans/[id]/exercise',
+      params: { id: 'plan-1', exerciseId: 'ex-1' },
+    })
   })
 
   it('calls removeExercise after two-step delete', () => {
