@@ -8,6 +8,7 @@ type WorkoutHistoryCardProps = {
   id: WorkoutId
   planId: PlanId
   planName: string
+  planLabel?: string
   focus: string
   date: string
   durationMinutes: number
@@ -19,6 +20,7 @@ type WorkoutHistoryCardProps = {
 export function WorkoutHistoryCard({
   id,
   planName,
+  planLabel,
   focus,
   date,
   durationMinutes,
@@ -32,6 +34,9 @@ export function WorkoutHistoryCard({
     setExpanded((prev) => !prev)
     cancelDelete()
   }
+
+  // Display name with optional plan label prefix
+  const displayName = planLabel ? `${planLabel} — ${planName}` : planName
 
   // Highest weight lifted in this session
   const topWeight =
@@ -55,7 +60,7 @@ export function WorkoutHistoryCard({
           {/* Top row: plan name + date */}
           <View className="flex-row items-baseline justify-between">
             <Text className="font-display text-[20px] tracking-[1px] text-text" numberOfLines={1}>
-              {planName}
+              {displayName}
             </Text>
             <Text className="font-ui text-[11px] tracking-[0.5px] text-dim">{date}</Text>
           </View>

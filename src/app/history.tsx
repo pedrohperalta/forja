@@ -87,6 +87,7 @@ export default function HistoryScreen() {
           id={session.id}
           planId={session.planId}
           planName={session.planName}
+          {...(session.planLabel != null ? { planLabel: session.planLabel } : {})}
           focus={session.focus}
           date={session.date}
           durationMinutes={session.durationMinutes}

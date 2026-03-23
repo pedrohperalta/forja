@@ -19,6 +19,7 @@ describe('WorkoutHistoryCard', () => {
     id: 'A-1000' as WorkoutId,
     planId: 'A' as PlanId,
     planName: 'Treino A',
+    planLabel: 'A',
     focus: 'Peito / Ombros / Triceps',
     date: '2026-03-21',
     durationMinutes: 45,
@@ -33,7 +34,7 @@ describe('WorkoutHistoryCard', () => {
   it('renders plan name, focus, date, and metadata', () => {
     render(<WorkoutHistoryCard {...defaultProps} />)
 
-    expect(screen.getByText('Treino A')).toBeTruthy()
+    expect(screen.getByText('A — Treino A')).toBeTruthy()
     expect(screen.getByText('Peito / Ombros / Triceps')).toBeTruthy()
     expect(screen.getByText('2026-03-21')).toBeTruthy()
     expect(screen.getByText(/45 min/)).toBeTruthy()
@@ -123,5 +124,20 @@ describe('WorkoutHistoryCard', () => {
     expect(
       screen.getByLabelText('Treino A, Peito / Ombros / Triceps, 45 minutos, 2 exercícios'),
     ).toBeTruthy()
+  })
+
+  describe('planLabel display', () => {
+    it('displays planLabel with plan name when planLabel is present', () => {
+      render(<WorkoutHistoryCard {...defaultProps} planLabel="A" planName="Treino de Peito" />)
+
+      expect(screen.getByText('A — Treino de Peito')).toBeTruthy()
+    })
+
+    it('displays only plan name when planLabel is absent', () => {
+      const { planLabel: _, ...propsWithoutLabel } = defaultProps
+      render(<WorkoutHistoryCard {...propsWithoutLabel} planName="Treino A" />)
+
+      expect(screen.getByText('Treino A')).toBeTruthy()
+    })
   })
 })
