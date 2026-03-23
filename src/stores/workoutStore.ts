@@ -72,7 +72,7 @@ export const useWorkoutStore = create<WorkoutState>()(
             currentSet: state.currentSet + 1,
             currentSets: [...state.currentSets, newSetRecord],
           })
-          return { target: 'rest' }
+          return { target: 'rest', restSeconds: exercise.restSeconds }
         }
 
         // Last set — log exercise, remove from queue by ID, reset currentSet/currentSets
@@ -97,7 +97,7 @@ export const useWorkoutStore = create<WorkoutState>()(
         if (newQueue.length === 0) return { target: 'complete' }
         const nextExercise = getCurrentExercise(newQueue, state.skippedIds)
         if (!nextExercise) return { target: 'checkpoint' }
-        return { target: 'rest' }
+        return { target: 'rest', restSeconds: exercise.restSeconds }
       },
 
       skipExercise: (): NavigationTarget => {

@@ -15,7 +15,7 @@ export type ExerciseLog = {
 
 /** Discriminated union for workout flow navigation targets. */
 export type NavigationTarget =
-  | { target: 'rest' }
+  | { target: 'rest'; restSeconds: number }
   | { target: 'checkpoint' }
   | { target: 'complete' }
   | { target: 'next' }
@@ -28,14 +28,20 @@ export type Exercise = {
   equipment: string
   reps: string
   sets: number
+  restSeconds: number
+  createdAt: string
+  updatedAt: string
 }
 
 /** A workout plan containing a list of exercises. */
 export type Plan = {
   id: PlanId
+  label: string
   name: string
   focus: string
   exercises: Exercise[]
+  createdAt: string
+  updatedAt: string
 }
 
 /** A completed exercise summary for workout history. */
@@ -50,6 +56,7 @@ export type WorkoutSession = {
   id: WorkoutId
   planId: PlanId
   planName: string
+  planLabel?: string
   focus: string
   date: string
   durationMinutes: number

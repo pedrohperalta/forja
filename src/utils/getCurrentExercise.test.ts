@@ -1,14 +1,6 @@
 import { getCurrentExercise } from '@/utils/getCurrentExercise'
-import type { Exercise, ExerciseId } from '@/types'
-
-const makeExercise = (id: string): Exercise => ({
-  id: id as ExerciseId,
-  name: `Exercise ${id}`,
-  category: 'TEST',
-  equipment: 'Machine',
-  reps: '10-15',
-  sets: 3,
-})
+import type { ExerciseId } from '@/types'
+import { makeExercise } from '@/test-utils/factories'
 
 describe('getCurrentExercise', () => {
   it('returns the first exercise when no exercises are skipped', () => {

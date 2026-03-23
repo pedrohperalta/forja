@@ -6,22 +6,11 @@
 
 import { render, screen, fireEvent } from '@testing-library/react-native'
 import { PendingExerciseCard } from './PendingExerciseCard'
-import type { ExerciseId, Exercise } from '@/types'
-
-function makeExercise(id: string, name: string): Exercise {
-  return {
-    id: id as ExerciseId,
-    name,
-    category: 'EMPH',
-    equipment: 'Maquina',
-    reps: '10-15',
-    sets: 3,
-  }
-}
+import { makeExercise } from '@/test-utils/factories'
 
 describe('PendingExerciseCard', () => {
   const defaultProps = {
-    exercise: makeExercise('ex-1', 'Supino Reto'),
+    exercise: makeExercise('ex-1', { name: 'Supino Reto' }),
     onDoNow: jest.fn(),
     onRemove: jest.fn(),
   }
@@ -39,7 +28,7 @@ describe('PendingExerciseCard', () => {
   it('renders category badge', () => {
     render(<PendingExerciseCard {...defaultProps} />)
 
-    expect(screen.getByText('EMPH')).toBeTruthy()
+    expect(screen.getByText('Peito')).toBeTruthy()
   })
 
   it('renders equipment badge', () => {

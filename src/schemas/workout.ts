@@ -25,6 +25,7 @@ export const WorkoutSessionSchema = z.object({
   id: z.string(),
   planId: z.string(),
   planName: z.string(),
+  planLabel: z.string().optional(),
   focus: z.string(),
   date: z.string(),
   durationMinutes: z.number(),

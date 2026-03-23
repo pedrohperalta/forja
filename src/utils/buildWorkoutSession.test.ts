@@ -1,51 +1,30 @@
-import type { ExerciseId, ExerciseLog, Plan, PlanId, WorkoutId } from '@/types'
+import type { ExerciseId, ExerciseLog, WorkoutId } from '@/types'
 import { buildWorkoutSession } from '@/utils/buildWorkoutSession'
+import { makeExercise, makePlan, makeLog as makeLogEntry } from '@/test-utils/factories'
 
-// -- Test data factories --
-
-function makePlan(): Plan {
-  return {
-    id: 'A' as PlanId,
-    name: 'Treino A',
-    focus: 'Peito / Ombros / Triceps',
-    exercises: [
-      {
-        id: 'supino-reto' as ExerciseId,
-        name: 'Supino Reto',
-        category: 'EMPH',
-        equipment: 'Maquina',
-        reps: '10-15',
-        sets: 3,
-      },
-    ],
-  }
+function makeTestPlan() {
+  return makePlan({
+    exercises: [makeExercise('supino-reto', { name: 'Supino Reto' })],
+  })
 }
 
-function makeLog(): ExerciseLog[] {
+function makeTestLog(): ExerciseLog[] {
   return [
-    {
-      exerciseId: 'supino-reto' as ExerciseId,
-      name: 'Supino Reto',
-      sets: [
-        { weight: 50, completedAt: 1000 },
-        { weight: 55, completedAt: 2000 },
-        { weight: 60, completedAt: 3000 },
-      ],
-    },
-    {
-      exerciseId: 'elevacao-frontal' as ExerciseId,
-      name: 'Elevacao Frontal',
-      sets: [
-        { weight: 10, completedAt: 4000 },
-        { weight: 12, completedAt: 5000 },
-      ],
-    },
+    makeLogEntry('supino-reto', 'Supino Reto', [
+      { weight: 50, completedAt: 1000 },
+      { weight: 55, completedAt: 2000 },
+      { weight: 60, completedAt: 3000 },
+    ]),
+    makeLogEntry('elevacao-frontal', 'Elevacao Frontal', [
+      { weight: 10, completedAt: 4000 },
+      { weight: 12, completedAt: 5000 },
+    ]),
   ]
 }
 
 describe('buildWorkoutSession', () => {
-  const plan = makePlan()
-  const log = makeLog()
+  const plan = makeTestPlan()
+  const log = makeTestLog()
   const startedAt = 1711000000000 // 2024-03-21T...
   const completedAt = 1711002700000 // 45 minutes later
 

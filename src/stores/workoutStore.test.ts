@@ -6,34 +6,12 @@
  * interference.
  */
 
-import type { ExerciseId, Plan, PlanId, NavigationTarget, Exercise } from '@/types'
+import type { ExerciseId, NavigationTarget } from '@/types'
 import { clearMockStorage } from '@/storage/__mocks__/mmkv'
 import { useWorkoutStore } from '@/stores/workoutStore'
+import { makeExercise, makePlan } from '@/test-utils/factories'
 
 jest.mock('@/storage/mmkv', () => require('@/storage/__mocks__/mmkv'))
-
-// -- Test data factories --
-
-function makeExercise(id: string, sets = 3): Exercise {
-  return {
-    id: id as ExerciseId,
-    name: `Exercise ${id}`,
-    category: 'TEST',
-    equipment: 'Machine',
-    reps: '10-15',
-    sets,
-  }
-}
-
-function makePlan(overrides: Partial<Plan> = {}): Plan {
-  return {
-    id: 'A' as PlanId,
-    name: 'Treino A',
-    focus: 'Peito / Ombros / Triceps',
-    exercises: [makeExercise('ex-1'), makeExercise('ex-2'), makeExercise('ex-3')],
-    ...overrides,
-  }
-}
 
 // -- Tests --
 
@@ -70,7 +48,7 @@ describe('workoutStore', () => {
 
       const result: NavigationTarget = useWorkoutStore.getState().completeSet(60)
 
-      expect(result).toEqual({ target: 'rest' })
+      expect(result).toEqual({ target: 'rest', restSeconds: 60 })
       expect(useWorkoutStore.getState().currentSet).toBe(2)
       expect(useWorkoutStore.getState().currentSets).toHaveLength(1)
       expect(useWorkoutStore.getState().currentSets[0]?.weight).toBe(60)
@@ -85,7 +63,7 @@ describe('workoutStore', () => {
       useWorkoutStore.getState().completeSet(60) // set 2 -> 3
       const result: NavigationTarget = useWorkoutStore.getState().completeSet(65) // set 3 (last)
 
-      expect(result).toEqual({ target: 'rest' })
+      expect(result).toEqual({ target: 'rest', restSeconds: 60 })
 
       // Exercise should be logged
       expect(useWorkoutStore.getState().log).toHaveLength(1)
@@ -106,7 +84,7 @@ describe('workoutStore', () => {
     it('last set of last exercise returns {target:"complete"}', () => {
       // Plan with only one exercise (2 sets)
       const plan = makePlan({
-        exercises: [makeExercise('ex-only', 2)],
+        exercises: [makeExercise('ex-only', { sets: 2 })],
       })
       useWorkoutStore.getState().startWorkout(plan)
 
@@ -120,7 +98,7 @@ describe('workoutStore', () => {
 
     it('last set when all remaining are skipped returns {target:"checkpoint"}', () => {
       const plan = makePlan({
-        exercises: [makeExercise('ex-1', 1), makeExercise('ex-2', 1), makeExercise('ex-3', 1)],
+        exercises: [makeExercise('ex-1', { sets: 1 }), makeExercise('ex-2', { sets: 1 }), makeExercise('ex-3', { sets: 1 })],
       })
       useWorkoutStore.getState().startWorkout(plan)
 

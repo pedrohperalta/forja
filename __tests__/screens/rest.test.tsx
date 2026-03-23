@@ -7,6 +7,7 @@
 
 import { render, screen, fireEvent, act } from '@testing-library/react-native'
 import type { ExerciseId, Exercise, Plan, PlanId, SetRecord, ExerciseLog } from '@/types'
+import { makeExercise, makePlan } from '@/test-utils/factories'
 
 // -- Reanimated mock --
 
@@ -86,27 +87,7 @@ jest.mock('expo-router', () => ({
   }),
 }))
 
-// -- Test data factories --
-
-function makeExercise(id: string, name?: string): Exercise {
-  return {
-    id: id as ExerciseId,
-    name: name ?? `Exercise ${id}`,
-    category: 'TEST',
-    equipment: 'Machine',
-    reps: '10-15',
-    sets: 3,
-  }
-}
-
-function makePlan(exercises: Exercise[]): Plan {
-  return {
-    id: 'A' as PlanId,
-    name: 'Treino A',
-    focus: 'Peito / Ombros / Triceps',
-    exercises,
-  }
-}
+// Factories imported from @/test-utils/factories
 
 // -- Import screen after mocks --
 
@@ -121,13 +102,13 @@ beforeEach(() => {
   jest.useFakeTimers()
 
   const exercises = [
-    makeExercise('ex-1', 'Supino Reto'),
-    makeExercise('ex-2', 'Crucifixo'),
-    makeExercise('ex-3', 'Elevacao Lateral'),
+    makeExercise('ex-1', { name: 'Supino Reto' }),
+    makeExercise('ex-2', { name: 'Crucifixo' }),
+    makeExercise('ex-3', { name: 'Elevacao Lateral' }),
   ]
 
   mockWorkoutState.status = 'active'
-  mockWorkoutState.activePlan = makePlan(exercises)
+  mockWorkoutState.activePlan = makePlan({ exercises })
   mockWorkoutState.queue = [...exercises]
   mockWorkoutState.skippedIds = []
   mockWorkoutState.currentSet = 1

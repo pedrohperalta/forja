@@ -52,4 +52,40 @@ describe('PLANS', () => {
       expect(plan.id).toBeTruthy()
     }
   })
+
+  it('every exercise has restSeconds as a positive number', () => {
+    for (const plan of Object.values(PLANS)) {
+      for (const exercise of plan.exercises) {
+        expect(typeof exercise.restSeconds).toBe('number')
+        expect(exercise.restSeconds).toBeGreaterThan(0)
+      }
+    }
+  })
+
+  it('every exercise has createdAt and updatedAt as ISO strings', () => {
+    for (const plan of Object.values(PLANS)) {
+      for (const exercise of plan.exercises) {
+        expect(exercise.createdAt).toBeTruthy()
+        expect(exercise.updatedAt).toBeTruthy()
+        expect(() => new Date(exercise.createdAt)).not.toThrow()
+        expect(() => new Date(exercise.updatedAt)).not.toThrow()
+      }
+    }
+  })
+
+  it('every plan has label, createdAt, and updatedAt', () => {
+    for (const plan of Object.values(PLANS)) {
+      expect(plan.label).toBeTruthy()
+      expect(plan.createdAt).toBeTruthy()
+      expect(plan.updatedAt).toBeTruthy()
+      expect(() => new Date(plan.createdAt)).not.toThrow()
+      expect(() => new Date(plan.updatedAt)).not.toThrow()
+    }
+  })
+
+  it('plan labels match their keys', () => {
+    for (const [key, plan] of Object.entries(PLANS)) {
+      expect(plan.label).toBe(key)
+    }
+  })
 })

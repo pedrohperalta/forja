@@ -15,6 +15,7 @@ import type {
   ExerciseLog,
   WorkoutSession,
 } from '@/types'
+import { makeExercise, makePlan, makeLog } from '@/test-utils/factories'
 
 // -- Mock FlashList --
 
@@ -91,48 +92,20 @@ jest.mock('expo-router', () => ({
   }),
 }))
 
-// -- Test data factories --
+// Factories imported from @/test-utils/factories
 
-function makeExercise(id: string, name?: string): Exercise {
-  return {
-    id: id as ExerciseId,
-    name: name ?? `Exercise ${id}`,
-    category: 'TEST',
-    equipment: 'Machine',
-    reps: '10-15',
-    sets: 3,
-  }
-}
-
-function makePlan(exercises: Exercise[]): Plan {
-  return {
-    id: 'A' as PlanId,
-    name: 'Treino A',
-    focus: 'Peito / Ombros / Triceps',
-    exercises,
-  }
-}
-
-function makeLog(): ExerciseLog[] {
+function makeTestLog(): ExerciseLog[] {
   return [
-    {
-      exerciseId: 'ex-1' as ExerciseId,
-      name: 'Supino Reto',
-      sets: [
-        { weight: 60, completedAt: 2000 },
-        { weight: 60, completedAt: 3000 },
-        { weight: 65, completedAt: 4000 },
-      ],
-    },
-    {
-      exerciseId: 'ex-2' as ExerciseId,
-      name: 'Crucifixo',
-      sets: [
-        { weight: 20, completedAt: 5000 },
-        { weight: 22, completedAt: 6000 },
-        { weight: 22, completedAt: 7000 },
-      ],
-    },
+    makeLog('ex-1', 'Supino Reto', [
+      { weight: 60, completedAt: 2000 },
+      { weight: 60, completedAt: 3000 },
+      { weight: 65, completedAt: 4000 },
+    ]),
+    makeLog('ex-2', 'Crucifixo', [
+      { weight: 20, completedAt: 5000 },
+      { weight: 22, completedAt: 6000 },
+      { weight: 22, completedAt: 7000 },
+    ]),
   ]
 }
 
@@ -148,18 +121,18 @@ beforeEach(() => {
   jest.clearAllMocks()
 
   const exercises = [
-    makeExercise('ex-1', 'Supino Reto'),
-    makeExercise('ex-2', 'Crucifixo'),
-    makeExercise('ex-3', 'Elevacao Lateral'),
+    makeExercise('ex-1', { name: 'Supino Reto' }),
+    makeExercise('ex-2', { name: 'Crucifixo' }),
+    makeExercise('ex-3', { name: 'Elevacao Lateral' }),
   ]
 
   mockWorkoutState.status = 'active'
-  mockWorkoutState.activePlan = makePlan(exercises)
+  mockWorkoutState.activePlan = makePlan({ exercises })
   mockWorkoutState.queue = []
   mockWorkoutState.skippedIds = []
   mockWorkoutState.currentSet = 1
   mockWorkoutState.currentSets = []
-  mockWorkoutState.log = makeLog()
+  mockWorkoutState.log = makeTestLog()
   mockWorkoutState.startedAt = 1000
   mockWorkoutState.completedAt = null
 
