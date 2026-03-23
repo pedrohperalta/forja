@@ -12,6 +12,7 @@ import { render, screen, fireEvent } from '@testing-library/react-native'
 import { useWorkoutStore } from '@/stores/workoutStore'
 import { useAppStore } from '@/stores/appStore'
 import { usePlanStore } from '@/stores/planStore'
+import { seedLegacyPlans } from '@/utils/seedLegacyPlans'
 
 import HomeScreen from '@/app/index'
 
@@ -40,6 +41,10 @@ jest.mock('@/stores/planStore', () => ({
     setState: jest.fn(),
     getState: jest.fn(),
   }),
+}))
+
+jest.mock('@/utils/seedLegacyPlans', () => ({
+  seedLegacyPlans: jest.fn(),
 }))
 
 // -- Helpers --
@@ -122,14 +127,7 @@ describe('HomeScreen', () => {
 
     render(<HomeScreen />)
 
-    expect(
-      (usePlanStore as unknown as jest.Mock & { setState: jest.Mock }).setState,
-    ).toHaveBeenCalledWith(
-      expect.objectContaining({
-        plans: expect.any(Array),
-        nextLabel: 'D',
-      }),
-    )
+    expect(seedLegacyPlans).toHaveBeenCalledTimes(1)
   })
 
   describe('"Meus Treinos" button', () => {

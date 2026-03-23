@@ -5,11 +5,11 @@ import { useRouter } from 'expo-router'
 import { useWorkoutStore } from '@/stores/workoutStore'
 import { useAppStore } from '@/stores/appStore'
 import { usePlanStore } from '@/stores/planStore'
-import { PLANS } from '@/constants/plans'
 import { getNextPlanId } from '@/utils/getNextPlanId'
 import { WorkoutCard } from '@/components/WorkoutCard'
 import { HistoryChip } from '@/components/HistoryChip'
 import { EmptyPlans } from '@/components/EmptyPlans'
+import { seedLegacyPlans } from '@/utils/seedLegacyPlans'
 import type { Plan } from '@/types'
 
 export default function HomeScreen() {
@@ -24,11 +24,11 @@ export default function HomeScreen() {
   // Plans from planStore instead of hardcoded constant
   const plans = usePlanStore((s) => s.plans)
 
-  // Seed step: if planStore is empty AND history exists, seed from PLANS constant
+  // Seed step: if planStore is empty AND history exists, seed from legacy hardcoded plans
   useEffect(() => {
     const currentPlans = usePlanStore.getState().plans
     if (currentPlans.length === 0 && historyLength > 0) {
-      usePlanStore.setState({ plans: Object.values(PLANS), nextLabel: 'D' })
+      seedLegacyPlans()
     }
   }, [historyLength])
 
