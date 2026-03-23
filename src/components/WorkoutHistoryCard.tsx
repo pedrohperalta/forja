@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { View, Text, Pressable } from 'react-native'
 
+import { useTwoStepDelete } from '@/hooks/useTwoStepDelete'
 import type { CompletedExercise, PlanId, WorkoutId } from '@/types'
 
 type WorkoutHistoryCardProps = {
@@ -25,24 +26,11 @@ export function WorkoutHistoryCard({
   onDelete,
 }: WorkoutHistoryCardProps): React.JSX.Element {
   const [expanded, setExpanded] = useState(false)
-  const [isConfirming, setIsConfirming] = useState(false)
+  const { deleteState, requestDelete, confirmDelete, cancelDelete } = useTwoStepDelete(onDelete)
 
   const handleToggle = (): void => {
     setExpanded((prev) => !prev)
-    setIsConfirming(false)
-  }
-
-  const handleDeletePress = (): void => {
-    setIsConfirming(true)
-  }
-
-  const handleConfirm = (): void => {
-    onDelete()
-    setIsConfirming(false)
-  }
-
-  const handleCancel = (): void => {
-    setIsConfirming(false)
+    cancelDelete()
   }
 
   // Highest weight lifted in this session
@@ -134,11 +122,11 @@ export function WorkoutHistoryCard({
 
               {/* Delete action */}
               <View className="mt-4 border-t border-border pt-3">
-                {isConfirming ? (
+                {deleteState === 'confirming' ? (
                   <View className="flex-row gap-3">
                     <Pressable
                       testID="confirm-delete-button"
-                      onPress={handleConfirm}
+                      onPress={confirmDelete}
                       accessibilityRole="button"
                       accessibilityLabel="Confirmar exclusão"
                       className="h-[38px] flex-1 items-center justify-center rounded-pill border border-danger bg-danger-dim"
@@ -149,7 +137,7 @@ export function WorkoutHistoryCard({
                     </Pressable>
                     <Pressable
                       testID="cancel-delete-button"
-                      onPress={handleCancel}
+                      onPress={cancelDelete}
                       accessibilityRole="button"
                       accessibilityLabel="Cancelar exclusão"
                       className="h-[38px] flex-1 items-center justify-center rounded-pill border border-border"
@@ -162,7 +150,7 @@ export function WorkoutHistoryCard({
                 ) : (
                   <Pressable
                     testID="delete-button"
-                    onPress={handleDeletePress}
+                    onPress={requestDelete}
                     accessibilityRole="button"
                     accessibilityLabel="Apagar treino"
                     className="h-[38px] w-full items-center justify-center rounded-pill border border-border-med bg-surface-2"
