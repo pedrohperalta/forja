@@ -12,7 +12,6 @@ import { render, screen, fireEvent } from '@testing-library/react-native'
 import { useWorkoutStore } from '@/stores/workoutStore'
 import { useAppStore } from '@/stores/appStore'
 import { usePlanStore } from '@/stores/planStore'
-import { seedLegacyPlans } from '@/utils/seedLegacyPlans'
 
 import HomeScreen from '@/app/index'
 
@@ -41,10 +40,6 @@ jest.mock('@/stores/planStore', () => ({
     setState: jest.fn(),
     getState: jest.fn(),
   }),
-}))
-
-jest.mock('@/utils/seedLegacyPlans', () => ({
-  seedLegacyPlans: jest.fn(),
 }))
 
 // -- Helpers --
@@ -108,26 +103,18 @@ describe('HomeScreen', () => {
 
     render(<HomeScreen />)
 
-    expect(screen.getByText('A Treino A')).toBeTruthy()
-    expect(screen.getByText('B Treino B')).toBeTruthy()
-    expect(screen.getByText('C Treino C')).toBeTruthy()
+    expect(screen.getByText('Treino A')).toBeTruthy()
+    expect(screen.getByText('Treino B')).toBeTruthy()
+    expect(screen.getByText('Treino C')).toBeTruthy()
   })
 
-  it('renders EmptyPlans when planStore has no plans and no history', () => {
-    setupMocks({ plans: [], historyLength: 0 })
+  it('renders EmptyPlans when planStore has no plans', () => {
+    setupMocks({ plans: [] })
 
     render(<HomeScreen />)
 
     expect(screen.getByText('Sem Treinos')).toBeTruthy()
     expect(screen.getByText('CRIAR PRIMEIRO PLANO')).toBeTruthy()
-  })
-
-  it('seeds planStore when empty and history exists', () => {
-    setupMocks({ plans: [], historyLength: 3 })
-
-    render(<HomeScreen />)
-
-    expect(seedLegacyPlans).toHaveBeenCalledTimes(1)
   })
 
   describe('"Meus Treinos" button', () => {
@@ -244,7 +231,7 @@ describe('HomeScreen', () => {
 
       render(<HomeScreen />)
 
-      const card = screen.getByText('A Treino A')
+      const card = screen.getByText('Treino A')
       fireEvent.press(card)
 
       expect(startWorkout).not.toHaveBeenCalled()
@@ -257,7 +244,7 @@ describe('HomeScreen', () => {
 
       render(<HomeScreen />)
 
-      const card = screen.getByText('A Treino A')
+      const card = screen.getByText('Treino A')
       fireEvent.press(card)
 
       expect(startWorkout).toHaveBeenCalledTimes(1)

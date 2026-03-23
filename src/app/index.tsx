@@ -9,7 +9,6 @@ import { getNextPlanId } from '@/utils/getNextPlanId'
 import { WorkoutCard } from '@/components/WorkoutCard'
 import { HistoryChip } from '@/components/HistoryChip'
 import { EmptyPlans } from '@/components/EmptyPlans'
-import { seedLegacyPlans } from '@/utils/seedLegacyPlans'
 import type { Plan } from '@/types'
 
 export default function HomeScreen() {
@@ -24,13 +23,6 @@ export default function HomeScreen() {
   // Plans from planStore instead of hardcoded constant
   const plans = usePlanStore((s) => s.plans)
 
-  // Seed step: if planStore is empty AND history exists, seed from legacy hardcoded plans
-  useEffect(() => {
-    const currentPlans = usePlanStore.getState().plans
-    if (currentPlans.length === 0 && historyLength > 0) {
-      seedLegacyPlans()
-    }
-  }, [historyLength])
 
   // Auto-redirect to complete screen when status is 'completed'
   useEffect(() => {
@@ -102,7 +94,7 @@ export default function HomeScreen() {
             <WorkoutCard
               key={plan.id}
               planId={plan.id}
-              planName={`${plan.label} ${plan.name}`}
+              planName={plan.name}
               focus={plan.focus}
               lastDate={lastDates[plan.id]}
               isNext={plan.id === nextPlanId}
