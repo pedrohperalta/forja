@@ -4,7 +4,7 @@
   "slug": "training_configuration",
   "createdAt": "2026-03-22T00:00:00.000Z",
   "updatedAt": "2026-03-22T00:00:00.000Z",
-  "phase": "solution",
+  "phase": "track-creation",
   "status": "completed",
   "phaseHistory": [
     {
@@ -15,6 +15,12 @@
     },
     {
       "phase": "solution",
+      "status": "completed",
+      "startedAt": "2026-03-22T00:00:00.000Z",
+      "completedAt": "2026-03-22T00:00:00.000Z"
+    },
+    {
+      "phase": "track-creation",
       "status": "completed",
       "startedAt": "2026-03-22T00:00:00.000Z",
       "completedAt": "2026-03-22T00:00:00.000Z"
