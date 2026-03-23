@@ -2,17 +2,25 @@
   "id": "plan-store-foundation_20260322",
   "title": "Plan Store Foundation",
   "type": "feature",
-  "status": "pending",
+  "status": "complete",
   "created": "2026-03-22T00:00:00.000Z",
-  "updated": "2026-03-22T00:00:00.000Z",
+  "updated": "2026-03-22T12:00:00.000Z",
+  "current_phase": 7,
+  "current_task": "7.4",
   "phases": {
     "total": 7,
-    "completed": 0
+    "completed": 7
   },
   "tasks": {
     "total": 28,
-    "completed": 0
+    "completed": 28
   },
   "masonsIdeaId": "training_configuration",
-  "dependsOn": []
+  "dependsOn": [],
+  "commits": [
+    "a8aaae3: feat(types): extend types, add shared factories, schemas, categories, and update constants",
+    "1482857: feat(store): add planStore with CRUD operations and MMKV persistence",
+    "271d2c9: refactor(utils): rewrite getNextPlanId to accept plans array parameter",
+    "411be30: feat(store): bump workoutStore to v2 with migration and planLabel snapshot"
+  ]
 }
