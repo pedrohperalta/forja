@@ -1,8 +1,9 @@
-import { View, Text, Pressable, ScrollView, TextInput } from 'react-native'
+import { View, Text, Pressable, ScrollView, TextInput, LayoutAnimation } from 'react-native'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import Svg, { Path } from 'react-native-svg'
 
 import { usePlanStore } from '@/stores/planStore'
+import { useHaptics } from '@/hooks/useHaptics'
 import { ExerciseRow } from '@/components/ExerciseRow'
 import type { PlanId, ExerciseId } from '@/types'
 
@@ -14,6 +15,7 @@ export default function PlanDetailScreen(): React.JSX.Element {
   const removeExercise = usePlanStore((s) => s.removeExercise)
   const reorderExercises = usePlanStore((s) => s.reorderExercises)
   const router = useRouter()
+  const haptics = useHaptics()
 
   const plan = plans.find((p) => p.id === id)
 
@@ -34,6 +36,8 @@ export default function PlanDetailScreen(): React.JSX.Element {
   }
 
   const handleDeleteExercise = (exerciseId: ExerciseId): void => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
+    haptics.warning()
     removeExercise(plan.id as PlanId, exerciseId)
   }
 

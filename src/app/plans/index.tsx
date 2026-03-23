@@ -1,8 +1,9 @@
-import { View, Text, Pressable, ScrollView } from 'react-native'
+import { View, Text, Pressable, ScrollView, LayoutAnimation } from 'react-native'
 import { useRouter } from 'expo-router'
 import Svg, { Path } from 'react-native-svg'
 
 import { usePlanStore } from '@/stores/planStore'
+import { useHaptics } from '@/hooks/useHaptics'
 import { PlanCard } from '@/components/PlanCard'
 import type { PlanId } from '@/types'
 
@@ -12,8 +13,10 @@ export default function PlansScreen(): React.JSX.Element {
   const addPlan = usePlanStore((s) => s.addPlan)
   const removePlan = usePlanStore((s) => s.removePlan)
   const router = useRouter()
+  const haptics = useHaptics()
 
   const handleAddPlan = (): void => {
+    haptics.light()
     const id = addPlan('Novo Plano', '')
     router.push(`/plans/${id}`)
   }
@@ -23,6 +26,8 @@ export default function PlansScreen(): React.JSX.Element {
   }
 
   const handleDeletePlan = (id: PlanId): void => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
+    haptics.warning()
     removePlan(id)
   }
 

@@ -4,6 +4,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router'
 import Svg, { Path } from 'react-native-svg'
 
 import { usePlanStore } from '@/stores/planStore'
+import { useHaptics } from '@/hooks/useHaptics'
 import { CategorySelector } from '@/components/CategorySelector'
 import { ExerciseFormSchema } from '@/schemas/plan'
 import type { PlanId, ExerciseId } from '@/types'
@@ -19,6 +20,7 @@ export default function ExerciseFormScreen(): React.JSX.Element {
   const addExercise = usePlanStore((s) => s.addExercise)
   const updateExercise = usePlanStore((s) => s.updateExercise)
   const router = useRouter()
+  const haptics = useHaptics()
 
   const plan = plans.find((p) => p.id === id)
   const existingExercise = exerciseId ? plan?.exercises.find((e) => e.id === exerciseId) : undefined
@@ -50,6 +52,7 @@ export default function ExerciseFormScreen(): React.JSX.Element {
     const result = ExerciseFormSchema.safeParse(formData)
 
     if (!result.success) {
+      haptics.warning()
       const fieldErrors: Record<string, string> = {}
       for (const issue of result.error.issues) {
         const field = issue.path[0]
@@ -60,6 +63,8 @@ export default function ExerciseFormScreen(): React.JSX.Element {
       setErrors(fieldErrors)
       return
     }
+
+    haptics.success()
 
     if (isEditMode && exerciseId) {
       updateExercise(id as PlanId, exerciseId as ExerciseId, {
@@ -84,10 +89,22 @@ export default function ExerciseFormScreen(): React.JSX.Element {
     router.back()
   }
 
-  const incrementSets = (): void => setSets((prev) => prev + 1)
-  const decrementSets = (): void => setSets((prev) => Math.max(1, prev - 1))
-  const incrementRest = (): void => setRestSeconds((prev) => prev + 15)
-  const decrementRest = (): void => setRestSeconds((prev) => Math.max(0, prev - 15))
+  const incrementSets = (): void => {
+    haptics.light()
+    setSets((prev) => prev + 1)
+  }
+  const decrementSets = (): void => {
+    haptics.light()
+    setSets((prev) => Math.max(1, prev - 1))
+  }
+  const incrementRest = (): void => {
+    haptics.light()
+    setRestSeconds((prev) => prev + 15)
+  }
+  const decrementRest = (): void => {
+    haptics.light()
+    setRestSeconds((prev) => Math.max(0, prev - 15))
+  }
 
   return (
     <View className="flex-1 bg-background">
