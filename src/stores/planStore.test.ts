@@ -8,6 +8,9 @@
 import type { ExerciseId, PlanId } from '@/types'
 import { clearMockStorage } from '@/storage/__mocks__/mmkv'
 
+// Import after mocks
+import { usePlanStore } from '@/stores/planStore'
+
 jest.mock('@/storage/mmkv', () => require('@/storage/__mocks__/mmkv'))
 
 // Mock expo-crypto to return deterministic UUIDs for testing
@@ -30,9 +33,6 @@ jest.mock('@/stores/workoutStore', () => ({
     getState: () => mockWorkoutStoreState,
   },
 }))
-
-// Import after mocks
-import { usePlanStore } from '@/stores/planStore'
 
 describe('planStore', () => {
   beforeEach(() => {

@@ -368,11 +368,25 @@ describe('workoutStore', () => {
             name: 'Treino A',
             focus: 'Peito',
             exercises: [
-              { id: 'ex-1', name: 'Supino', category: 'EMPH', equipment: 'Machine', reps: '10-15', sets: 3 },
+              {
+                id: 'ex-1',
+                name: 'Supino',
+                category: 'EMPH',
+                equipment: 'Machine',
+                reps: '10-15',
+                sets: 3,
+              },
             ],
           },
           queue: [
-            { id: 'ex-2', name: 'Crucifixo', category: 'EMPH', equipment: 'Machine', reps: '10-15', sets: 3 },
+            {
+              id: 'ex-2',
+              name: 'Crucifixo',
+              category: 'EMPH',
+              equipment: 'Machine',
+              reps: '10-15',
+              sets: 3,
+            },
           ],
           skippedIds: [],
           currentSet: 1,

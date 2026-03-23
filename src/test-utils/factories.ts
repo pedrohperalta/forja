@@ -3,10 +3,7 @@ import type { Exercise, ExerciseId, ExerciseLog, Plan, PlanId } from '@/types'
 const DEFAULT_TIMESTAMP = '2026-01-01T00:00:00.000Z'
 
 /** Creates a test Exercise with all required fields. */
-export function makeExercise(
-  id: string,
-  overrides: Partial<Omit<Exercise, 'id'>> = {},
-): Exercise {
+export function makeExercise(id: string, overrides: Partial<Omit<Exercise, 'id'>> = {}): Exercise {
   return {
     id: id as ExerciseId,
     name: overrides.name ?? `Exercise ${id}`,

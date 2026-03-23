@@ -180,14 +180,13 @@ export const useWorkoutStore = create<WorkoutState>()(
       storage: createJSONStorage(() => mmkvStateStorage),
       version: 2,
       migrate: (persisted, version) => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const state = persisted as any
 
         if (version === 1) {
           const now = new Date().toISOString()
 
           // Backfill exercise fields helper
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
           const backfillExercise = (ex: any) => ({
             ...ex,
             restSeconds: ex.restSeconds ?? 60,
