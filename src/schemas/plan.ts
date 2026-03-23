@@ -13,6 +13,16 @@ export const ExerciseSchema = z.object({
   updatedAt: z.string(),
 })
 
+/** Zod schema for exercise form input validation. */
+export const ExerciseFormSchema = z.object({
+  name: z.string().min(1, 'Nome e obrigatorio'),
+  category: z.string().min(1, 'Categoria e obrigatoria'),
+  equipment: z.string(),
+  reps: z.string(),
+  sets: z.number().min(1, 'Minimo 1 serie'),
+  restSeconds: z.number().min(0, 'Descanso invalido'),
+})
+
 /** Zod schema for a workout plan. */
 export const PlanSchema = z.object({
   id: z.string(),
