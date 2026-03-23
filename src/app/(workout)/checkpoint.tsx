@@ -44,7 +44,7 @@ export default function CheckpointScreen(): React.JSX.Element | null {
         // Stay — re-render shows fewer cards
         break
       case 'rest':
-        // Should not happen from checkpoint
+        // Dead code: resolveTarget never returns 'rest'. Kept for type exhaustiveness.
         break
     }
   }

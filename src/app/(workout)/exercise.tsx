@@ -89,7 +89,10 @@ export default function ExerciseScreen(): React.JSX.Element | null {
   const handleNavigation = (result: NavigationTarget): void => {
     switch (result.target) {
       case 'rest':
-        router.push('/(workout)/rest')
+        router.push({
+          pathname: '/(workout)/rest',
+          params: { restSeconds: String(result.restSeconds) },
+        })
         break
       case 'checkpoint':
         router.push('/(workout)/checkpoint')

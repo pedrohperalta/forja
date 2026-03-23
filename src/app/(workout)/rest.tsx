@@ -1,28 +1,31 @@
 import { useEffect, useRef } from 'react'
 import { View, Text, Pressable } from 'react-native'
-import { useRouter } from 'expo-router'
+import { useRouter, useLocalSearchParams } from 'expo-router'
 import { useWorkoutStore } from '@/stores/workoutStore'
 import { useRestTimer } from '@/hooks/useRestTimer'
 import { useHaptics } from '@/hooks/useHaptics'
 import { RestTimer } from '@/components/RestTimer'
 import { getCurrentExercise } from '@/utils/getCurrentExercise'
 
-const REST_DURATION_SECONDS = 60
-
 export default function RestScreen(): React.JSX.Element {
   const router = useRouter()
+  const { restSeconds: restSecondsParam } = useLocalSearchParams<{ restSeconds?: string }>()
+
+  // Parse restSeconds from route param with fallback to 60
+  const parsedSeconds = restSecondsParam ? parseInt(restSecondsParam, 10) : NaN
+  const restSeconds = !isNaN(parsedSeconds) && parsedSeconds > 0 ? parsedSeconds : 60
 
   // Atomic selectors
   const queue = useWorkoutStore((s) => s.queue)
   const skippedIds = useWorkoutStore((s) => s.skippedIds)
   const currentSets = useWorkoutStore((s) => s.currentSets)
 
-  // Rest timer hook
-  const { secondsLeft, progress, isFinished } = useRestTimer(REST_DURATION_SECONDS)
+  // Rest timer hook — uses dynamic restSeconds
+  const { secondsLeft, progress, isFinished } = useRestTimer(restSeconds)
 
   // Haptic feedback
   const haptics = useHaptics()
-  const prevSecondsRef = useRef(REST_DURATION_SECONDS)
+  const prevSecondsRef = useRef(restSeconds)
 
   // Light haptic on last 3 seconds countdown, success on complete
   useEffect(() => {

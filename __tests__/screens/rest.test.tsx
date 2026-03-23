@@ -1,7 +1,8 @@
 /**
- * Rest screen tests — Phase 4 (TDD)
+ * Rest screen tests — updated to test dynamic restSeconds from route params.
  *
- * Tests timer completion navigation, "Ir para pulados" guard,
+ * Tests timer with custom restSeconds param, fallback to 60 when no param,
+ * timer completion navigation, "Ir para pulados" guard,
  * skip rest button, and next exercise preview.
  */
 
@@ -79,12 +80,16 @@ const mockReplace = jest.fn()
 const mockPush = jest.fn()
 const mockBack = jest.fn()
 
+// Dynamic search params for restSeconds
+let mockSearchParams: Record<string, string> = {}
+
 jest.mock('expo-router', () => ({
   useRouter: () => ({
     push: mockPush,
     replace: mockReplace,
     back: mockBack,
   }),
+  useLocalSearchParams: () => mockSearchParams,
 }))
 
 // Factories imported from @/test-utils/factories
@@ -100,6 +105,9 @@ beforeAll(() => {
 beforeEach(() => {
   jest.clearAllMocks()
   jest.useFakeTimers()
+
+  // Reset search params to no restSeconds (default fallback)
+  mockSearchParams = {}
 
   const exercises = [
     makeExercise('ex-1', { name: 'Supino Reto' }),
@@ -125,20 +133,53 @@ afterEach(() => {
 })
 
 describe('Rest Screen', () => {
-  it('renders the rest timer', () => {
+  it('renders the rest timer with default 60s when no restSeconds param', () => {
     render(<RestScreen />)
 
     expect(screen.getByText('60')).toBeTruthy()
   })
 
-  it('navigates back when timer completes', () => {
+  it('renders the rest timer with custom restSeconds from route param', () => {
+    mockSearchParams = { restSeconds: '90' }
+
     render(<RestScreen />)
 
-    // Advance timer to completion (60 seconds)
+    expect(screen.getByText('90')).toBeTruthy()
+  })
+
+  it('falls back to 60 when restSeconds param is invalid', () => {
+    mockSearchParams = { restSeconds: 'abc' }
+
+    render(<RestScreen />)
+
+    expect(screen.getByText('60')).toBeTruthy()
+  })
+
+  it('navigates back when timer completes with default 60s', () => {
+    render(<RestScreen />)
+
     act(() => {
       jest.advanceTimersByTime(60000)
     })
 
+    expect(mockBack).toHaveBeenCalled()
+  })
+
+  it('navigates back when timer completes with custom 90s', () => {
+    mockSearchParams = { restSeconds: '90' }
+
+    render(<RestScreen />)
+
+    // Should NOT have navigated at 60s
+    act(() => {
+      jest.advanceTimersByTime(60000)
+    })
+    expect(mockBack).not.toHaveBeenCalled()
+
+    // Should navigate at 90s
+    act(() => {
+      jest.advanceTimersByTime(30000)
+    })
     expect(mockBack).toHaveBeenCalled()
   })
 

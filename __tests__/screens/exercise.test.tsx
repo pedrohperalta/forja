@@ -214,8 +214,8 @@ describe('Exercise Screen', () => {
   })
 
   describe('completeSet navigation', () => {
-    it('navigates to rest on target=rest', () => {
-      mockWorkoutState.completeSet.mockReturnValue({ target: 'rest' })
+    it('navigates to rest on target=rest with restSeconds param', () => {
+      mockWorkoutState.completeSet.mockReturnValue({ target: 'rest', restSeconds: 90 })
 
       render(<ExerciseScreen />)
 
@@ -227,7 +227,10 @@ describe('Exercise Screen', () => {
       fireEvent.press(screen.getByText('COMPLETEI A SÉRIE'))
 
       expect(mockWorkoutState.completeSet).toHaveBeenCalledWith(60)
-      expect(mockPush).toHaveBeenCalledWith('/(workout)/rest')
+      expect(mockPush).toHaveBeenCalledWith({
+        pathname: '/(workout)/rest',
+        params: { restSeconds: '90' },
+      })
     })
 
     it('navigates to checkpoint on target=checkpoint', () => {
