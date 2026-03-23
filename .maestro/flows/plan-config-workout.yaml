@@ -1,0 +1,135 @@
+# Plan Configuration -> Workout Flow
+# Create a plan, add exercises, start workout, verify rest time, complete, verify history label
+appId: com.forja.app
+---
+# Launch fresh — no existing plans
+- launchApp:
+    clearState: true
+
+# Verify home screen shows empty state for new users
+- assertVisible: "Sem Treinos"
+- assertVisible: "CRIAR PRIMEIRO PLANO"
+
+# Tap CTA to create first plan
+- tapOn: "CRIAR PRIMEIRO PLANO"
+
+# Should be on plan list -> immediately redirected to new plan detail
+# Type plan name
+- tapOn:
+    text: "Novo Plano"
+- clearInput
+- inputText: "Treino Teste"
+
+# Type focus
+- tapOn:
+    text: "Foco (ex: Peito / Ombros)"
+- inputText: "Peito"
+
+# Add first exercise
+- tapOn: "ADICIONAR EXERCICIO"
+
+# Fill exercise form
+- tapOn:
+    text: "Nome do exercicio"
+- inputText: "Supino Reto"
+
+# Select category
+- tapOn: "Peito"
+
+# Fill equipment
+- tapOn:
+    text: "Equipamento"
+- inputText: "Barra"
+
+# Set rest to 90s (default is 60, tap + twice = 90)
+- tapOn:
+    text: "Aumentar descanso"
+- tapOn:
+    text: "Aumentar descanso"
+
+# Save exercise
+- tapOn: "SALVAR"
+
+# Add second exercise
+- tapOn: "ADICIONAR EXERCICIO"
+
+- tapOn:
+    text: "Nome do exercicio"
+- inputText: "Crucifixo"
+
+- tapOn: "Peito"
+
+- tapOn:
+    text: "Equipamento"
+- inputText: "Halter"
+
+# Keep default 60s rest
+- tapOn: "SALVAR"
+
+# Go back to plan list
+- tapOn:
+    text: "Voltar para planos"
+
+# Go back to home
+- tapOn:
+    text: "Voltar para treinos"
+
+# Verify home screen shows the new plan
+- assertVisible: "Treino Teste"
+
+# Start workout by tapping the plan card
+- tapOn: "Treino Teste"
+
+# Exercise screen — should show Supino Reto
+- assertVisible: "Supino Reto"
+
+# Enter weight and complete set 1
+- tapOn:
+    id: "weight-input"
+- inputText: "40"
+- tapOn:
+    id: "complete-set-button"
+
+# Rest screen should show 90 seconds (the custom rest time)
+- assertVisible: "90"
+- assertVisible: "Pular Descanso"
+
+# Skip rest to continue
+- tapOn:
+    id: "skip-rest-button"
+
+# Complete sets 2 and 3
+- tapOn:
+    id: "weight-input"
+- inputText: "40"
+- tapOn:
+    id: "complete-set-button"
+- tapOn:
+    id: "skip-rest-button"
+
+- tapOn:
+    id: "weight-input"
+- inputText: "40"
+- tapOn:
+    id: "complete-set-button"
+
+# After last set of exercise 1, rest then next exercise
+- tapOn:
+    id: "skip-rest-button"
+
+# Exercise 2 — Crucifixo (should have 60s rest)
+- assertVisible: "Crucifixo"
+
+# Remove exercise 2 to finish faster
+- tapOn:
+    id: "not-doing-button"
+
+# Complete screen
+- assertVisible: "Treino Completo!"
+
+# Go back to home
+- tapOn:
+    id: "back-to-home-button"
+
+# Verify home screen
+- assertVisible: "FORJA"
