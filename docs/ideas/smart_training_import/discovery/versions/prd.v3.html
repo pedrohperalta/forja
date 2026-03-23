@@ -1,0 +1,1121 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PRD — Smart Training Import | Forja</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --accent: #C2F000;
+    --accent-dim: rgba(194, 240, 0, 0.12);
+    --danger: #ef4444;
+    --warning: #f59e0b;
+    --p0: #ef4444;
+    --p1: #f59e0b;
+    --p2: #3b82f6;
+    --bg: #0e0e0e;
+    --surface: #1a1a1a;
+    --surface-2: #252525;
+    --border: #2a2a2a;
+    --text: #f5f5f4;
+    --text-med: #a8a29e;
+    --text-dim: #57534e;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    padding: 0;
+  }
+
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 32px 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-inner {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .header h1 {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--accent);
+    letter-spacing: -0.5px;
+  }
+  .header .meta {
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+  .review-toggle {
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    padding: 8px 20px;
+    border-radius: 100px;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .review-toggle:hover { opacity: 0.85; }
+  .review-toggle.active {
+    background: var(--danger);
+    color: white;
+  }
+
+  .content {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 32px 120px;
+  }
+
+  section { margin-bottom: 48px; }
+  .section-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+  h2 {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: var(--text);
+  }
+  h3 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: var(--text);
+  }
+  p, li {
+    font-size: 14px;
+    color: var(--text-med);
+    line-height: 1.7;
+  }
+  ul, ol {
+    padding-left: 20px;
+    margin-bottom: 16px;
+  }
+  li { margin-bottom: 6px; }
+  li strong { color: var(--text); }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 16px;
+  }
+  .card h3 { margin-bottom: 8px; }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  .badge-p0 { background: rgba(239,68,68,0.15); color: var(--p0); }
+  .badge-p1 { background: rgba(245,158,11,0.15); color: var(--p1); }
+  .badge-p2 { background: rgba(59,130,246,0.15); color: var(--p2); }
+
+  .feature-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  @media (max-width: 640px) {
+    .feature-grid { grid-template-columns: 1fr; }
+  }
+
+  .metric-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 640px) {
+    .metric-grid { grid-template-columns: 1fr; }
+  }
+  .metric-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+  }
+  .metric-value {
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--accent);
+    line-height: 1;
+  }
+  .metric-label {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-top: 6px;
+  }
+
+  .story {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 12px 12px 0;
+    padding: 20px 24px;
+    margin-bottom: 12px;
+  }
+  .story .role {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+  .story p { color: var(--text); font-size: 14px; }
+  .story .story-badges {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+  .story-id {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .criteria {
+    background: var(--surface-2);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-top: 10px;
+    font-size: 13px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    color: var(--text-med);
+  }
+  .criteria strong { color: var(--accent); font-weight: 600; }
+
+  .flow-diagram {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 24px 0;
+  }
+  .flow-step {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    text-align: center;
+    min-width: 130px;
+  }
+  .flow-step-icon { font-size: 24px; margin-bottom: 4px; }
+  .flow-step-label { font-size: 13px; font-weight: 600; color: var(--text); }
+  .flow-step-desc { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+  .flow-arrow { font-size: 18px; color: var(--text-dim); padding: 0 8px; }
+
+  /* Mockup frame */
+  .mockup-frame {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    margin: 24px 0;
+    max-width: 375px;
+  }
+  .mockup-pair {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .mockup-status-bar {
+    background: var(--bg);
+    padding: 8px 24px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .mockup-content { padding: 0 24px 32px; }
+  .mockup-label {
+    font-size: 11px;
+    color: var(--text-dim);
+    text-align: center;
+    margin-top: 8px;
+    font-style: italic;
+  }
+
+  .m-hero { font-size: 28px; font-weight: 800; color: var(--text); margin: 16px 0 4px; letter-spacing: -1px; }
+  .m-sub { font-size: 12px; color: var(--text-dim); margin-bottom: 20px; }
+  .m-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 10px;
+  }
+  .m-card-title { font-size: 14px; font-weight: 700; color: var(--text); }
+  .m-card-sub { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+  .m-chip {
+    display: inline-block;
+    padding: 2px 8px;
+    background: var(--surface-2);
+    border-radius: 100px;
+    font-size: 10px;
+    color: var(--text-med);
+  }
+  .m-btn {
+    display: block;
+    text-align: center;
+    padding: 14px;
+    border-radius: 100px;
+    font-weight: 700;
+    font-size: 13px;
+    margin-top: 16px;
+  }
+  .m-btn-primary { background: var(--accent); color: var(--bg); }
+  .m-btn-secondary { background: transparent; border: 1px solid var(--border); color: var(--text-med); }
+  .m-back { font-size: 12px; color: var(--text-med); margin-bottom: 12px; }
+  .m-section-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: var(--accent); margin: 16px 0 8px; }
+  .m-exercise-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .m-exercise-name { font-size: 13px; color: var(--text); font-weight: 500; }
+  .m-exercise-meta { font-size: 11px; color: var(--text-dim); }
+  .m-scan-area {
+    border: 2px dashed var(--border);
+    border-radius: 16px;
+    padding: 32px 16px;
+    text-align: center;
+    margin-bottom: 16px;
+  }
+  .m-progress { height: 3px; background: var(--surface-2); border-radius: 2px; margin: 8px 0; overflow: hidden; }
+  .m-progress-fill { height: 100%; background: var(--accent); border-radius: 2px; }
+  .m-badge-check { color: #22c55e; font-size: 12px; }
+  .m-badge-warn { color: var(--warning); font-size: 12px; }
+
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 48px 0;
+  }
+
+  /* Commenting system */
+  [data-c].commentable {
+    cursor: pointer;
+    position: relative;
+    transition: outline 0.15s, background 0.15s;
+    outline: 2px solid transparent;
+    border-radius: 4px;
+  }
+  [data-c].commentable:hover {
+    outline: 2px solid var(--accent);
+    background: rgba(194, 240, 0, 0.04);
+  }
+  [data-c].commentable.has-comment {
+    outline: 2px solid var(--warning);
+    background: rgba(245, 158, 11, 0.06);
+  }
+
+  .comment-panel {
+    display: none;
+    position: fixed;
+    right: 0;
+    top: 0;
+    width: 360px;
+    height: 100vh;
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    z-index: 200;
+    flex-direction: column;
+  }
+  .comment-panel.open { display: flex; }
+  .comment-panel-header {
+    padding: 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .comment-panel-header h3 { font-size: 14px; font-weight: 700; margin: 0; }
+  .comment-panel-body { flex: 1; overflow-y: auto; padding: 20px; }
+  .comment-panel-footer { padding: 16px 20px; border-top: 1px solid var(--border); }
+  .comment-input {
+    width: 100%;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 13px;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    resize: vertical;
+    min-height: 60px;
+  }
+  .comment-input:focus { outline: none; border-color: var(--accent); }
+  .comment-submit {
+    margin-top: 8px;
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    padding: 8px 16px;
+    border-radius: 100px;
+    font-weight: 700;
+    font-size: 12px;
+    cursor: pointer;
+    width: 100%;
+  }
+  .comment-item {
+    background: var(--surface-2);
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 8px;
+  }
+  .comment-item-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 6px;
+  }
+  .comment-item-section { font-size: 11px; font-weight: 700; color: var(--accent); }
+  .comment-item-time { font-size: 11px; color: var(--text-dim); }
+  .comment-item-text { font-size: 13px; color: var(--text-med); }
+  .comment-item-delete {
+    font-size: 11px; color: var(--danger); cursor: pointer;
+    margin-top: 6px; background: none; border: none; padding: 0;
+  }
+  .comment-count {
+    background: var(--warning); color: var(--bg);
+    font-size: 10px; font-weight: 700;
+    padding: 1px 6px; border-radius: 100px; margin-left: 6px;
+  }
+  .export-btn {
+    background: var(--surface-2); color: var(--text-med);
+    border: 1px solid var(--border); padding: 6px 14px;
+    border-radius: 100px; font-size: 12px; font-weight: 600; cursor: pointer;
+  }
+  .export-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .close-btn { background: none; border: none; color: var(--text-dim); font-size: 20px; cursor: pointer; }
+  .no-comments { text-align: center; color: var(--text-dim); font-size: 13px; padding: 40px 0; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-inner">
+    <div>
+      <h1>FORJA — Smart Training Import</h1>
+      <div class="meta">PRD v3 &middot; 23 Mar 2026 &middot; Feature</div>
+    </div>
+    <div style="display: flex; gap: 8px; align-items: center;">
+      <button class="export-btn" id="exportBtn" style="display:none;" onclick="exportComments()">Exportar Comentários</button>
+      <button class="review-toggle" id="reviewToggle" onclick="toggleReviewMode()">Review Mode</button>
+    </div>
+  </div>
+</div>
+
+<!-- Comment Panel -->
+<div class="comment-panel" id="commentPanel">
+  <div class="comment-panel-header">
+    <h3>Comentários <span class="comment-count" id="commentCount" style="display:none">0</span></h3>
+    <button class="close-btn" onclick="closePanel()">&times;</button>
+  </div>
+  <div class="comment-panel-body" id="commentList">
+    <div class="no-comments">Nenhum comentário ainda. Clique em elementos destacados para comentar.</div>
+  </div>
+  <div class="comment-panel-footer" id="commentForm" style="display:none">
+    <div style="font-size:11px;color:var(--accent);font-weight:700;margin-bottom:6px" id="commentTarget"></div>
+    <textarea class="comment-input" id="commentInput" placeholder="Deixe seu comentário..."></textarea>
+    <button class="comment-submit" onclick="submitComment()">Adicionar Comentário</button>
+  </div>
+</div>
+
+<!-- Content -->
+<div class="content">
+
+  <!-- 1. Overview -->
+  <section>
+    <div class="section-label" data-c="sec-overview">Visão Geral</div>
+    <h2 data-c="title-overview">Importação Inteligente de Treinos</h2>
+    <p data-c="desc-overview">Hoje, toda vez que o treinador envia um novo plano de treino, o usuário precisa abrir o Forja e cadastrar manualmente cada exercício — digitando nomes, selecionando categorias, configurando séries, repetições e descanso. Um plano típico tem 2-3 treinos (A, B, C) com 5-7 exercícios cada, e cada treino geralmente vem em uma foto ou página separada. Cadastrar tudo leva cerca de 30 minutos e é altamente propenso a erros.</p>
+    <p data-c="desc-proposal" style="margin-top:12px">Com a importação inteligente, o usuário <strong style="color:var(--text)">envia as fotos de cada treino</strong> — uma por uma ou todas de uma vez. O app envia cada imagem para um serviço inteligente que extrai os exercícios com todos os detalhes (séries, repetições, descanso, equipamento) e monta o plano completo. O usuário revisa, ajusta se necessário, e confirma. Pronto.</p>
+  </section>
+
+  <!-- 2. Metrics -->
+  <section>
+    <div class="section-label" data-c="sec-metrics">Impacto Esperado</div>
+    <h2 data-c="title-metrics">Números</h2>
+    <div class="metric-grid">
+      <div class="metric-card" data-c="metric-time-before">
+        <div class="metric-value">~30min</div>
+        <div class="metric-label">Tempo atual de setup</div>
+      </div>
+      <div class="metric-card" data-c="metric-time-after">
+        <div class="metric-value">~3min</div>
+        <div class="metric-label">Tempo esperado com importação</div>
+      </div>
+      <div class="metric-card" data-c="metric-errors">
+        <div class="metric-value">90%</div>
+        <div class="metric-label">Redução em erros de digitação</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. Problem -->
+  <section>
+    <div class="section-label" data-c="sec-problem">Problema</div>
+    <h2 data-c="title-problem">Por que isso importa</h2>
+    <div class="card" data-c="problem-typing">
+      <h3>Digitação manual de exercícios</h3>
+      <p>Cada exercício exige digitar nome, equipamento e repetições manualmente. Com 15-20 exercícios por programa, erros de digitação são frequentes — nomes escritos de formas diferentes, categorias esquecidas, detalhes trocados.</p>
+    </div>
+    <div class="card" data-c="problem-tedious">
+      <h3>Processo repetitivo e demorado</h3>
+      <p>Para cada exercício é necessário preencher 5-6 campos (nome, categoria, equipamento, séries, repetições, descanso). Multiplicado por ~18 exercícios, o processo é tedioso o suficiente para fazer o usuário desistir no meio.</p>
+    </div>
+    <div class="card" data-c="problem-swap">
+      <h3>Troca de programa é dolorosa</h3>
+      <p>Quando o treinador envia um novo programa, o usuário precisa deletar os planos antigos um por um e recriar tudo do zero. Não existe nenhuma forma de importar ou substituir o programa de uma vez.</p>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 4. Flow -->
+  <section>
+    <div class="section-label" data-c="sec-flow">Fluxo Principal</div>
+    <h2 data-c="title-flow">Da foto ao treino pronto</h2>
+    <p data-c="desc-flow" style="margin-bottom:16px">O caminho feliz quando o treinador envia um novo plano. Cada treino (A, B, C...) tem sua própria foto:</p>
+    <div class="flow-diagram" data-c="flow-diagram">
+      <div class="flow-step">
+        <div class="flow-step-icon">📷</div>
+        <div class="flow-step-label">Capturar</div>
+        <div class="flow-step-desc">1 foto por treino</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="flow-step-icon">🤖</div>
+        <div class="flow-step-label">Processar</div>
+        <div class="flow-step-desc">IA extrai cada treino</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="flow-step-icon">✏️</div>
+        <div class="flow-step-label">Revisar</div>
+        <div class="flow-step-desc">Conferir o plano completo</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="flow-step-icon">✅</div>
+        <div class="flow-step-label">Salvar</div>
+        <div class="flow-step-desc">Substituir ou adicionar</div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 5. Captura e Processamento -->
+  <section>
+    <div class="section-label" data-c="sec-capture">Captura e Processamento</div>
+    <h2 data-c="title-capture">Enviar as fotos dos treinos <span class="badge badge-p0">P0</span></h2>
+
+    <p data-c="desc-capture" style="margin-bottom:16px">Um plano de treino é composto por vários treinos (A, B, C...). Cada treino geralmente corresponde a uma foto ou página do programa do treinador. O usuário envia uma foto por treino.</p>
+
+    <div class="story" data-c="story-capture">
+      <div class="story-badges">
+        <span class="story-id">US-01</span>
+        <span class="badge badge-p0">P0</span>
+      </div>
+      <div class="role">Como praticante de musculação</div>
+      <p>Quero enviar as fotos dos meus treinos (uma por treino) para que o app monte o plano completo automaticamente.</p>
+      <div class="criteria">
+        <strong>Dado</strong> que estou na tela de importação<br>
+        <strong>Quando</strong> adiciono fotos dos treinos (tirando foto ou selecionando da galeria)<br>
+        <strong>Então</strong> vejo uma lista das fotos adicionadas (Treino A, Treino B...) e posso adicionar mais ou remover antes de iniciar o processamento
+      </div>
+    </div>
+
+    <div class="story" data-c="story-process-each">
+      <div class="story-badges">
+        <span class="story-id">US-02</span>
+        <span class="badge badge-p0">P0</span>
+      </div>
+      <div class="role">Como praticante de musculação</div>
+      <p>Quero que cada foto seja processada individualmente e que eu veja o progresso de cada uma.</p>
+      <div class="criteria">
+        <strong>Dado</strong> que adicionei 3 fotos (Treino A, B, C) e iniciei o processamento<br>
+        <strong>Quando</strong> o serviço processa as imagens<br>
+        <strong>Então</strong> vejo o status de cada treino (processando / concluído / erro) e ao final recebo o plano completo para revisão
+      </div>
+    </div>
+
+    <div class="story" data-c="story-extraction-complete">
+      <div class="story-badges">
+        <span class="story-id">US-03</span>
+        <span class="badge badge-p0">P0</span>
+      </div>
+      <div class="role">Como praticante de musculação</div>
+      <p>Quero que o serviço retorne cada treino completo — nome, foco muscular, e cada exercício com nome, categoria, equipamento, séries, repetições e descanso — sem que eu precise preencher nada manualmente.</p>
+      <div class="criteria">
+        <strong>Dado</strong> que enviei fotos legíveis dos treinos<br>
+        <strong>Quando</strong> o processamento termina<br>
+        <strong>Então</strong> recebo o plano com todos os treinos e seus exercícios completos, prontos para revisar e salvar
+      </div>
+    </div>
+  </section>
+
+  <!-- Mockup: Capture + Processing -->
+  <section>
+    <div class="section-label" data-c="sec-mockup-capture">Mockup</div>
+    <h2 data-c="title-mockup-capture">Telas — Captura e Processamento</h2>
+
+    <div class="mockup-pair">
+      <div>
+        <div class="mockup-frame" data-c="mockup-capture" style="margin-left:auto;margin-right:auto">
+          <div class="mockup-status-bar">
+            <span>9:41</span>
+            <span>⦿ ▮▮ ⟩</span>
+          </div>
+          <div class="mockup-content">
+            <div class="m-back">‹ PLANOS</div>
+            <div class="m-section-label">IMPORTAR</div>
+            <div class="m-hero">Importar Plano</div>
+            <div class="m-sub">Adicione uma foto para cada treino</div>
+
+            <div class="m-card" style="display:flex;align-items:center;gap:12px">
+              <div style="width:48px;height:48px;background:var(--surface-2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">📷</div>
+              <div style="flex:1">
+                <div class="m-card-title">Treino A</div>
+                <div class="m-card-sub">foto_treino_a.jpg</div>
+              </div>
+              <span style="color:var(--text-dim);font-size:14px">✕</span>
+            </div>
+            <div class="m-card" style="display:flex;align-items:center;gap:12px">
+              <div style="width:48px;height:48px;background:var(--surface-2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">📷</div>
+              <div style="flex:1">
+                <div class="m-card-title">Treino B</div>
+                <div class="m-card-sub">foto_treino_b.jpg</div>
+              </div>
+              <span style="color:var(--text-dim);font-size:14px">✕</span>
+            </div>
+            <div class="m-card" style="display:flex;align-items:center;gap:12px">
+              <div style="width:48px;height:48px;background:var(--surface-2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">📷</div>
+              <div style="flex:1">
+                <div class="m-card-title">Treino C</div>
+                <div class="m-card-sub">foto_treino_c.jpg</div>
+              </div>
+              <span style="color:var(--text-dim);font-size:14px">✕</span>
+            </div>
+
+            <div class="m-btn m-btn-secondary" style="margin-top:12px">+ ADICIONAR TREINO</div>
+            <div class="m-btn m-btn-primary">PROCESSAR PLANO</div>
+          </div>
+        </div>
+        <div class="mockup-label">Captura — uma foto por treino</div>
+      </div>
+
+      <div>
+        <div class="mockup-frame" data-c="mockup-processing" style="margin-left:auto;margin-right:auto">
+          <div class="mockup-status-bar">
+            <span>9:41</span>
+            <span>⦿ ▮▮ ⟩</span>
+          </div>
+          <div class="mockup-content">
+            <div class="m-back">‹ IMPORTAR</div>
+            <div class="m-section-label">PROCESSANDO</div>
+            <div class="m-hero">Analisando...</div>
+            <div class="m-sub">Extraindo exercícios de cada treino</div>
+
+            <div class="m-card" style="display:flex;align-items:center;gap:12px">
+              <div style="color:#22c55e;font-size:16px;flex-shrink:0">✅</div>
+              <div style="flex:1">
+                <div class="m-card-title">Treino A</div>
+                <div class="m-card-sub">6 exercícios extraídos</div>
+              </div>
+            </div>
+            <div class="m-card" style="display:flex;align-items:center;gap:12px">
+              <div style="color:#22c55e;font-size:16px;flex-shrink:0">✅</div>
+              <div style="flex:1">
+                <div class="m-card-title">Treino B</div>
+                <div class="m-card-sub">7 exercícios extraídos</div>
+              </div>
+            </div>
+            <div class="m-card" style="display:flex;align-items:center;gap:12px;opacity:0.6">
+              <div style="flex-shrink:0;width:16px">
+                <div class="m-progress" style="width:16px;margin:0">
+                  <div class="m-progress-fill" style="width:60%"></div>
+                </div>
+              </div>
+              <div style="flex:1">
+                <div class="m-card-title">Treino C</div>
+                <div class="m-card-sub">Processando...</div>
+              </div>
+            </div>
+
+            <div style="text-align:center;margin-top:20px">
+              <div style="color:var(--text-dim);font-size:11px">2 de 3 treinos concluídos</div>
+            </div>
+          </div>
+        </div>
+        <div class="mockup-label">Processamento — status por treino</div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 6. Revisão -->
+  <section>
+    <div class="section-label" data-c="sec-review">Revisão</div>
+    <h2 data-c="title-review">Conferir antes de salvar <span class="badge badge-p0">P0</span></h2>
+
+    <div class="story" data-c="story-review-edit">
+      <div class="story-badges">
+        <span class="story-id">US-04</span>
+        <span class="badge badge-p0">P0</span>
+      </div>
+      <div class="role">Como praticante de musculação</div>
+      <p>Quero revisar os dados extraídos e poder corrigir qualquer informação antes de salvar, para garantir que está tudo certo.</p>
+      <div class="criteria">
+        <strong>Dado</strong> que o processamento terminou e os dados foram extraídos<br>
+        <strong>Quando</strong> vejo a tela de revisão<br>
+        <strong>Então</strong> posso ver cada plano com seus exercícios e editar qualquer campo (nome, categoria, séries, reps, descanso) antes de confirmar
+      </div>
+    </div>
+
+    <div class="story" data-c="story-confidence-indicator">
+      <div class="story-badges">
+        <span class="story-id">US-05</span>
+        <span class="badge badge-p1">P1</span>
+      </div>
+      <div class="role">Como praticante de musculação</div>
+      <p>Quero saber quais exercícios o serviço teve dificuldade em identificar, para focar minha atenção nos que precisam de correção.</p>
+      <div class="criteria">
+        <strong>Dado</strong> que estou na tela de revisão<br>
+        <strong>Quando</strong> o serviço tem baixa confiança em algum exercício<br>
+        <strong>Então</strong> vejo um indicador visual (⚠) ao lado desse exercício, diferenciando dos que foram identificados com segurança (✓)
+      </div>
+    </div>
+  </section>
+
+  <!-- Mockup: Review -->
+  <section>
+    <div class="section-label" data-c="sec-mockup-review">Mockup</div>
+    <h2 data-c="title-mockup-review">Tela — Revisão</h2>
+
+    <div class="mockup-frame" data-c="mockup-review" style="margin-left:auto;margin-right:auto">
+      <div class="mockup-status-bar">
+        <span>9:42</span>
+        <span>⦿ ▮▮ ⟩</span>
+      </div>
+      <div class="mockup-content">
+        <div class="m-back">‹ IMPORTAR</div>
+        <div class="m-section-label">REVISÃO</div>
+        <div class="m-hero">Revisão</div>
+        <div class="m-sub">18 exercícios em 3 treinos • Toque para editar</div>
+
+        <div class="m-section-label" style="margin-top:8px">Treino A — Peito / Ombros / Tríceps</div>
+        <div class="m-exercise-row">
+          <div style="flex:1">
+            <div class="m-exercise-name">Supino Reto <span class="m-badge-check">✓</span></div>
+            <div class="m-exercise-meta">4×10-12 · 60s · Barra</div>
+          </div>
+          <span style="color:var(--accent);font-size:11px;font-weight:600">EDITAR</span>
+        </div>
+        <div class="m-exercise-row">
+          <div style="flex:1">
+            <div class="m-exercise-name">Crucifixo Inclinado <span class="m-badge-check">✓</span></div>
+            <div class="m-exercise-meta">3×12-15 · 45s · Halter</div>
+          </div>
+          <span style="color:var(--accent);font-size:11px;font-weight:600">EDITAR</span>
+        </div>
+        <div class="m-exercise-row">
+          <div style="flex:1">
+            <div class="m-exercise-name">Desenv. Militar <span class="m-badge-warn">⚠</span></div>
+            <div class="m-exercise-meta">4×8-10 · 90s · Barra</div>
+          </div>
+          <span style="color:var(--accent);font-size:11px;font-weight:600">EDITAR</span>
+        </div>
+        <div class="m-exercise-row">
+          <div style="flex:1">
+            <div class="m-exercise-name">Elevação Lateral <span class="m-badge-check">✓</span></div>
+            <div class="m-exercise-meta">3×12-15 · 45s · Halter</div>
+          </div>
+          <span style="color:var(--accent);font-size:11px;font-weight:600">EDITAR</span>
+        </div>
+        <div class="m-exercise-row" style="border:none">
+          <div style="flex:1">
+            <div class="m-exercise-name">Tríceps Testa <span class="m-badge-check">✓</span></div>
+            <div class="m-exercise-meta">3×10-12 · 60s · Barra EZ</div>
+          </div>
+          <span style="color:var(--accent);font-size:11px;font-weight:600">EDITAR</span>
+        </div>
+
+        <div style="display:flex;gap:8px;align-items:center;margin:12px 0 4px">
+          <span class="m-badge-check">✓</span>
+          <span style="color:var(--text-dim);font-size:10px">= identificado com confiança</span>
+          <span class="m-badge-warn" style="margin-left:6px">⚠</span>
+          <span style="color:var(--text-dim);font-size:10px">= requer atenção</span>
+        </div>
+
+        <div class="m-btn m-btn-primary">IMPORTAR PROGRAMA</div>
+        <div class="m-btn m-btn-secondary" style="margin-top:8px">CANCELAR</div>
+      </div>
+    </div>
+    <div class="mockup-label">Revisão — exercícios com indicador de confiança</div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 7. Substituição de Programa -->
+  <section>
+    <div class="section-label" data-c="sec-replace">Substituição de Plano</div>
+    <h2 data-c="title-replace">Trocar plano completo <span class="badge badge-p0">P0</span></h2>
+
+    <div class="story" data-c="story-replace-all">
+      <div class="story-badges">
+        <span class="story-id">US-06</span>
+        <span class="badge badge-p0">P0</span>
+      </div>
+      <div class="role">Como praticante de musculação</div>
+      <p>Quero substituir todo o meu plano atual de uma vez ao importar um novo, sem precisar deletar treinos um a um.</p>
+      <div class="criteria">
+        <strong>Dado</strong> que estou confirmando a importação<br>
+        <strong>Quando</strong> escolho "Substituir plano"<br>
+        <strong>Então</strong> os treinos antigos são arquivados, os novos treinos são criados, e as labels (A, B, C...) são reiniciadas
+      </div>
+    </div>
+
+    <div class="story" data-c="story-add-existing">
+      <div class="story-badges">
+        <span class="story-id">US-07</span>
+        <span class="badge badge-p1">P1</span>
+      </div>
+      <div class="role">Como praticante de musculação</div>
+      <p>Quero ter a opção de manter os treinos anteriores ao importar um novo plano, caso queira mesclar os dois.</p>
+      <div class="criteria">
+        <strong>Dado</strong> que estou confirmando a importação<br>
+        <strong>Quando</strong> escolho "Adicionar ao existente"<br>
+        <strong>Então</strong> os novos treinos são adicionados após os existentes, com labels continuando a sequência
+      </div>
+    </div>
+
+    <div class="story" data-c="story-preserve-weights">
+      <div class="story-badges">
+        <span class="story-id">US-08</span>
+        <span class="badge badge-p0">P0</span>
+      </div>
+      <div class="role">Como praticante de musculação</div>
+      <p>Quero que meu histórico de pesos seja preservado ao trocar de plano, para não perder meu progresso.</p>
+      <div class="criteria">
+        <strong>Dado</strong> que estou substituindo o plano<br>
+        <strong>Quando</strong> um exercício do novo plano tem o mesmo nome de um exercício anterior<br>
+        <strong>Então</strong> o último peso utilizado é mantido e exibido como referência no próximo treino
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 8. Tratamento de Erros -->
+  <section>
+    <div class="section-label" data-c="sec-errors">Cenários de Erro</div>
+    <h2 data-c="title-errors">Quando algo dá errado</h2>
+
+    <div class="story" data-c="story-bad-image">
+      <div class="story-badges">
+        <span class="story-id">US-09</span>
+        <span class="badge badge-p0">P0</span>
+      </div>
+      <div class="role">Como praticante de musculação</div>
+      <p>Quero receber feedback claro quando uma foto não puder ser processada, para saber o que fazer.</p>
+      <div class="criteria">
+        <strong>Dado</strong> que enviei uma foto ilegível ou que não contém exercícios de treino<br>
+        <strong>Quando</strong> o processamento de um treino falha<br>
+        <strong>Então</strong> vejo uma mensagem clara explicando o problema no treino afetado (ex: "Não conseguimos identificar exercícios nesta foto") com a opção de trocar a foto e tentar novamente
+      </div>
+    </div>
+
+    <div class="story" data-c="story-partial-extraction">
+      <div class="story-badges">
+        <span class="story-id">US-10</span>
+        <span class="badge badge-p1">P1</span>
+      </div>
+      <div class="role">Como praticante de musculação</div>
+      <p>Quero poder prosseguir mesmo quando o serviço conseguiu extrair apenas parte de um treino, completando manualmente o que faltou.</p>
+      <div class="criteria">
+        <strong>Dado</strong> que o serviço extraiu parcialmente um treino (ex: identificou alguns exercícios mas não todos)<br>
+        <strong>Quando</strong> vejo a tela de revisão<br>
+        <strong>Então</strong> posso ver o que foi extraído, adicionar exercícios faltantes manualmente, e prosseguir com a importação
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 9. Métricas de Sucesso -->
+  <section>
+    <div class="section-label" data-c="sec-success">Métricas de Sucesso</div>
+    <h2 data-c="title-success">Como sabemos que funcionou</h2>
+
+    <div class="feature-grid">
+      <div class="card" data-c="success-setup-time">
+        <h3>Tempo de configuração</h3>
+        <p><strong style="color:var(--danger)">Antes:</strong> ~30 min para cadastrar 3 treinos com ~18 exercícios</p>
+        <p><strong style="color:var(--accent)">Depois:</strong> &lt;5 min com importação + revisão rápida</p>
+      </div>
+      <div class="card" data-c="success-error-rate">
+        <h3>Erros de digitação</h3>
+        <p><strong style="color:var(--danger)">Antes:</strong> Erros frequentes em nomes, categorias incorretas</p>
+        <p><strong style="color:var(--accent)">Depois:</strong> Nomes extraídos diretamente do programa, sem digitação</p>
+      </div>
+      <div class="card" data-c="success-ai-accuracy">
+        <h3>Precisão da extração</h3>
+        <p><strong>Meta:</strong> &gt;85% dos exercícios extraídos corretamente sem edição manual necessária</p>
+      </div>
+      <div class="card" data-c="success-adoption">
+        <h3>Adoção</h3>
+        <p><strong>Meta:</strong> Importação se torna o método principal de configuração — usado em &gt;80% das trocas de plano</p>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 10. Riscos -->
+  <section>
+    <div class="section-label" data-c="sec-risks">Riscos</div>
+    <h2 data-c="title-risks">O que pode dar errado</h2>
+
+    <div class="card" data-c="risk-image-quality">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <h3 style="margin:0">Qualidade da imagem</h3>
+        <span class="badge badge-p0">Alto</span>
+      </div>
+      <p>Fotos com má iluminação, texto cortado ou baixa resolução podem comprometer a extração.</p>
+      <p style="margin-top:8px"><strong style="color:var(--text)">Mitigação:</strong> Guias visuais na câmera para alinhar o documento, suporte a múltiplas fotos, e fallback para edição manual na tela de revisão.</p>
+    </div>
+
+    <div class="card" data-c="risk-format-variety">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <h3 style="margin:0">Variação de formato entre treinadores</h3>
+        <span class="badge badge-p1">Médio</span>
+      </div>
+      <p>Cada treinador organiza o programa de um jeito diferente — tabelas, listas, abreviações próprias.</p>
+      <p style="margin-top:8px"><strong style="color:var(--text)">Mitigação:</strong> A tela de revisão garante que o usuário sempre valida antes de importar. Com o tempo, o processamento pode ser refinado com base nos formatos reais encontrados.</p>
+    </div>
+
+    <div class="card" data-c="risk-partial-info">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <h3 style="margin:0">Informação incompleta no programa</h3>
+        <span class="badge badge-p1">Médio</span>
+      </div>
+      <p>Alguns treinadores não incluem tempo de descanso ou equipamento no programa — apenas nome do exercício e séries×reps.</p>
+      <p style="margin-top:8px"><strong style="color:var(--text)">Mitigação:</strong> O serviço preenche valores padrão inteligentes quando informação não está presente (ex: 60s descanso, equipamento inferido pelo tipo de exercício). O usuário ajusta na revisão.</p>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 11. Fora do Escopo -->
+  <section>
+    <div class="section-label" data-c="sec-oos">Fora do Escopo (v1)</div>
+    <h2 data-c="title-oos">O que NÃO está incluído</h2>
+
+    <div class="card" data-c="oos-items">
+      <ul>
+        <li><strong>Importação de texto puro ou planilha</strong> — apenas foto e PDF na v1</li>
+        <li><strong>Catálogo de exercícios pré-carregado</strong> — toda informação vem da extração da imagem</li>
+        <li><strong>Importação seletiva</strong> — importa o plano completo com todos os treinos, sem selecionar treinos individuais</li>
+        <li><strong>Histórico de planos anteriores</strong> — treinos antigos são arquivados mas não acessíveis por uma UI dedicada na v1</li>
+        <li><strong>Compartilhamento de planos</strong> — sem export/import entre usuários</li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<!-- Commenting System JS -->
+<script>
+const STORAGE_KEY = 'prd-comments-smart_training_import-v3';
+let reviewMode = false;
+let activeTarget = null;
+let comments = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+
+function toggleReviewMode() {
+  reviewMode = !reviewMode;
+  const btn = document.getElementById('reviewToggle');
+  const exportBtn = document.getElementById('exportBtn');
+  const panel = document.getElementById('commentPanel');
+
+  if (reviewMode) {
+    btn.textContent = 'Exit Review';
+    btn.classList.add('active');
+    exportBtn.style.display = 'inline-block';
+    panel.classList.add('open');
+    document.querySelectorAll('[data-c]').forEach(el => {
+      el.classList.add('commentable');
+      el.addEventListener('click', onElementClick);
+    });
+  } else {
+    btn.textContent = 'Review Mode';
+    btn.classList.remove('active');
+    exportBtn.style.display = 'none';
+    panel.classList.remove('open');
+    document.querySelectorAll('[data-c]').forEach(el => {
+      el.classList.remove('commentable');
+      el.removeEventListener('click', onElementClick);
+    });
+  }
+  updateCommentHighlights();
+}
+
+function onElementClick(e) {
+  e.stopPropagation();
+  const target = e.currentTarget.getAttribute('data-c');
+  activeTarget = target;
+  document.getElementById('commentTarget').textContent = '#' + target;
+  document.getElementById('commentForm').style.display = 'block';
+  document.getElementById('commentInput').value = '';
+  document.getElementById('commentInput').focus();
+  renderComments();
+}
+
+function submitComment() {
+  const input = document.getElementById('commentInput');
+  const text = input.value.trim();
+  if (!text || !activeTarget) return;
+
+  comments.push({
+    id: Date.now(),
+    target: activeTarget,
+    text: text,
+    timestamp: new Date().toISOString()
+  });
+
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(comments));
+  input.value = '';
+  renderComments();
+  updateCommentHighlights();
+}
+
+function deleteComment(id) {
+  comments = comments.filter(c => c.id !== id);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(comments));
+  renderComments();
+  updateCommentHighlights();
+}
+
+function renderComments() {
+  const list = document.getElementById('commentList');
+  const countEl = document.getElementById('commentCount');
+
+  if (comments.length === 0) {
+    list.innerHTML = '<div class="no-comments">Nenhum comentário ainda. Clique em elementos destacados para comentar.</div>';
+    countEl.style.display = 'none';
+    return;
+  }
+
+  countEl.style.display = 'inline';
+  countEl.textContent = comments.length;
+
+  const filtered = activeTarget
+    ? [
+        ...comments.filter(c => c.target === activeTarget),
+        ...comments.filter(c => c.target !== activeTarget)
+      ]
+    : comments;
+
+  list.innerHTML = filtered.map(c => `
+    <div class="comment-item" ${c.target === activeTarget ? 'style="border-left:2px solid var(--accent)"' : ''}>
+      <div class="comment-item-header">
+        <span class="comment-item-section">#${c.target}</span>
+        <span class="comment-item-time">${new Date(c.timestamp).toLocaleString('pt-BR')}</span>
+      </div>
+      <div class="comment-item-text">${c.text}</div>
+      <button class="comment-item-delete" onclick="deleteComment(${c.id})">Remover</button>
+    </div>
+  `).join('');
+}
+
+function updateCommentHighlights() {
+  const targets = new Set(comments.map(c => c.target));
+  document.querySelectorAll('[data-c]').forEach(el => {
+    if (targets.has(el.getAttribute('data-c'))) {
+      el.classList.add('has-comment');
+    } else {
+      el.classList.remove('has-comment');
+    }
+  });
+}
+
+function closePanel() {
+  document.getElementById('commentPanel').classList.remove('open');
+  activeTarget = null;
+  document.getElementById('commentForm').style.display = 'none';
+}
+
+function exportComments() {
+  if (comments.length === 0) {
+    alert('Nenhum comentário para exportar.');
+    return;
+  }
+
+  let output = '# PRD Review Comments\n\n';
+  comments.forEach((c, i) => {
+    output += `## #${i + 1} — ${c.target}\n`;
+    output += `${c.text}\n\n`;
+  });
+
+  navigator.clipboard.writeText(output).then(() => {
+    alert('Comentários copiados para o clipboard! Cole de volta no Claude para revisões.');
+  }).catch(() => {
+    const textarea = document.createElement('textarea');
+    textarea.value = output;
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textarea);
+    alert('Comentários copiados para o clipboard!');
+  });
+}
+
+updateCommentHighlights();
+
+document.getElementById('commentInput')?.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    submitComment();
+  }
+});
+</script>
+
+</body>
+</html>
