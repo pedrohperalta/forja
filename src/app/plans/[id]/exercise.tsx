@@ -1,11 +1,22 @@
 import { useState } from 'react'
-import { View, Text, Pressable, ScrollView, TextInput } from 'react-native'
+import {
+  View,
+  Text,
+  Pressable,
+  ScrollView,
+  TextInput,
+  KeyboardAvoidingView,
+  Platform,
+} from 'react-native'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import Svg, { Path } from 'react-native-svg'
+
+import * as Crypto from 'expo-crypto'
 
 import { usePlanStore } from '@/stores/planStore'
 import { useHaptics } from '@/hooks/useHaptics'
 import { CategorySelector } from '@/components/CategorySelector'
+import { EquipmentPhoto } from '@/components/EquipmentPhoto'
 import { ExerciseFormSchema } from '@/schemas/plan'
 import type { PlanId, ExerciseId } from '@/types'
 
@@ -23,13 +34,16 @@ export default function ExerciseFormScreen(): React.JSX.Element {
   const haptics = useHaptics()
 
   const plan = plans.find((p) => p.id === id)
-  const existingExercise = exerciseId ? plan?.exercises.find((e) => e.id === exerciseId) : undefined
-
+  // Generate ID upfront for new exercises so the photo picker works immediately
+  const [effectiveId] = useState<string>(() => exerciseId ?? (Crypto.randomUUID() as string))
+  const existingExercise = plan?.exercises.find((e) => e.id === effectiveId)
   const isEditMode = existingExercise !== undefined
 
   // Form state
   const [name, setName] = useState(existingExercise?.name ?? '')
-  const [category, setCategory] = useState(existingExercise?.category ?? '')
+  const [categories, setCategories] = useState<string[]>(
+    existingExercise?.category ? existingExercise.category.split(' / ') : [],
+  )
   const [equipment, setEquipment] = useState(existingExercise?.equipment ?? '')
   const [reps, setReps] = useState(existingExercise?.reps ?? DEFAULT_REPS)
   const [sets, setSets] = useState(existingExercise?.sets ?? DEFAULT_SETS)
@@ -37,13 +51,17 @@ export default function ExerciseFormScreen(): React.JSX.Element {
     existingExercise?.restSeconds ?? DEFAULT_REST_SECONDS,
   )
 
+  const handleToggleCategory = (cat: string): void => {
+    setCategories((prev) => (prev.includes(cat) ? prev.filter((c) => c !== cat) : [...prev, cat]))
+  }
+
   // Validation errors
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   const handleSave = (): void => {
     const formData = {
       name: name.trim(),
-      category,
+      category: categories.join(' / '),
       equipment: equipment.trim(),
       reps,
       sets,
@@ -66,8 +84,8 @@ export default function ExerciseFormScreen(): React.JSX.Element {
 
     haptics.success()
 
-    if (isEditMode && exerciseId) {
-      updateExercise(id as PlanId, exerciseId as ExerciseId, {
+    if (isEditMode) {
+      updateExercise(id as PlanId, effectiveId as ExerciseId, {
         name: formData.name,
         category: formData.category,
         equipment: formData.equipment,
@@ -76,14 +94,18 @@ export default function ExerciseFormScreen(): React.JSX.Element {
         restSeconds: formData.restSeconds,
       })
     } else {
-      addExercise(id as PlanId, {
-        name: formData.name,
-        category: formData.category,
-        equipment: formData.equipment,
-        reps: formData.reps,
-        sets: formData.sets,
-        restSeconds: formData.restSeconds,
-      })
+      addExercise(
+        id as PlanId,
+        {
+          name: formData.name,
+          category: formData.category,
+          equipment: formData.equipment,
+          reps: formData.reps,
+          sets: formData.sets,
+          restSeconds: formData.restSeconds,
+        },
+        effectiveId as ExerciseId,
+      )
     }
 
     router.back()
@@ -138,113 +160,134 @@ export default function ExerciseFormScreen(): React.JSX.Element {
       </View>
 
       {/* Form */}
-      <ScrollView className="flex-1 px-6 pt-6" showsVerticalScrollIndicator={false}>
-        {/* Name field */}
-        <View className="mb-5">
-          <Text className="mb-2 font-ui text-[10px] uppercase tracking-[2px] text-muted">NOME</Text>
-          <TextInput
-            className="h-[48px] rounded-lg border border-border bg-surface px-4 font-ui text-[14px] text-text"
-            value={name}
-            onChangeText={setName}
-            placeholder="Nome do exercicio"
-            placeholderTextColor="#555"
-            accessibilityLabel="Nome do exercicio"
-          />
-          {errors['name'] ? (
-            <Text className="mt-1 font-ui text-[11px] text-danger">{errors['name']}</Text>
-          ) : null}
-        </View>
-
-        {/* Category selector */}
-        <View className="mb-5">
-          <CategorySelector selected={category} onSelect={setCategory} />
-          {errors['category'] ? (
-            <Text className="mt-1 font-ui text-[11px] text-danger">{errors['category']}</Text>
-          ) : null}
-        </View>
-
-        {/* Equipment field */}
-        <View className="mb-5">
-          <Text className="mb-2 font-ui text-[10px] uppercase tracking-[2px] text-muted">
-            EQUIPAMENTO
-          </Text>
-          <TextInput
-            className="h-[48px] rounded-lg border border-border bg-surface px-4 font-ui text-[14px] text-text"
-            value={equipment}
-            onChangeText={setEquipment}
-            placeholder="Equipamento"
-            placeholderTextColor="#555"
-            accessibilityLabel="Equipamento"
-          />
-        </View>
-
-        {/* Reps field */}
-        <View className="mb-5">
-          <Text className="mb-2 font-ui text-[10px] uppercase tracking-[2px] text-muted">
-            REPETICOES
-          </Text>
-          <TextInput
-            className="h-[48px] rounded-lg border border-border bg-surface px-4 font-ui text-[14px] text-text"
-            value={reps}
-            onChangeText={setReps}
-            placeholder="Ex: 10-12"
-            placeholderTextColor="#555"
-            accessibilityLabel="Repeticoes"
-          />
-        </View>
-
-        {/* Sets stepper */}
-        <View className="mb-5">
-          <Text className="mb-2 font-ui text-[10px] uppercase tracking-[2px] text-muted">
-            SERIES
-          </Text>
-          <View className="flex-row items-center gap-4">
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Diminuir series"
-              onPress={decrementSets}
-              className="h-[44px] w-[44px] items-center justify-center rounded-pill border border-border bg-surface"
-            >
-              <Text className="font-display text-[20px] text-text">-</Text>
-            </Pressable>
-            <Text className="font-display text-[28px] text-accent">{sets}</Text>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Aumentar series"
-              onPress={incrementSets}
-              className="h-[44px] w-[44px] items-center justify-center rounded-pill border border-border bg-surface"
-            >
-              <Text className="font-display text-[20px] text-text">+</Text>
-            </Pressable>
+      <KeyboardAvoidingView
+        className="flex-1"
+        behavior="padding"
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+      >
+        <ScrollView
+          className="flex-1 px-6 pt-6"
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          {/* Name field */}
+          <View className="mb-5">
+            <Text className="mb-2 font-ui text-[10px] uppercase tracking-[2px] text-muted">
+              NOME
+            </Text>
+            <TextInput
+              className="h-[48px] rounded-lg border border-border bg-surface px-4 font-ui text-[14px] text-text"
+              value={name}
+              onChangeText={setName}
+              placeholder="Nome do exercicio"
+              placeholderTextColor="#555"
+              accessibilityLabel="Nome do exercicio"
+            />
+            {errors['name'] ? (
+              <Text className="mt-1 font-ui text-[11px] text-danger">{errors['name']}</Text>
+            ) : null}
           </View>
-        </View>
 
-        {/* Rest stepper */}
-        <View className="mb-8">
-          <Text className="mb-2 font-ui text-[10px] uppercase tracking-[2px] text-muted">
-            DESCANSO (SEGUNDOS)
-          </Text>
-          <View className="flex-row items-center gap-4">
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Diminuir descanso"
-              onPress={decrementRest}
-              className="h-[44px] w-[44px] items-center justify-center rounded-pill border border-border bg-surface"
-            >
-              <Text className="font-display text-[20px] text-text">-</Text>
-            </Pressable>
-            <Text className="font-display text-[28px] text-accent">{restSeconds}</Text>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Aumentar descanso"
-              onPress={incrementRest}
-              className="h-[44px] w-[44px] items-center justify-center rounded-pill border border-border bg-surface"
-            >
-              <Text className="font-display text-[20px] text-text">+</Text>
-            </Pressable>
+          {/* Category selector */}
+          <View className="mb-5">
+            <CategorySelector selected={categories} onToggle={handleToggleCategory} />
+            {errors['category'] ? (
+              <Text className="mt-1 font-ui text-[11px] text-danger">{errors['category']}</Text>
+            ) : null}
           </View>
-        </View>
-      </ScrollView>
+
+          {/* Equipment field */}
+          <View className="mb-5">
+            <Text className="mb-2 font-ui text-[10px] uppercase tracking-[2px] text-muted">
+              EQUIPAMENTO
+            </Text>
+            <TextInput
+              className="h-[48px] rounded-lg border border-border bg-surface px-4 font-ui text-[14px] text-text"
+              value={equipment}
+              onChangeText={setEquipment}
+              placeholder="Equipamento"
+              placeholderTextColor="#555"
+              accessibilityLabel="Equipamento"
+            />
+          </View>
+
+          {/* Reps field */}
+          <View className="mb-5">
+            <Text className="mb-2 font-ui text-[10px] uppercase tracking-[2px] text-muted">
+              REPETICOES
+            </Text>
+            <TextInput
+              className="h-[48px] rounded-lg border border-border bg-surface px-4 font-ui text-[14px] text-text"
+              value={reps}
+              onChangeText={setReps}
+              placeholder="Ex: 10-12"
+              placeholderTextColor="#555"
+              accessibilityLabel="Repeticoes"
+            />
+          </View>
+
+          {/* Sets & Rest steppers — side by side */}
+          <View className="mb-5 flex-row gap-4">
+            <View className="flex-1 items-center">
+              <Text className="mb-2 font-ui text-[10px] uppercase tracking-[2px] text-muted">
+                SERIES
+              </Text>
+              <View className="flex-row items-center gap-3">
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Diminuir series"
+                  onPress={decrementSets}
+                  className="h-[44px] w-[44px] items-center justify-center rounded-pill border border-border bg-surface"
+                >
+                  <Text className="font-display text-[20px] text-text">-</Text>
+                </Pressable>
+                <Text className="font-display text-[28px] text-accent">{sets}</Text>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Aumentar series"
+                  onPress={incrementSets}
+                  className="h-[44px] w-[44px] items-center justify-center rounded-pill border border-border bg-surface"
+                >
+                  <Text className="font-display text-[20px] text-text">+</Text>
+                </Pressable>
+              </View>
+            </View>
+
+            <View className="flex-1 items-center">
+              <Text className="mb-2 font-ui text-[10px] uppercase tracking-[2px] text-muted">
+                DESCANSO (S)
+              </Text>
+              <View className="flex-row items-center gap-3">
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Diminuir descanso"
+                  onPress={decrementRest}
+                  className="h-[44px] w-[44px] items-center justify-center rounded-pill border border-border bg-surface"
+                >
+                  <Text className="font-display text-[20px] text-text">-</Text>
+                </Pressable>
+                <Text className="font-display text-[28px] text-accent">{restSeconds}</Text>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Aumentar descanso"
+                  onPress={incrementRest}
+                  className="h-[44px] w-[44px] items-center justify-center rounded-pill border border-border bg-surface"
+                >
+                  <Text className="font-display text-[20px] text-text">+</Text>
+                </Pressable>
+              </View>
+            </View>
+          </View>
+
+          {/* Equipment photo — always available via pre-generated ID */}
+          <View className="mb-8">
+            <Text className="mb-2 font-ui text-[10px] uppercase tracking-[2px] text-muted">
+              FOTO DO APARELHO
+            </Text>
+            <EquipmentPhoto exerciseId={effectiveId as ExerciseId} />
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
 
       {/* Sticky bottom CTA */}
       <View className="border-t border-border bg-background px-6 pb-10 pt-4">

@@ -46,6 +46,7 @@ export const useWorkoutStore = create<WorkoutState>()(
       completedAt: null,
 
       startWorkout: (plan: Plan): void => {
+        if (plan.exercises.length === 0) return
         set({
           status: 'active',
           activePlan: plan,

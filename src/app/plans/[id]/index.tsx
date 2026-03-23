@@ -113,7 +113,7 @@ export default function PlanDetailScreen(): React.JSX.Element {
             <Text className="font-ui text-[14px] text-muted">Nenhum exercicio adicionado</Text>
           </View>
         ) : (
-          <View className="gap-3 pb-6">
+          <View className="gap-3 pb-8">
             {plan.exercises.map((exercise) => (
               <ExerciseRow
                 key={exercise.id}

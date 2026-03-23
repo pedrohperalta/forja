@@ -34,7 +34,11 @@ export interface PlanState {
   addPlan: (name: string, focus: string) => PlanId
   updatePlan: (id: PlanId, changes: Partial<Pick<Plan, 'name' | 'focus'>>) => void
   removePlan: (id: PlanId) => void
-  addExercise: (planId: PlanId, exercise: Omit<Exercise, 'id' | 'createdAt' | 'updatedAt'>) => void
+  addExercise: (
+    planId: PlanId,
+    exercise: Omit<Exercise, 'id' | 'createdAt' | 'updatedAt'>,
+    exerciseId?: ExerciseId,
+  ) => ExerciseId
   updateExercise: (
     planId: PlanId,
     exerciseId: ExerciseId,
@@ -97,11 +101,12 @@ export const usePlanStore = create<PlanState>()(
       addExercise: (
         planId: PlanId,
         exercise: Omit<Exercise, 'id' | 'createdAt' | 'updatedAt'>,
-      ): void => {
+        exerciseId?: ExerciseId,
+      ): ExerciseId => {
         const now = new Date().toISOString()
         const newExercise: Exercise = {
           ...exercise,
-          id: Crypto.randomUUID() as ExerciseId,
+          id: exerciseId ?? (Crypto.randomUUID() as ExerciseId),
           createdAt: now,
           updatedAt: now,
         }
@@ -113,6 +118,8 @@ export const usePlanStore = create<PlanState>()(
               : plan,
           ),
         })
+
+        return newExercise.id
       },
 
       updateExercise: (

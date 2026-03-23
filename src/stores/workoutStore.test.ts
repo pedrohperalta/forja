@@ -39,6 +39,16 @@ describe('workoutStore', () => {
       expect(state.startedAt).toEqual(expect.any(Number))
       expect(state.completedAt).toBeNull()
     })
+
+    it('does not start when plan has no exercises', () => {
+      const emptyPlan = makePlan({ exercises: [] })
+
+      useWorkoutStore.getState().startWorkout(emptyPlan)
+
+      const state = useWorkoutStore.getState()
+      expect(state.status).toBe('idle')
+      expect(state.activePlan).toBeNull()
+    })
   })
 
   describe('completeSet', () => {

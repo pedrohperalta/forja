@@ -11,8 +11,8 @@ import { MUSCLE_CATEGORIES } from '@/constants/categories'
 
 describe('CategorySelector', () => {
   const defaultProps = {
-    selected: '',
-    onSelect: jest.fn(),
+    selected: [] as string[],
+    onToggle: jest.fn(),
   }
 
   beforeEach(() => {
@@ -27,31 +27,32 @@ describe('CategorySelector', () => {
     }
   })
 
-  it('calls onSelect with category name when a category is pressed', () => {
-    const onSelect = jest.fn()
-    render(<CategorySelector {...defaultProps} onSelect={onSelect} />)
+  it('calls onToggle with category name when pressed', () => {
+    const onToggle = jest.fn()
+    render(<CategorySelector {...defaultProps} onToggle={onToggle} />)
 
     fireEvent.press(screen.getByText('Peito'))
 
-    expect(onSelect).toHaveBeenCalledWith('Peito')
-    expect(onSelect).toHaveBeenCalledTimes(1)
+    expect(onToggle).toHaveBeenCalledWith('Peito')
+    expect(onToggle).toHaveBeenCalledTimes(1)
   })
 
-  it('highlights the selected category', () => {
-    render(<CategorySelector {...defaultProps} selected="Costas" />)
+  it('highlights selected categories', () => {
+    render(<CategorySelector {...defaultProps} selected={['Costas', 'Peito']} />)
 
-    // The selected category button should have accessible selected state
-    const selectedButton = screen.getByRole('button', { name: 'Costas' })
-    expect(selectedButton).toBeTruthy()
+    const costasButton = screen.getByRole('button', { name: 'Costas' })
+    const peitoButton = screen.getByRole('button', { name: 'Peito' })
+    expect(costasButton).toBeTruthy()
+    expect(peitoButton).toBeTruthy()
   })
 
-  it('calls onSelect with different category when another is pressed', () => {
-    const onSelect = jest.fn()
-    render(<CategorySelector {...defaultProps} selected="Peito" onSelect={onSelect} />)
+  it('supports multiple selections visually', () => {
+    const onToggle = jest.fn()
+    render(<CategorySelector {...defaultProps} selected={['Peito']} onToggle={onToggle} />)
 
     fireEvent.press(screen.getByText('Ombros'))
 
-    expect(onSelect).toHaveBeenCalledWith('Ombros')
+    expect(onToggle).toHaveBeenCalledWith('Ombros')
   })
 
   it('renders section label', () => {

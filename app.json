@@ -28,7 +28,8 @@
         "monochromeImage": "./assets/images/adaptive-icon-monochrome.png"
       },
       "package": "com.forja.app",
-      "permissions": []
+      "permissions": [],
+      "softwareKeyboardLayoutMode": "resize"
     },
     "web": {
       "favicon": "./assets/favicon.png"

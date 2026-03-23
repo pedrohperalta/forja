@@ -30,6 +30,13 @@ jest.mock('expo-crypto', () => ({
   randomUUID: () => 'new-uuid',
 }))
 
+jest.mock('@/components/EquipmentPhoto', () => ({
+  EquipmentPhoto: ({ exerciseId }: { exerciseId: string }) => {
+    const { Text } = require('react-native')
+    return <Text>EquipmentPhoto-{exerciseId}</Text>
+  },
+}))
+
 // -- Helpers --
 
 const makeExercise = (overrides: Partial<Exercise> = {}): Exercise => ({
@@ -122,10 +129,11 @@ describe('ExerciseFormScreen', () => {
           category: 'Peito',
           equipment: 'Halter',
         }),
+        expect.any(String),
       )
     })
 
-    it('navigates back after successful save', () => {
+    it('navigates back after successful create', () => {
       setupMocks()
 
       render(<ExerciseFormScreen />)
@@ -135,6 +143,14 @@ describe('ExerciseFormScreen', () => {
       fireEvent.press(screen.getByText('SALVAR'))
 
       expect(mockBack).toHaveBeenCalled()
+    })
+
+    it('shows equipment photo picker in create mode', () => {
+      setupMocks()
+
+      render(<ExerciseFormScreen />)
+
+      expect(screen.getByText(/EquipmentPhoto/)).toBeTruthy()
     })
 
     it('shows validation error when name is empty', () => {
@@ -185,6 +201,14 @@ describe('ExerciseFormScreen', () => {
       expect(screen.getByDisplayValue('10-12')).toBeTruthy()
     })
 
+    it('renders equipment photo component', () => {
+      setupMocks()
+
+      render(<ExerciseFormScreen />)
+
+      expect(screen.getByText('EquipmentPhoto-ex-1')).toBeTruthy()
+    })
+
     it('calls updateExercise when form is saved in edit mode', () => {
       const { updateExercise } = setupMocks()
 
@@ -206,7 +230,7 @@ describe('ExerciseFormScreen', () => {
   })
 
   describe('category selector', () => {
-    it('renders all 12 muscle categories', () => {
+    it('renders muscle categories', () => {
       setupMocks()
 
       render(<ExerciseFormScreen />)

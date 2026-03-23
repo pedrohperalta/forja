@@ -68,9 +68,10 @@ function setupMocks({
   lastDates = {} as Partial<Record<string, string>>,
   historyLength = 0,
   startWorkout = jest.fn(),
+  reset = jest.fn(),
   plans = [planA, planB, planC] as Plan[],
 } = {}) {
-  const workoutState = { status, startWorkout }
+  const workoutState = { status, startWorkout, reset }
   ;(useWorkoutStore as unknown as jest.Mock).mockImplementation(
     (selector: (s: typeof workoutState) => unknown) => selector(workoutState),
   )
@@ -88,7 +89,7 @@ function setupMocks({
     plans,
   })
 
-  return { startWorkout }
+  return { startWorkout, reset }
 }
 
 // -- Tests --
@@ -235,6 +236,53 @@ describe('HomeScreen', () => {
       fireEvent.press(card)
 
       expect(startWorkout).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('Cards disabled when plan has no exercises', () => {
+    it('card is disabled when plan has zero exercises', () => {
+      const emptyPlan = makePlan({
+        id: 'E' as PlanId,
+        label: 'E',
+        name: 'Treino Vazio',
+        focus: 'Nenhum',
+        exercises: [],
+      })
+      const { startWorkout } = setupMocks({ plans: [emptyPlan] })
+
+      render(<HomeScreen />)
+
+      fireEvent.press(screen.getByText('Treino Vazio'))
+
+      expect(startWorkout).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('Abandon workout', () => {
+    it('shows abandon button when status is active', () => {
+      setupMocks({ status: 'active' })
+
+      render(<HomeScreen />)
+
+      expect(screen.getByText(/abandonar/i)).toBeTruthy()
+    })
+
+    it('hides abandon button when status is idle', () => {
+      setupMocks({ status: 'idle' })
+
+      render(<HomeScreen />)
+
+      expect(screen.queryByText(/abandonar/i)).toBeNull()
+    })
+
+    it('calls reset when abandon is pressed', () => {
+      const { reset } = setupMocks({ status: 'active' })
+
+      render(<HomeScreen />)
+
+      fireEvent.press(screen.getByText(/abandonar/i))
+
+      expect(reset).toHaveBeenCalledTimes(1)
     })
   })
 

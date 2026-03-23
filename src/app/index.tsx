@@ -17,6 +17,7 @@ export default function HomeScreen() {
   // Atomic selectors (Zustand v5)
   const status = useWorkoutStore((s) => s.status)
   const startWorkout = useWorkoutStore((s) => s.startWorkout)
+  const reset = useWorkoutStore((s) => s.reset)
   const lastDates = useAppStore((s) => s.lastDates)
   const historyLength = useAppStore((s) => s.history.length)
 
@@ -40,6 +41,10 @@ export default function HomeScreen() {
 
   const handleResumeBannerPress = (): void => {
     router.push('/(workout)/exercise')
+  }
+
+  const handleAbandonWorkout = (): void => {
+    reset()
   }
 
   const handleHistoryPress = (): void => {
@@ -97,7 +102,7 @@ export default function HomeScreen() {
               focus={plan.focus}
               lastDate={lastDates[plan.id]}
               isNext={plan.id === nextPlanId}
-              disabled={isActive}
+              disabled={isActive || plan.exercises.length === 0}
               onPress={() => handleCardPress(plan)}
             />
           ))}
@@ -133,6 +138,14 @@ export default function HomeScreen() {
             <Text className="font-ui text-[14px] uppercase tracking-[1px] text-background">
               CONTINUAR TREINO
             </Text>
+          </Pressable>
+          <Pressable
+            onPress={handleAbandonWorkout}
+            accessibilityRole="button"
+            accessibilityLabel="Abandonar Treino"
+            className="mt-3 h-[46px] items-center justify-center rounded-pill border border-danger-dim"
+          >
+            <Text className="font-ui text-[13px] text-danger">Abandonar</Text>
           </Pressable>
         </View>
       ) : null}
