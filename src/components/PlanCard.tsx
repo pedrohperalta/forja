@@ -22,8 +22,7 @@ export function PlanCard({
   onPress,
   onDelete,
 }: PlanCardProps): React.JSX.Element {
-  const { deleteState, requestDelete, confirmDelete, cancelDelete } =
-    useTwoStepDelete(onDelete)
+  const { deleteState, requestDelete, confirmDelete, cancelDelete } = useTwoStepDelete(onDelete)
 
   const exerciseLabel = exerciseCount === 1 ? 'exercicio' : 'exercicios'
 
@@ -44,10 +43,7 @@ export function PlanCard({
               <Text className="font-display text-[16px] text-accent">{label}</Text>
             </View>
             <View className="flex-1">
-              <Text
-                className="font-display text-[20px] tracking-[1px] text-text"
-                numberOfLines={1}
-              >
+              <Text className="font-display text-[20px] tracking-[1px] text-text" numberOfLines={1}>
                 {name}
               </Text>
               <Text className="font-ui text-[12px] text-muted" numberOfLines={1}>

@@ -28,13 +28,15 @@ jest.mock('@/stores/planStore', () => ({
 
 // Mock react-native-reanimated-dnd — render children directly
 jest.mock('react-native-reanimated-dnd', () => ({
-  SortableList: ({ data, renderItem }: { data: unknown[]; renderItem: (info: { item: unknown; index: number }) => React.JSX.Element }) => {
+  SortableList: ({
+    data,
+    renderItem,
+  }: {
+    data: unknown[]
+    renderItem: (info: { item: unknown; index: number }) => React.JSX.Element
+  }) => {
     const { View } = require('react-native')
-    return (
-      <View>
-        {data.map((item, index) => renderItem({ item, index }))}
-      </View>
-    )
+    return <View>{data.map((item, index) => renderItem({ item, index }))}</View>
   },
   SortableItem: ({ children }: { children: React.ReactNode }) => {
     const { View } = require('react-native')

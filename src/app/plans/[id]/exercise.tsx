@@ -21,9 +21,7 @@ export default function ExerciseFormScreen(): React.JSX.Element {
   const router = useRouter()
 
   const plan = plans.find((p) => p.id === id)
-  const existingExercise = exerciseId
-    ? plan?.exercises.find((e) => e.id === exerciseId)
-    : undefined
+  const existingExercise = exerciseId ? plan?.exercises.find((e) => e.id === exerciseId) : undefined
 
   const isEditMode = existingExercise !== undefined
 
@@ -41,7 +39,14 @@ export default function ExerciseFormScreen(): React.JSX.Element {
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   const handleSave = (): void => {
-    const formData = { name: name.trim(), category, equipment: equipment.trim(), reps, sets, restSeconds }
+    const formData = {
+      name: name.trim(),
+      category,
+      equipment: equipment.trim(),
+      reps,
+      sets,
+      restSeconds,
+    }
     const result = ExerciseFormSchema.safeParse(formData)
 
     if (!result.success) {
@@ -119,9 +124,7 @@ export default function ExerciseFormScreen(): React.JSX.Element {
       <ScrollView className="flex-1 px-6 pt-6" showsVerticalScrollIndicator={false}>
         {/* Name field */}
         <View className="mb-5">
-          <Text className="mb-2 font-ui text-[10px] uppercase tracking-[2px] text-muted">
-            NOME
-          </Text>
+          <Text className="mb-2 font-ui text-[10px] uppercase tracking-[2px] text-muted">NOME</Text>
           <TextInput
             className="h-[48px] rounded-lg border border-border bg-surface px-4 font-ui text-[14px] text-text"
             value={name}

@@ -8,10 +8,7 @@ type CategorySelectorProps = {
 }
 
 /** Scrollable grid of muscle group pill chips for exercise category selection. */
-export function CategorySelector({
-  selected,
-  onSelect,
-}: CategorySelectorProps): React.JSX.Element {
+export function CategorySelector({ selected, onSelect }: CategorySelectorProps): React.JSX.Element {
   return (
     <View>
       <Text className="mb-3 font-ui text-[10px] uppercase tracking-[2px] text-muted">
@@ -35,9 +32,7 @@ export function CategorySelector({
                 }`}
               >
                 <Text
-                  className={`font-ui text-[12px] ${
-                    isSelected ? 'text-accent' : 'text-text-med'
-                  }`}
+                  className={`font-ui text-[12px] ${isSelected ? 'text-accent' : 'text-text-med'}`}
                 >
                   {category}
                 </Text>

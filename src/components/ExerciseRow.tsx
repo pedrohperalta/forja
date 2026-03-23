@@ -27,18 +27,14 @@ export function ExerciseRow({
   onEdit,
   onDelete,
 }: ExerciseRowProps): React.JSX.Element {
-  const { deleteState, requestDelete, confirmDelete, cancelDelete } =
-    useTwoStepDelete(onDelete)
+  const { deleteState, requestDelete, confirmDelete, cancelDelete } = useTwoStepDelete(onDelete)
 
   return (
     <View className="rounded-lg border border-border bg-surface px-4 py-3">
       {/* Top: name + edit button */}
       <View className="flex-row items-start justify-between">
         <View className="mr-3 flex-1">
-          <Text
-            className="font-display text-[18px] tracking-[0.5px] text-text"
-            numberOfLines={1}
-          >
+          <Text className="font-display text-[18px] tracking-[0.5px] text-text" numberOfLines={1}>
             {name}
           </Text>
 
@@ -120,9 +116,7 @@ export function ExerciseRow({
             onPress={requestDelete}
             className="rounded-pill border border-border-med bg-surface-2 px-3 py-1"
           >
-            <Text className="font-ui text-[10px] uppercase tracking-[1px] text-danger">
-              APAGAR
-            </Text>
+            <Text className="font-ui text-[10px] uppercase tracking-[1px] text-danger">APAGAR</Text>
           </Pressable>
         )}
       </View>
