@@ -27,8 +27,8 @@
 
 ## Phase 3: useImportProcessing Hook
 
-- [ ] Task 3.1: Write tests for `useImportProcessing` — processes photos sequentially, updates statuses in importStore, aggregates workouts, handles errors per photo, sets `'processing'` status on start, sets `'reviewing'` on completion. Test label auto-generation: reads `usePlanStore.getState().nextLabel` and generates sequential labels (one per photo)
-- [ ] Task 3.2: Implement `useImportProcessing` in `src/hooks/useImportProcessing.ts` — iterates `importStore.photos`, auto-generates labels from `planStore.nextLabel`, calls `importApi.extractWorkout(uri, label)` for each, updates `importStore.updatePhotoStatus()` and `importStore.setWorkouts()`. Sets `importStore.status` to `'processing'` on start, `'reviewing'` on completion
+- [x] Task 3.1: Write tests for `useImportProcessing` — processes photos sequentially, updates statuses in importStore, aggregates workouts, handles errors per photo, sets `'processing'` status on start, sets `'reviewing'` on completion. Test label auto-generation: reads `usePlanStore.getState().nextLabel` and generates sequential labels (one per photo)
+- [x] Task 3.2: Implement `useImportProcessing` in `src/hooks/useImportProcessing.ts` — iterates `importStore.photos`, auto-generates labels from `planStore.nextLabel`, calls `importApi.extractWorkout(uri, label)` for each, updates `importStore.updatePhotoStatus()` and `importStore.setWorkouts()`. Sets `importStore.status` to `'processing'` on start, `'reviewing'` on completion
 
 ### Checkpoint
 
