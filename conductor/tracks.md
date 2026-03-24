@@ -49,5 +49,5 @@ import-data-layer
 | Plan Integration & Polish | 7 | 20 |
 | Import Data Layer & Backend | 7 | 28 |
 | Import UI & Capture Flow | 6 | 16 |
-| Review Screen & Integration | 4 | 12 |
-| **Total** | **73** | **256** |
+| Review Screen & Integration | 3 | 10 |
+| **Total** | **72** | **254** |

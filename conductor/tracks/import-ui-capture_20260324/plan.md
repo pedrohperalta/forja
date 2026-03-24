@@ -27,8 +27,8 @@
 
 ## Phase 3: useImportProcessing Hook
 
-- [ ] Task 3.1: Write tests for `useImportProcessing` — processes photos sequentially, updates statuses in importStore, aggregates workouts, handles errors per photo, sets final status
-- [ ] Task 3.2: Implement `useImportProcessing` in `src/hooks/useImportProcessing.ts` — iterates `importStore.photos`, calls `importApi.extractWorkout()` for each, updates `importStore.updatePhotoStatus()` and `importStore.setWorkouts()`
+- [ ] Task 3.1: Write tests for `useImportProcessing` — processes photos sequentially, updates statuses in importStore, aggregates workouts, handles errors per photo, sets `'processing'` status on start, sets `'reviewing'` on completion. Test label auto-generation: reads `usePlanStore.getState().nextLabel` and generates sequential labels (one per photo)
+- [ ] Task 3.2: Implement `useImportProcessing` in `src/hooks/useImportProcessing.ts` — iterates `importStore.photos`, auto-generates labels from `planStore.nextLabel`, calls `importApi.extractWorkout(uri, label)` for each, updates `importStore.updatePhotoStatus()` and `importStore.setWorkouts()`. Sets `importStore.status` to `'processing'` on start, `'reviewing'` on completion
 
 ### Checkpoint
 
@@ -36,8 +36,8 @@
 
 ## Phase 4: Import Capture Screen
 
-- [ ] Task 4.1: Write tests for `ImportCaptureScreen` — renders photo cards, mode selector, PROCESSAR button disabled when no photos, navigates to /import/processing on submit
-- [ ] Task 4.2: Create route `src/app/import/index.tsx` — `ImportCaptureScreen` with camera capture via `expo-image-picker`, gallery selection, photo card grid, mode selector, sticky bottom CTA
+- [ ] Task 4.1: Write tests for `ImportCaptureScreen` — renders photo cards, mode selector, PROCESSAR button disabled when no photos, navigates to /import/processing on submit, add button disabled at 5 photos, sets importStore status to `'capturing'` on mount
+- [ ] Task 4.2: Create route `src/app/import/index.tsx` — `ImportCaptureScreen` with camera capture via `expo-image-picker`, gallery selection, photo card grid (max 5 photos), mode selector, sticky bottom CTA. Sets `importStore.status` to `'capturing'` on mount
 - [ ] Task 4.3: Create route layout `src/app/import/_layout.tsx` — Stack navigator for import flow
 
 ### Checkpoint
@@ -47,8 +47,8 @@
 
 ## Phase 5: Import Processing Screen
 
-- [ ] Task 5.1: Write tests for `ImportProcessingScreen` — shows progress, displays per-photo status, navigates to /import/review on completion
-- [ ] Task 5.2: Create route `src/app/import/processing.tsx` — `ImportProcessingScreen` with progress bar, photo status list, uses `useImportProcessing` hook, auto-navigates on success
+- [ ] Task 5.1: Write tests for `ImportProcessingScreen` — shows progress, displays per-photo status, navigates to /import/review on completion, back navigation is disabled during processing
+- [ ] Task 5.2: Create route `src/app/import/processing.tsx` — `ImportProcessingScreen` with progress bar, photo status list, uses `useImportProcessing` hook, auto-navigates on success. Disable hardware back via `BackHandler` and hide header back button while processing is in flight
 
 ### Checkpoint
 

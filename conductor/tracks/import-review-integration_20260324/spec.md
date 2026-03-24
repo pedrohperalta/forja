@@ -15,14 +15,13 @@ This track builds the review screen where users can inspect and edit extracted e
 1. `ImportReviewScreen` at `/import/review` — displays extracted workouts with editable exercise rows, confidence badges, and a "CONFIRMAR IMPORTAÇÃO" CTA
 2. Users can tap an `ExtractedExerciseRow` to edit exercise name, category, sets, reps, rest, and equipment inline
 3. `updateExtractedExercise(workoutIndex, exerciseIndex, changes)` action in importStore is used for edits
-4. "CONFIRMAR IMPORTAÇÃO" calls `importStore.confirmImport()` which triggers `planStore.importPlans()`, then navigates to plans screen
+4. "CONFIRMAR IMPORTAÇÃO" calls `importStore.confirmImport()` which triggers `planStore.importPlans()`, then navigates to plans screen via `router.replace('/plans')`, then calls `importStore.reset()` to clear ephemeral state
 5. Import button added to `src/app/plans/index.tsx` — "IMPORTAR TREINO" secondary button in the header area
 6. Import button added to `src/components/EmptyPlans.tsx` — secondary option below "CRIAR PRIMEIRO PLANO"
-7. `.env.local` template with `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_ANON_KEY` placeholders
-8. All components follow Forja design system
-9. All components have unit tests written before implementation (TDD)
-10. `npx tsc --noEmit` passes
-11. All new + existing tests pass
+7. All components follow Forja design system
+8. All components have unit tests written before implementation (TDD)
+9. `npx tsc --noEmit` passes
+10. All new + existing tests pass
 
 ## Out of Scope
 
@@ -51,6 +50,6 @@ Entry points:
 ### Key Decisions
 
 - **Inline editing** — tapping an exercise row opens editable fields in-place (no modal), using `updateExtractedExercise` action
-- **Two-step confirmation** — `confirmImport()` sets status to `'confirmed'`, triggers `planStore.importPlans()`, then screen navigates away and `importStore.reset()` is called
+- **Two-step confirmation** — `confirmImport()` sets status to `'confirmed'` and triggers `planStore.importPlans()`. The screen then calls `router.replace('/plans')` followed by `importStore.reset()` — reset is called AFTER navigation to avoid clearing state prematurely
 - **Entry points in existing screens** — secondary pill buttons that don't disrupt current UI hierarchy
-- **Environment variables** — `.env.local` template for Supabase credentials, referenced by `importApi` service from Track 1
+- **Environment variables** — `.env.local.example` is created in Track 1 (Phase 6). No env work needed in this track

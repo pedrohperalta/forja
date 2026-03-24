@@ -19,10 +19,14 @@ This track builds the capture and processing UI: reusable components for display
 5. `useImportProcessing` hook — orchestrates photo processing pipeline: iterates photos, calls `importApi.extractWorkout()` for each, updates `importStore` photo statuses and aggregates workouts
 6. `ImportCaptureScreen` at `/import/` — camera capture + gallery picker, displays photo cards, mode selector, "PROCESSAR" CTA
 7. `ImportProcessingScreen` at `/import/processing` — progress indicator, photo-by-photo status, auto-navigates to review when complete
-8. All components follow Forja design system: Bebas Neue for titles, Syne for body, pill buttons, dark theme, accent color
-9. All components have unit tests written before implementation (TDD)
-10. `npx tsc --noEmit` passes
-11. All new + existing tests pass
+8. `useImportProcessing` hook auto-generates sequential labels from `planStore.nextLabel` (e.g., "Treino A", "Treino B") — one per photo
+9. `useImportProcessing` hook manages `importStore.status` transitions: sets `'processing'` on start, `'reviewing'` on completion
+10. Maximum 5 photos per import session — add button disabled when limit reached
+11. Back navigation disabled during processing (hardware back + header back) to prevent partial state
+12. All components follow Forja design system: Bebas Neue for titles, Syne for body, pill buttons, dark theme, accent color
+13. All components have unit tests written before implementation (TDD)
+14. `npx tsc --noEmit` passes
+15. All new + existing tests pass
 
 ## Out of Scope
 
@@ -55,7 +59,11 @@ This track builds the capture and processing UI: reusable components for display
 - **`useImportProcessing` hook** — encapsulates the async processing pipeline, making it testable independently of the screen
 - **Camera + Gallery** — uses `expo-image-picker` (already in Expo SDK) for both capture and library selection
 - **Sequential processing** — photos processed one at a time to avoid rate limits and provide clear progress feedback
+- **Label auto-generation** — hook reads `usePlanStore.getState().nextLabel` and generates sequential labels per photo (Treino A, B, C...)
+- **Photo limit** — max 5 photos per import to keep processing time reasonable and avoid rate limits
+- **Status ownership** — `useImportProcessing` hook owns `'processing'` → `'reviewing'` transitions; capture screen sets `'capturing'` on mount
 - **No navigation on error** — if any photo fails, user stays on processing screen with error state and retry option
+- **Back disabled during processing** — hardware back and header back button are disabled while API calls are in flight
 
 ### Component Design
 
