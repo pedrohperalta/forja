@@ -49,4 +49,18 @@ describe('EmptyPlans', () => {
 
     expect(screen.getByLabelText('Criar primeiro plano de treino')).toBeTruthy()
   })
+
+  it('renders import button', () => {
+    render(<EmptyPlans />)
+
+    expect(screen.getByText('IMPORTAR TREINO')).toBeTruthy()
+  })
+
+  it('navigates to /import/ when import button is pressed', () => {
+    render(<EmptyPlans />)
+
+    fireEvent.press(screen.getByText('IMPORTAR TREINO'))
+
+    expect(mockPush).toHaveBeenCalledWith('/import')
+  })
 })
