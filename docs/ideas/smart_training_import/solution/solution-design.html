@@ -1,0 +1,1416 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Solution Design — Smart Training Import | Forja</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<style>
+  :root {
+    --accent: #C2F000;
+    --accent-dim: rgba(194, 240, 0, 0.12);
+    --danger: #ef4444;
+    --warning: #f59e0b;
+    --success: #10b981;
+    --p0: #ef4444;
+    --p1: #f59e0b;
+    --p2: #3b82f6;
+    --bg: #0e0e0e;
+    --surface: #1a1a1a;
+    --surface-2: #252525;
+    --border: #2a2a2a;
+    --text: #f5f5f4;
+    --text-med: #a8a29e;
+    --text-dim: #57534e;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    padding: 0;
+  }
+
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 32px 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-inner {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .header h1 {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--accent);
+    letter-spacing: -0.5px;
+  }
+  .header .meta {
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+  .review-toggle {
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    padding: 8px 20px;
+    border-radius: 100px;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .review-toggle:hover { opacity: 0.85; }
+  .review-toggle.active {
+    background: var(--danger);
+    color: white;
+  }
+
+  .content {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 40px 32px 120px;
+  }
+
+  section { margin-bottom: 48px; }
+  .section-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+  h2 {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: var(--text);
+  }
+  h3 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: var(--text);
+  }
+  h4 {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--text);
+  }
+  p, li {
+    font-size: 14px;
+    color: var(--text-med);
+    line-height: 1.7;
+  }
+  ul, ol {
+    padding-left: 20px;
+    margin-bottom: 16px;
+  }
+  li { margin-bottom: 6px; }
+  li strong { color: var(--text); }
+  code {
+    background: var(--surface-2);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 13px;
+    color: var(--accent);
+  }
+  pre {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    overflow-x: auto;
+    margin-bottom: 16px;
+  }
+  pre code {
+    background: none;
+    padding: 0;
+    font-size: 12px;
+    color: var(--text-med);
+    line-height: 1.6;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 16px;
+  }
+  .card h3 { margin-bottom: 8px; }
+  .card h4 { margin-bottom: 6px; }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  .badge-p0 { background: rgba(239,68,68,0.15); color: var(--p0); }
+  .badge-p1 { background: rgba(245,158,11,0.15); color: var(--p1); }
+  .badge-p2 { background: rgba(59,130,246,0.15); color: var(--p2); }
+  .badge-accent { background: var(--accent-dim); color: var(--accent); }
+  .badge-new { background: rgba(16,185,129,0.15); color: #10b981; }
+  .badge-change { background: rgba(245,158,11,0.15); color: var(--warning); }
+  .badge-keep { background: rgba(59,130,246,0.15); color: var(--p2); }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 16px;
+    font-size: 13px;
+  }
+  th {
+    text-align: left;
+    padding: 10px 14px;
+    background: var(--surface-2);
+    color: var(--text-dim);
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-med);
+  }
+
+  .mermaid-container {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 16px;
+    overflow-x: auto;
+  }
+  .mermaid { text-align: center; }
+
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 48px 0;
+  }
+
+  .phase-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 12px;
+  }
+  .phase-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  .phase-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .task-list { list-style: none; padding-left: 0; }
+  .task-list li {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .task-list li:last-child { border-bottom: none; }
+  .task-id {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-dim);
+    min-width: 40px;
+  }
+  .task-desc {
+    font-size: 13px;
+    color: var(--text-med);
+    flex: 1;
+  }
+  .task-file {
+    font-size: 11px;
+    color: var(--text-dim);
+    font-family: monospace;
+  }
+
+  .file-tree {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 12px;
+    color: var(--text-med);
+    line-height: 1.8;
+  }
+  .file-tree .new { color: #10b981; }
+  .file-tree .changed { color: var(--warning); }
+  .file-tree .indent { padding-left: 20px; }
+  .file-tree .indent2 { padding-left: 40px; }
+  .file-tree .indent3 { padding-left: 60px; }
+
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  @media (max-width: 640px) {
+    .grid-2 { grid-template-columns: 1fr; }
+  }
+
+  .metric-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 640px) {
+    .metric-grid { grid-template-columns: 1fr; }
+  }
+  .metric-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+  }
+  .metric-value {
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--accent);
+    line-height: 1;
+  }
+  .metric-label {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-top: 6px;
+  }
+
+  /* Commenting system */
+  [data-c].commentable {
+    cursor: pointer;
+    position: relative;
+    transition: outline 0.15s, background 0.15s;
+    outline: 2px solid transparent;
+    border-radius: 4px;
+  }
+  [data-c].commentable:hover {
+    outline: 2px solid var(--accent);
+    background: rgba(194, 240, 0, 0.04);
+  }
+  [data-c].commentable.has-comment {
+    outline: 2px solid var(--warning);
+    background: rgba(245, 158, 11, 0.06);
+  }
+
+  .comment-panel {
+    display: none;
+    position: fixed;
+    right: 0;
+    top: 0;
+    width: 360px;
+    height: 100vh;
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    z-index: 200;
+    flex-direction: column;
+  }
+  .comment-panel.open { display: flex; }
+  .comment-panel-header {
+    padding: 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .comment-panel-header h3 { font-size: 14px; font-weight: 700; margin: 0; }
+  .comment-panel-body { flex: 1; overflow-y: auto; padding: 20px; }
+  .comment-panel-footer { padding: 16px 20px; border-top: 1px solid var(--border); }
+  .comment-input {
+    width: 100%;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 13px;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    resize: vertical;
+    min-height: 60px;
+  }
+  .comment-input:focus { outline: none; border-color: var(--accent); }
+  .comment-submit {
+    margin-top: 8px;
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    padding: 8px 16px;
+    border-radius: 100px;
+    font-weight: 700;
+    font-size: 12px;
+    cursor: pointer;
+    width: 100%;
+  }
+  .comment-item {
+    background: var(--surface-2);
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 8px;
+  }
+  .comment-item-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 6px;
+  }
+  .comment-item-section { font-size: 11px; font-weight: 700; color: var(--accent); }
+  .comment-item-time { font-size: 11px; color: var(--text-dim); }
+  .comment-item-text { font-size: 13px; color: var(--text-med); }
+  .comment-item-delete {
+    font-size: 11px; color: var(--danger); cursor: pointer;
+    margin-top: 6px; background: none; border: none; padding: 0;
+  }
+  .comment-count {
+    background: var(--warning); color: var(--bg);
+    font-size: 10px; font-weight: 700;
+    padding: 1px 6px; border-radius: 100px; margin-left: 6px;
+  }
+  .export-btn {
+    background: var(--surface-2); color: var(--text-med);
+    border: 1px solid var(--border); padding: 6px 14px;
+    border-radius: 100px; font-size: 12px; font-weight: 600; cursor: pointer;
+  }
+  .export-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .close-btn { background: none; border: none; color: var(--text-dim); font-size: 20px; cursor: pointer; }
+  .no-comments { text-align: center; color: var(--text-dim); font-size: 13px; padding: 40px 0; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-inner">
+    <div>
+      <h1>FORJA — Smart Training Import</h1>
+      <div class="meta">Solution Design v2 &middot; 24 Mar 2026 &middot; Feature</div>
+    </div>
+    <div style="display: flex; gap: 8px; align-items: center;">
+      <button class="export-btn" id="exportBtn" style="display:none;" onclick="exportComments()">Exportar Comentários</button>
+      <button class="review-toggle" id="reviewToggle" onclick="toggleReviewMode()">Review Mode</button>
+    </div>
+  </div>
+</div>
+
+<!-- Comment Panel -->
+<div class="comment-panel" id="commentPanel">
+  <div class="comment-panel-header">
+    <h3>Comentários <span class="comment-count" id="commentCount" style="display:none">0</span></h3>
+    <button class="close-btn" onclick="closePanel()">&times;</button>
+  </div>
+  <div class="comment-panel-body" id="commentList">
+    <div class="no-comments">Nenhum comentário ainda. Clique em elementos destacados para comentar.</div>
+  </div>
+  <div class="comment-panel-footer" id="commentForm" style="display:none">
+    <div style="font-size:11px;color:var(--accent);font-weight:700;margin-bottom:6px" id="commentTarget"></div>
+    <textarea class="comment-input" id="commentInput" placeholder="Deixe seu comentário..."></textarea>
+    <button class="comment-submit" onclick="submitComment()">Adicionar Comentário</button>
+  </div>
+</div>
+
+<!-- Content -->
+<div class="content">
+
+  <!-- ==================== 1. PROBLEMA ==================== -->
+  <section>
+    <div class="section-label" data-c="sec-problem">Problema</div>
+    <h2 data-c="title-problem">Cadastro manual de treinos é lento e propenso a erros</h2>
+    <p data-c="desc-problem">Toda vez que o treinador envia um novo programa de treinos (geralmente como fotos, uma por treino), o usuário precisa abrir o Forja e cadastrar manualmente cada exercício — digitando nomes, selecionando categorias, configurando séries, repetições e descanso. Um programa típico tem 2-3 treinos (A, B, C) com 5-7 exercícios cada. O processo leva ~30 minutos e resulta em erros frequentes de digitação, categorias erradas e detalhes trocados.</p>
+
+    <div class="grid-2" style="margin-top: 16px">
+      <div class="card" data-c="problem-typing">
+        <h4>Digitação manual</h4>
+        <p>15-20 exercícios × 6 campos cada = ~100 inputs manuais por troca de programa</p>
+      </div>
+      <div class="card" data-c="problem-swap">
+        <h4>Troca dolorosa</h4>
+        <p>Sem forma de substituir o programa de uma vez — precisa deletar e recriar tudo</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== 2. OBJETIVO ==================== -->
+  <section>
+    <div class="section-label" data-c="sec-objective">Objetivo</div>
+    <h2 data-c="title-objective">Importar um programa completo a partir de fotos em &lt;5 minutos</h2>
+    <p data-c="desc-objective">Permitir que o usuário envie fotos dos treinos (uma por treino), processe via IA na nuvem, revise o resultado, e importe o programa completo no Forja — substituindo ou adicionando ao existente. O histórico de pesos e treinos anteriores é preservado.</p>
+
+    <div class="metric-grid" style="margin-top: 16px">
+      <div class="metric-card" data-c="metric-time">
+        <div class="metric-value">&lt;5min</div>
+        <div class="metric-label">Setup de programa completo</div>
+      </div>
+      <div class="metric-card" data-c="metric-accuracy">
+        <div class="metric-value">&gt;85%</div>
+        <div class="metric-label">Precisão sem edição manual</div>
+      </div>
+      <div class="metric-card" data-c="metric-errors">
+        <div class="metric-value">~0</div>
+        <div class="metric-label">Erros de digitação</div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ==================== 3. SOLUÇÃO PROPOSTA ==================== -->
+  <section>
+    <div class="section-label" data-c="sec-solution">Solução Proposta</div>
+    <h2 data-c="title-solution">Arquitetura de alto nível</h2>
+
+    <p data-c="desc-architecture">O app mobile captura fotos dos treinos, envia cada imagem para uma <strong style="color:var(--text)">Supabase Edge Function</strong> que chama a API Claude Vision para extrair os exercícios. O resultado estruturado volta ao app, onde o usuário revisa e confirma a importação. Todo o processamento pesado acontece na nuvem; o app permanece offline-first para todas as outras funcionalidades.</p>
+
+    <div class="mermaid-container" data-c="diagram-architecture">
+      <div class="mermaid">
+graph LR
+    A["📱 Forja App"] -->|"POST /extract-workout\n(image base64)"| B["⚡ Supabase\nEdge Function"]
+    B -->|"Claude Vision API\n(structured output)"| C["🤖 Claude\nSonnet 4.6"]
+    C -->|"JSON response"| B
+    B -->|"WorkoutData[]"| A
+    A -->|"Revisão + Salvar"| D["💾 MMKV\n(planStore)"]
+
+    style A fill:#1a1a1a,stroke:#C2F000,color:#f5f5f4
+    style B fill:#1a1a1a,stroke:#C2F000,color:#f5f5f4
+    style C fill:#1a1a1a,stroke:#3b82f6,color:#f5f5f4
+    style D fill:#1a1a1a,stroke:#C2F000,color:#f5f5f4
+      </div>
+    </div>
+
+    <h3 data-c="title-decisions">Decisões técnicas</h3>
+    <div class="card" data-c="decision-supabase">
+      <h4>Supabase Edge Function</h4>
+      <p>Escolhida por: API key segura no servidor, free tier generoso (500k invocações), base para futuro sync/web (DB + Auth + Storage + Realtime), open source (sem vendor lock-in forte), DX simples (<code>supabase functions deploy</code>).</p>
+    </div>
+    <div class="card" data-c="decision-claude">
+      <h4>Claude Vision (Sonnet 4.6)</h4>
+      <p>Modelo multimodal que recebe a imagem e retorna JSON estruturado com exercícios extraídos. Sonnet 4.6 oferece boa relação custo/qualidade para OCR + interpretação semântica. Custo estimado: ~$0.02-0.05 por foto.</p>
+    </div>
+    <div class="card" data-c="decision-offline">
+      <h4>Offline-first preservado</h4>
+      <p>A importação é a única funcionalidade que requer internet. Todas as outras features (treinos, histórico, planos) continuam 100% offline. Sem Supabase Auth ou DB no v1 — apenas Edge Functions.</p>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ==================== 4. FLUXO DO USUÁRIO ==================== -->
+  <section>
+    <div class="section-label" data-c="sec-flow">Fluxo do Usuário</div>
+    <h2 data-c="title-flow">Da foto ao treino pronto</h2>
+
+    <div class="mermaid-container" data-c="diagram-flow">
+      <div class="mermaid">
+flowchart TD
+    H["🏠 Home\n(sem planos)"] -->|"Importar Plano"| CAP
+    P["📋 Planos"] -->|"Importar Plano"| CAP
+
+    CAP["📷 Captura\nAdicionar fotos"] -->|"Tirar foto / Galeria"| CAP
+    CAP -->|"Processar Plano"| PROC
+
+    PROC["⏳ Processamento\nStatus por treino"] -->|"Todos ok"| REV
+    PROC -->|"Algum falhou"| ERR
+
+    ERR["⚠️ Erro\nTrocar foto"] -->|"Nova foto"| PROC
+
+    REV["✏️ Revisão\nEditar exercícios"] -->|"Importar Programa"| SAVE
+    REV -->|"Cancelar"| P
+
+    SAVE{"Substituir ou\nadicionar?"} -->|"Substituir"| REPLACE
+    SAVE -->|"Adicionar"| ADD
+
+    REPLACE["🔄 Substituir\nArquivar antigos"] --> DONE
+    ADD["➕ Adicionar\nManter existentes"] --> DONE
+
+    DONE["✅ Sucesso\nPlano importado"]
+
+    style H fill:#1a1a1a,stroke:#C2F000,color:#f5f5f4
+    style P fill:#1a1a1a,stroke:#C2F000,color:#f5f5f4
+    style CAP fill:#1a1a1a,stroke:#C2F000,color:#f5f5f4
+    style PROC fill:#1a1a1a,stroke:#3b82f6,color:#f5f5f4
+    style ERR fill:#1a1a1a,stroke:#ef4444,color:#f5f5f4
+    style REV fill:#1a1a1a,stroke:#f59e0b,color:#f5f5f4
+    style SAVE fill:#252525,stroke:#C2F000,color:#f5f5f4
+    style REPLACE fill:#1a1a1a,stroke:#C2F000,color:#f5f5f4
+    style ADD fill:#1a1a1a,stroke:#C2F000,color:#f5f5f4
+    style DONE fill:#1a1a1a,stroke:#10b981,color:#f5f5f4
+      </div>
+    </div>
+
+    <h3 data-c="title-entry-points">Entry points</h3>
+    <p data-c="desc-entry-points">A importação pode ser iniciada de dois pontos:</p>
+    <ul>
+      <li data-c="entry-home"><strong>Home (sem planos):</strong> Quando <code>plans.length === 0</code>, o componente <code>EmptyPlans</code> mostra botão "Importar Plano" além do "Criar Plano".</li>
+      <li data-c="entry-plans"><strong>Tela de Planos:</strong> Botão secundário "Importar" ao lado do "Novo Plano" no topo da tela.</li>
+    </ul>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ==================== 5. MODELO DE DADOS ==================== -->
+  <section>
+    <div class="section-label" data-c="sec-data">Modelo de Dados</div>
+    <h2 data-c="title-data">Mudanças no schema</h2>
+
+    <h3 data-c="title-plan-changes">Plan — campo <code>archived</code> <span class="badge badge-change">Alterado</span></h3>
+    <div class="card" data-c="data-plan-archived">
+      <pre><code>// src/types/workout.ts
+interface Plan {
+  id: PlanId
+  label: string        // A, B, C...
+  name: string
+  focus: string
+  exercises: Exercise[]
+  archived?: boolean   // ← NOVO — soft delete para substituição de plano
+  createdAt: string
+  updatedAt: string
+}</code></pre>
+      <p style="margin-top:12px">Quando <code>archived: true</code>, o plano não aparece na UI principal (home, lista de planos, seleção de treino) mas permanece no MMKV. O <code>planStore</code> migra para v2 com backfill de <code>archived: false</code>.</p>
+    </div>
+
+    <h3 data-c="title-import-types">Tipos de importação <span class="badge badge-new">Novo</span></h3>
+    <div class="card" data-c="data-import-types">
+      <pre><code>// src/types/import.ts
+
+/** Exercício extraído pela IA — antes de virar Exercise do app */
+interface ExtractedExercise {
+  name: string
+  category: ExerciseCategory
+  equipment: string
+  sets: number
+  reps: string          // "10-12", "15", "até falha"
+  restSeconds: number
+  confidence: number    // 0-1, confiança da extração
+}
+
+/** Treino extraído de uma foto */
+interface ExtractedWorkout {
+  label: string         // "A", "B", "C"
+  name: string          // nome do treino
+  focus: string         // grupo muscular principal
+  exercises: ExtractedExercise[]
+}
+
+/** Status de processamento por foto */
+interface ImportPhotoStatus {
+  id: string
+  label: string         // "Treino A", "Treino B"
+  uri: string           // URI local da foto
+  status: 'pending' | 'processing' | 'done' | 'error'
+  result?: ExtractedWorkout
+  error?: string
+}
+
+/** Estado completo da importação */
+interface ImportSession {
+  photos: ImportPhotoStatus[]
+  mode: 'replace' | 'add'
+}</code></pre>
+    </div>
+
+    <h3 data-c="title-api-contract">Contrato da API <span class="badge badge-new">Novo</span></h3>
+    <div class="card" data-c="data-api-contract">
+      <h4>POST /extract-workout</h4>
+      <table>
+        <tr><th>Campo</th><th>Tipo</th><th>Descrição</th></tr>
+        <tr><td><strong>Request</strong></td><td colspan="2"></td></tr>
+        <tr><td><code>image</code></td><td>string (base64)</td><td>Imagem do treino codificada em base64</td></tr>
+        <tr><td><code>label</code></td><td>string</td><td>Label sugerida ("A", "B", "C")</td></tr>
+        <tr><td><strong>Response (200)</strong></td><td colspan="2"></td></tr>
+        <tr><td><code>workout</code></td><td>ExtractedWorkout</td><td>Treino extraído com exercícios completos</td></tr>
+        <tr><td><strong>Response (422)</strong></td><td colspan="2"></td></tr>
+        <tr><td><code>error</code></td><td>string</td><td>"unreadable_image" | "no_exercises_found"</td></tr>
+      </table>
+
+      <h4 style="margin-top: 16px">Prompt Claude Vision (resumo)</h4>
+      <pre><code>System: Você é um assistente que extrai exercícios de fotos de
+programas de treino de musculação. Retorne JSON estruturado.
+
+User: [imagem] Extraia todos os exercícios deste treino.
+Para cada exercício, identifique: nome, categoria (peito, costas,
+ombros, bíceps, tríceps, pernas, core, cardio), equipamento,
+séries, repetições e tempo de descanso.
+Se alguma informação não estiver visível, infira valores padrão
+razoáveis e marque confidence &lt; 0.7.
+Retorne como label: "{label}", com nome e foco muscular do treino.</code></pre>
+    </div>
+
+    <h3 data-c="title-zod-schema">Validação Zod <span class="badge badge-new">Novo</span></h3>
+    <div class="card" data-c="data-zod-schema">
+      <pre><code>// src/schemas/import.ts
+import { z } from 'zod'
+
+const extractedExerciseSchema = z.object({
+  name: z.string().min(1),
+  category: z.enum([...CATEGORIES]),
+  equipment: z.string(),
+  sets: z.number().int().min(1).max(20),
+  reps: z.string().min(1),
+  restSeconds: z.number().int().min(0).max(600),
+  confidence: z.number().min(0).max(1),
+})
+
+const extractedWorkoutSchema = z.object({
+  label: z.string().min(1),
+  name: z.string().min(1),
+  focus: z.string().min(1),
+  exercises: z.array(extractedExerciseSchema).min(1),
+})
+
+export const extractWorkoutResponseSchema = z.object({
+  workout: extractedWorkoutSchema,
+})</code></pre>
+      <p style="margin-top:12px">A resposta da Edge Function é validada com Zod no client antes de exibir na tela de revisão. Se a validação falhar, trata como erro de processamento.</p>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ==================== 6. STORE CHANGES ==================== -->
+  <section>
+    <div class="section-label" data-c="sec-stores">Mudanças nos Stores</div>
+    <h2 data-c="title-stores">planStore v2 + importStore</h2>
+
+    <div class="card" data-c="store-plan-v2">
+      <h3>planStore v2 <span class="badge badge-change">Alterado</span></h3>
+      <pre><code>// Novas actions no planStore:
+
+/** Arquivar todos os planos ativos */
+archiveAllPlans(): void
+
+/** Importar planos extraídos (converte ExtractedWorkout[] → Plan[]) */
+importPlans(workouts: ExtractedWorkout[], mode: 'replace' | 'add'): PlanId[]
+
+// Migração v1 → v2:
+// Backfill archived: false em todos os planos existentes
+
+// Selectors ajustados:
+// usePlanStore(s => s.plans) → filtra archived !== true</code></pre>
+      <p style="margin-top:12px"><code>importPlans</code> com mode <code>'replace'</code> primeiro chama <code>archiveAllPlans()</code>, depois cria os novos planos. Com mode <code>'add'</code>, apenas cria. O <code>nextLabel</code> é recalculado a partir dos planos ativos.</p>
+    </div>
+
+    <div class="card" data-c="store-import-new">
+      <h3>importStore <span class="badge badge-new">Novo</span></h3>
+      <pre><code>// src/stores/importStore.ts — Zustand store (sem persistência)
+
+interface ImportState {
+  photos: ImportPhotoStatus[]
+  results: ExtractedWorkout[]
+  mode: 'replace' | 'add'
+  status: 'idle' | 'capturing' | 'processing' | 'reviewing' | 'done'
+
+  // Actions
+  addPhoto(uri: string): void
+  removePhoto(id: string): void
+  startProcessing(): Promise&lt;void&gt;
+  retryPhoto(id: string, newUri: string): Promise&lt;void&gt;
+  updateExercise(workoutLabel: string, exerciseIndex: number,
+                 changes: Partial&lt;ExtractedExercise&gt;): void
+  addExercise(workoutLabel: string, exercise: ExtractedExercise): void
+  removeExercise(workoutLabel: string, exerciseIndex: number): void
+  setMode(mode: 'replace' | 'add'): void
+  confirmImport(): PlanId[]  // delegates to planStore.importPlans
+  reset(): void
+}</code></pre>
+      <p style="margin-top:12px">Store efêmero (sem MMKV). O estado vive apenas durante o fluxo de importação. <code>startProcessing()</code> faz chamadas paralelas à Edge Function para cada foto. <code>confirmImport()</code> converte <code>ExtractedWorkout[]</code> em <code>Plan[]</code> e delega ao <code>planStore</code>.</p>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ==================== 7. NOVAS ROTAS ==================== -->
+  <section>
+    <div class="section-label" data-c="sec-routes">Novas Rotas</div>
+    <h2 data-c="title-routes">Telas de importação</h2>
+
+    <table data-c="table-routes">
+      <tr>
+        <th>Rota</th>
+        <th>Tela</th>
+        <th>Responsabilidade</th>
+      </tr>
+      <tr>
+        <td><code>/plans/import</code></td>
+        <td>ImportCaptureScreen</td>
+        <td>Adicionar fotos dos treinos (câmera/galeria), listar fotos adicionadas, botão "Processar"</td>
+      </tr>
+      <tr>
+        <td><code>/plans/import/processing</code></td>
+        <td>ImportProcessingScreen</td>
+        <td>Status de processamento por treino (pending/done/error), retry individual</td>
+      </tr>
+      <tr>
+        <td><code>/plans/import/review</code></td>
+        <td>ImportReviewScreen</td>
+        <td>Revisão dos exercícios extraídos, edição inline, indicadores de confiança, confirmação</td>
+      </tr>
+    </table>
+
+    <p data-c="desc-route-layout">As rotas ficam sob <code>src/app/plans/import/</code> como grupo de rotas do Expo Router. Sem layout próprio — usam o layout padrão do app.</p>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ==================== 8. SUPABASE SETUP ==================== -->
+  <section>
+    <div class="section-label" data-c="sec-supabase">Supabase Edge Function</div>
+    <h2 data-c="title-supabase">Backend de processamento</h2>
+
+    <div class="card" data-c="supabase-structure">
+      <h4>Estrutura do projeto Supabase</h4>
+      <div class="file-tree">
+        <div class="new">supabase/</div>
+        <div class="new indent">config.toml</div>
+        <div class="new indent">functions/</div>
+        <div class="new indent2">extract-workout/</div>
+        <div class="new indent3">index.ts</div>
+      </div>
+    </div>
+
+    <div class="card" data-c="supabase-function">
+      <h4>Edge Function — extract-workout</h4>
+      <pre><code>// supabase/functions/extract-workout/index.ts
+import { serve } from 'https://deno.land/std/http/server.ts'
+import Anthropic from 'npm:@anthropic-ai/sdk'
+
+serve(async (req) => {
+  const { image, label } = await req.json()
+
+  const client = new Anthropic({
+    apiKey: Deno.env.get('ANTHROPIC_API_KEY'),
+  })
+
+  const response = await client.messages.create({
+    model: 'claude-sonnet-4-6',
+    max_tokens: 2048,
+    messages: [{
+      role: 'user',
+      content: [
+        { type: 'image', source: {
+          type: 'base64', media_type: 'image/jpeg', data: image
+        }},
+        { type: 'text', text: EXTRACTION_PROMPT(label) },
+      ],
+    }],
+  })
+
+  // Parse + validate JSON from Claude response
+  // Return ExtractedWorkout or 422 error
+})</code></pre>
+      <p style="margin-top:12px">A API key da Anthropic é armazenada como secret no Supabase (<code>supabase secrets set ANTHROPIC_API_KEY=sk-...</code>). Nunca exposta no client.</p>
+    </div>
+
+    <div class="card" data-c="supabase-client">
+      <h4>Client no app</h4>
+      <pre><code>// src/services/importApi.ts
+const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL
+const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY
+
+export async function extractWorkout(
+  imageBase64: string,
+  label: string
+): Promise&lt;ExtractedWorkout&gt; {
+  const response = await fetch(
+    `${SUPABASE_URL}/functions/v1/extract-workout`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+      },
+      body: JSON.stringify({ image: imageBase64, label }),
+    }
+  )
+
+  if (!response.ok) throw new ImportError(await response.json())
+
+  const data = await response.json()
+  return extractWorkoutResponseSchema.parse(data).workout
+}</code></pre>
+      <p style="margin-top:12px">O anon key do Supabase é público por design — a segurança é via Row Level Security (não necessária aqui pois não usamos DB) e rate limiting. A API key da Anthropic fica protegida no servidor.</p>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ==================== 9. ARQUIVOS AFETADOS ==================== -->
+  <section>
+    <div class="section-label" data-c="sec-files">Arquivos Afetados</div>
+    <h2 data-c="title-files">O que muda no codebase</h2>
+
+    <div class="card" data-c="files-tree">
+      <div class="file-tree">
+        <div>src/</div>
+        <div class="indent">app/</div>
+        <div class="indent2">plans/</div>
+        <div class="new indent3">import/</div>
+        <div class="new indent3">&nbsp;&nbsp;index.tsx          — ImportCaptureScreen</div>
+        <div class="new indent3">&nbsp;&nbsp;processing.tsx     — ImportProcessingScreen</div>
+        <div class="new indent3">&nbsp;&nbsp;review.tsx         — ImportReviewScreen</div>
+        <div class="changed indent2">index.tsx              — botão "Importar" adicionado</div>
+        <div class="changed indent">app/index.tsx            — entry point no EmptyPlans</div>
+        <div class="indent">types/</div>
+        <div class="new indent2">import.ts              — ExtractedExercise, ExtractedWorkout, etc.</div>
+        <div class="changed indent2">workout.ts             — Plan.archived field</div>
+        <div class="indent">schemas/</div>
+        <div class="new indent2">import.ts              — Zod schemas para validação</div>
+        <div class="indent">stores/</div>
+        <div class="new indent2">importStore.ts         — estado do fluxo de importação</div>
+        <div class="changed indent2">planStore.ts           — v2 migration, archiveAllPlans, importPlans</div>
+        <div class="indent">services/</div>
+        <div class="new indent2">importApi.ts           — client HTTP para Edge Function</div>
+        <div class="indent">components/</div>
+        <div class="new indent2">ImportPhotoCard.tsx     — card de foto na captura</div>
+        <div class="new indent2">ExtractedExerciseRow.tsx — exercício na revisão</div>
+        <div class="new indent2">ConfidenceBadge.tsx     — indicador ✓ / ⚠</div>
+        <div class="new indent2">ImportModeSelector.tsx  — substituir vs adicionar</div>
+        <div class="changed indent2">EmptyPlans.tsx         — botão importar adicionado</div>
+        <div class="indent">constants/</div>
+        <div class="changed indent2">categories.ts          — export de CATEGORIES array para Zod</div>
+        <div>&nbsp;</div>
+        <div class="new">supabase/</div>
+        <div class="new indent">config.toml</div>
+        <div class="new indent">functions/</div>
+        <div class="new indent2">extract-workout/</div>
+        <div class="new indent3">index.ts</div>
+        <div>&nbsp;</div>
+        <div class="changed">.env.local                 — EXPO_PUBLIC_SUPABASE_URL, EXPO_PUBLIC_SUPABASE_ANON_KEY</div>
+        <div class="changed">package.json               — (sem novas deps — usa fetch nativo + expo-image-picker já existente)</div>
+      </div>
+    </div>
+
+    <p data-c="desc-no-new-deps" style="margin-top:12px"><strong style="color:var(--text)">Zero novas dependências npm.</strong> O app já tem <code>expo-image-picker</code> (usado para equipment photos), <code>zod</code> para validação, e <code>fetch</code> nativo. O Supabase SDK não é necessário — chamamos a Edge Function via <code>fetch</code> direto com anon key no header.</p>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ==================== 10. ESTRATÉGIA DE TESTES ==================== -->
+  <section>
+    <div class="section-label" data-c="sec-tests">Estratégia de Testes</div>
+    <h2 data-c="title-tests">TDD estrito — testes primeiro</h2>
+
+    <div class="card" data-c="test-unit">
+      <h3>Testes unitários</h3>
+      <table>
+        <tr><th>Arquivo</th><th>O que testa</th></tr>
+        <tr><td><code>importStore.test.ts</code></td><td>Todas as actions: addPhoto, removePhoto, startProcessing (mock fetch), retryPhoto, updateExercise, confirmImport, reset</td></tr>
+        <tr><td><code>planStore.test.ts</code></td><td>Novas actions: archiveAllPlans, importPlans (replace + add modes), migração v2</td></tr>
+        <tr><td><code>importApi.test.ts</code></td><td>extractWorkout: success, 422 error, network error, Zod validation failure</td></tr>
+        <tr><td><code>import.schema.test.ts</code></td><td>Schema Zod: valid data, missing fields, out-of-range values</td></tr>
+      </table>
+    </div>
+
+    <div class="card" data-c="test-components">
+      <h3>Testes de componentes</h3>
+      <table>
+        <tr><th>Arquivo</th><th>O que testa</th></tr>
+        <tr><td><code>ImportPhotoCard.test.tsx</code></td><td>Render com status (pending/done/error), callback de remoção</td></tr>
+        <tr><td><code>ExtractedExerciseRow.test.tsx</code></td><td>Render com confidence badge, edição inline, callbacks</td></tr>
+        <tr><td><code>ConfidenceBadge.test.tsx</code></td><td>✓ para confidence &ge; 0.7, ⚠ para &lt; 0.7</td></tr>
+        <tr><td><code>ImportModeSelector.test.tsx</code></td><td>Seleção replace/add, estado ativo</td></tr>
+      </table>
+    </div>
+
+    <div class="card" data-c="test-screens">
+      <h3>Testes de tela</h3>
+      <table>
+        <tr><th>Arquivo</th><th>O que testa</th></tr>
+        <tr><td><code>__tests__/screens/importCapture.test.tsx</code></td><td>Adicionar/remover fotos, navegação para processing</td></tr>
+        <tr><td><code>__tests__/screens/importProcessing.test.tsx</code></td><td>Status cards, retry, navegação para review quando todos done</td></tr>
+        <tr><td><code>__tests__/screens/importReview.test.tsx</code></td><td>Lista de exercícios, edição, mode selector, confirmação</td></tr>
+      </table>
+    </div>
+
+    <div class="card" data-c="test-edge-function">
+      <h3>Testes da Edge Function</h3>
+      <p>Testada separadamente com Deno test runner. Mock da API Anthropic para validar parsing do response, tratamento de erros, e formato do JSON de saída.</p>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ==================== 11. MÉTRICAS DE SUCESSO ==================== -->
+  <section>
+    <div class="section-label" data-c="sec-metrics">Métricas de Sucesso</div>
+    <h2 data-c="title-metrics-section">Como sabemos que funcionou</h2>
+
+    <div class="grid-2">
+      <div class="card" data-c="metric-setup-time">
+        <h4>Tempo de setup</h4>
+        <p><strong style="color:var(--danger)">Antes:</strong> ~30 min</p>
+        <p><strong style="color:var(--accent)">Depois:</strong> &lt;5 min (captura + revisão)</p>
+      </div>
+      <div class="card" data-c="metric-extraction-accuracy">
+        <h4>Precisão da extração</h4>
+        <p>&gt;85% dos exercícios extraídos corretamente sem edição manual</p>
+      </div>
+      <div class="card" data-c="metric-adoption-rate">
+        <h4>Adoção</h4>
+        <p>Importação se torna método principal de setup (&gt;80% das trocas)</p>
+      </div>
+      <div class="card" data-c="metric-error-rate">
+        <h4>Erros</h4>
+        <p>~0 erros de digitação em exercícios importados</p>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ==================== 12. DÍVIDA TÉCNICA ==================== -->
+  <section>
+    <div class="section-label" data-c="sec-debt">Dívida Técnica</div>
+    <h2 data-c="title-debt">Trade-offs aceitos</h2>
+
+    <div class="card" data-c="debt-no-auth">
+      <h4>Sem autenticação Supabase</h4>
+      <p>O anon key permite qualquer request à Edge Function. Aceitável para app pessoal. Em produção multi-usuário, adicionar Supabase Auth + RLS. Rate limiting via Supabase protege contra abuse básico.</p>
+    </div>
+
+    <div class="card" data-c="debt-no-cache">
+      <h4>Sem cache de resultados</h4>
+      <p>Cada foto é processada do zero. Não há cache de resultados anteriores. Em v2, poderia cachear extrações por hash da imagem.</p>
+    </div>
+
+    <div class="card" data-c="debt-no-pdf">
+      <h4>Sem suporte a PDF</h4>
+      <p>Apenas fotos (JPEG/PNG) via expo-image-picker. PDF fica para v2 com expo-document-picker + conversão server-side.</p>
+    </div>
+
+    <div class="card" data-c="debt-base64-size">
+      <h4>Imagem como base64 no body</h4>
+      <p>Imagens são enviadas como base64 no JSON body. Para fotos grandes, isso pode ser lento. Em v2, considerar upload para Supabase Storage + URL pré-assinada. Para v1, limitar resolução da imagem via ImagePicker (<code>quality: 0.8</code>, <code>maxWidth: 1920</code>).</p>
+    </div>
+
+    <div class="card" data-c="debt-archived-ui">
+      <h4>Sem UI para planos arquivados</h4>
+      <p>Planos arquivados ficam no MMKV mas não são acessíveis pela UI. Em v2, adicionar seção "Planos Anteriores" na tela de planos.</p>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ==================== 13. DEPENDÊNCIAS ==================== -->
+  <section>
+    <div class="section-label" data-c="sec-deps">Dependências</div>
+    <h2 data-c="title-deps">O que precisa estar pronto</h2>
+
+    <div class="card" data-c="dep-supabase-project">
+      <h4>Projeto Supabase</h4>
+      <p>Criar projeto no Supabase, configurar secrets (<code>ANTHROPIC_API_KEY</code>), fazer deploy da Edge Function. Precisa de conta na Anthropic com créditos.</p>
+    </div>
+
+    <div class="card" data-c="dep-anthropic-key">
+      <h4>API Key Anthropic</h4>
+      <p>Chave válida com acesso ao Claude Sonnet 4.6 (modelo multimodal). Custo estimado: ~$0.50-2.00/mês para uso pessoal.</p>
+    </div>
+
+    <div class="card" data-c="dep-env-vars">
+      <h4>Variáveis de ambiente</h4>
+      <p><code>EXPO_PUBLIC_SUPABASE_URL</code> e <code>EXPO_PUBLIC_SUPABASE_ANON_KEY</code> configurados no <code>.env.local</code> e no EAS Build secrets.</p>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ==================== 14. IMPACTO NO PRODUTO ==================== -->
+  <section>
+    <div class="section-label" data-c="sec-impact">Impacto no Produto</div>
+    <h2 data-c="title-impact">O que muda para o usuário</h2>
+
+    <div class="card" data-c="impact-positive">
+      <h3 style="color:var(--success)">Positivo</h3>
+      <ul>
+        <li>Setup de programa em &lt;5 min vs ~30 min</li>
+        <li>Eliminação de erros de digitação</li>
+        <li>Troca de programa em uma operação (substituir tudo)</li>
+        <li>Preservação automática de histórico de pesos</li>
+      </ul>
+    </div>
+
+    <div class="card" data-c="impact-tradeoffs">
+      <h3 style="color:var(--warning)">Trade-offs</h3>
+      <ul>
+        <li>Requer internet para importação (primeira feature online do app)</li>
+        <li>Depende de foto legível — fotos ruins podem falhar</li>
+        <li>Custos de API (~$0.02-0.05/foto) — desprezível para uso pessoal</li>
+      </ul>
+    </div>
+
+    <div class="card" data-c="impact-unchanged">
+      <h3 style="color:var(--p2)">Sem mudança</h3>
+      <ul>
+        <li>Fluxo de treino (exercício → rest → checkpoint → complete)</li>
+        <li>Histórico e estatísticas</li>
+        <li>Criação manual de planos (continua disponível)</li>
+        <li>Funcionamento offline para todas as features existentes</li>
+      </ul>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ==================== 15. TAREFAS ==================== -->
+  <section>
+    <div class="section-label" data-c="sec-tasks">Tarefas de Implementação</div>
+    <h2 data-c="title-tasks">4 fases</h2>
+
+    <!-- Phase 1 -->
+    <div class="phase-card" data-c="phase-1">
+      <div class="phase-header">
+        <div class="phase-title">Fase 1 — Fundação (tipos, schemas, store, API)</div>
+        <span class="badge badge-p0">P0</span>
+      </div>
+      <ul class="task-list">
+        <li data-c="task-1-1">
+          <span class="task-id">1.1</span>
+          <span class="task-desc">Criar tipos de importação (<code>ExtractedExercise</code>, <code>ExtractedWorkout</code>, <code>ImportPhotoStatus</code>)</span>
+          <span class="task-file">src/types/import.ts</span>
+        </li>
+        <li data-c="task-1-2">
+          <span class="task-id">1.2</span>
+          <span class="task-desc">Criar schemas Zod para validação da resposta da API</span>
+          <span class="task-file">src/schemas/import.ts</span>
+        </li>
+        <li data-c="task-1-3">
+          <span class="task-id">1.3</span>
+          <span class="task-desc">Adicionar campo <code>archived</code> ao tipo <code>Plan</code> + migração v2 do planStore</span>
+          <span class="task-file">src/types/workout.ts, src/stores/planStore.ts</span>
+        </li>
+        <li data-c="task-1-4">
+          <span class="task-id">1.4</span>
+          <span class="task-desc">Implementar <code>archiveAllPlans()</code> e <code>importPlans()</code> no planStore</span>
+          <span class="task-file">src/stores/planStore.ts</span>
+        </li>
+        <li data-c="task-1-5">
+          <span class="task-id">1.5</span>
+          <span class="task-desc">Criar <code>importStore</code> com todas as actions e estado</span>
+          <span class="task-file">src/stores/importStore.ts</span>
+        </li>
+        <li data-c="task-1-6">
+          <span class="task-id">1.6</span>
+          <span class="task-desc">Criar <code>importApi.ts</code> — client HTTP para Edge Function com validação Zod</span>
+          <span class="task-file">src/services/importApi.ts</span>
+        </li>
+        <li data-c="task-1-7">
+          <span class="task-id">1.7</span>
+          <span class="task-desc">Criar e fazer deploy da Supabase Edge Function <code>extract-workout</code></span>
+          <span class="task-file">supabase/functions/extract-workout/index.ts</span>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Phase 2 -->
+    <div class="phase-card" data-c="phase-2">
+      <div class="phase-header">
+        <div class="phase-title">Fase 2 — Componentes UI</div>
+        <span class="badge badge-p0">P0</span>
+      </div>
+      <ul class="task-list">
+        <li data-c="task-2-1">
+          <span class="task-id">2.1</span>
+          <span class="task-desc">Criar <code>ImportPhotoCard</code> — card com thumbnail, label, status, botão remover</span>
+          <span class="task-file">src/components/ImportPhotoCard.tsx</span>
+        </li>
+        <li data-c="task-2-2">
+          <span class="task-id">2.2</span>
+          <span class="task-desc">Criar <code>ExtractedExerciseRow</code> — exercício extraído com edição inline e badge de confiança</span>
+          <span class="task-file">src/components/ExtractedExerciseRow.tsx</span>
+        </li>
+        <li data-c="task-2-3">
+          <span class="task-id">2.3</span>
+          <span class="task-desc">Criar <code>ConfidenceBadge</code> — ✓ (verde) para &ge;0.7, ⚠ (amarelo) para &lt;0.7</span>
+          <span class="task-file">src/components/ConfidenceBadge.tsx</span>
+        </li>
+        <li data-c="task-2-4">
+          <span class="task-id">2.4</span>
+          <span class="task-desc">Criar <code>ImportModeSelector</code> — toggle "Substituir plano" / "Adicionar ao existente"</span>
+          <span class="task-file">src/components/ImportModeSelector.tsx</span>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Phase 3 -->
+    <div class="phase-card" data-c="phase-3">
+      <div class="phase-header">
+        <div class="phase-title">Fase 3 — Telas de Importação</div>
+        <span class="badge badge-p0">P0</span>
+      </div>
+      <ul class="task-list">
+        <li data-c="task-3-1">
+          <span class="task-id">3.1</span>
+          <span class="task-desc">Criar <code>ImportCaptureScreen</code> — adicionar fotos, preview, navegação para processing</span>
+          <span class="task-file">src/app/plans/import/index.tsx</span>
+        </li>
+        <li data-c="task-3-2">
+          <span class="task-id">3.2</span>
+          <span class="task-desc">Criar <code>ImportProcessingScreen</code> — status por treino, retry individual, auto-navigate quando completo</span>
+          <span class="task-file">src/app/plans/import/processing.tsx</span>
+        </li>
+        <li data-c="task-3-3">
+          <span class="task-id">3.3</span>
+          <span class="task-desc">Criar <code>ImportReviewScreen</code> — lista de exercícios por treino, edição, mode selector, confirmação</span>
+          <span class="task-file">src/app/plans/import/review.tsx</span>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Phase 4 -->
+    <div class="phase-card" data-c="phase-4">
+      <div class="phase-header">
+        <div class="phase-title">Fase 4 — Integração e Entry Points</div>
+        <span class="badge badge-p0">P0</span>
+      </div>
+      <ul class="task-list">
+        <li data-c="task-4-1">
+          <span class="task-id">4.1</span>
+          <span class="task-desc">Adicionar botão "Importar" na tela de Planos (<code>/plans</code>)</span>
+          <span class="task-file">src/app/plans/index.tsx</span>
+        </li>
+        <li data-c="task-4-2">
+          <span class="task-id">4.2</span>
+          <span class="task-desc">Adicionar botão "Importar Plano" no <code>EmptyPlans</code> (entry point Home)</span>
+          <span class="task-file">src/components/EmptyPlans.tsx</span>
+        </li>
+        <li data-c="task-4-3">
+          <span class="task-id">4.3</span>
+          <span class="task-desc">Filtrar planos arquivados nos selectors do planStore (home, plans list, workout start)</span>
+          <span class="task-file">src/stores/planStore.ts</span>
+        </li>
+        <li data-c="task-4-4">
+          <span class="task-id">4.4</span>
+          <span class="task-desc">Preservar lastWeights do appStore ao importar exercícios com mesmo nome</span>
+          <span class="task-file">src/stores/importStore.ts</span>
+        </li>
+        <li data-c="task-4-5">
+          <span class="task-id">4.5</span>
+          <span class="task-desc">Configurar variáveis de ambiente (EAS secrets + .env.local)</span>
+          <span class="task-file">.env.local, eas.json</span>
+        </li>
+        <li data-c="task-4-6">
+          <span class="task-id">4.6</span>
+          <span class="task-desc">Teste end-to-end: foto real → Edge Function → revisão → importação → plano no app</span>
+          <span class="task-file">Manual test</span>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ==================== 16. AUTORES ==================== -->
+  <section>
+    <div class="section-label" data-c="sec-authors">Autores</div>
+    <h2 data-c="title-authors">Equipe</h2>
+    <div class="card" data-c="authors">
+      <table>
+        <tr><th>Papel</th><th>Nome</th></tr>
+        <tr><td>Product Owner</td><td>Pedro Peralta</td></tr>
+        <tr><td>Solution Design</td><td>Claude (Opus 4.6)</td></tr>
+      </table>
+    </div>
+  </section>
+
+</div>
+
+<!-- Commenting System JS -->
+<script>
+const STORAGE_KEY = 'solution-comments-smart_training_import-v2';
+let reviewMode = false;
+let activeTarget = null;
+let comments = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+
+function toggleReviewMode() {
+  reviewMode = !reviewMode;
+  const btn = document.getElementById('reviewToggle');
+  const exportBtn = document.getElementById('exportBtn');
+  const panel = document.getElementById('commentPanel');
+
+  if (reviewMode) {
+    btn.textContent = 'Exit Review';
+    btn.classList.add('active');
+    exportBtn.style.display = 'inline-block';
+    panel.classList.add('open');
+    document.querySelectorAll('[data-c]').forEach(el => {
+      el.classList.add('commentable');
+      el.addEventListener('click', onElementClick);
+    });
+  } else {
+    btn.textContent = 'Review Mode';
+    btn.classList.remove('active');
+    exportBtn.style.display = 'none';
+    panel.classList.remove('open');
+    document.querySelectorAll('[data-c]').forEach(el => {
+      el.classList.remove('commentable');
+      el.removeEventListener('click', onElementClick);
+    });
+  }
+  updateCommentHighlights();
+}
+
+function onElementClick(e) {
+  e.stopPropagation();
+  const target = e.currentTarget.getAttribute('data-c');
+  activeTarget = target;
+  document.getElementById('commentTarget').textContent = '#' + target;
+  document.getElementById('commentForm').style.display = 'block';
+  document.getElementById('commentInput').value = '';
+  document.getElementById('commentInput').focus();
+  renderComments();
+}
+
+function submitComment() {
+  const input = document.getElementById('commentInput');
+  const text = input.value.trim();
+  if (!text || !activeTarget) return;
+
+  comments.push({
+    id: Date.now(),
+    target: activeTarget,
+    text: text,
+    timestamp: new Date().toISOString()
+  });
+
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(comments));
+  input.value = '';
+  renderComments();
+  updateCommentHighlights();
+}
+
+function deleteComment(id) {
+  comments = comments.filter(c => c.id !== id);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(comments));
+  renderComments();
+  updateCommentHighlights();
+}
+
+function renderComments() {
+  const list = document.getElementById('commentList');
+  const countEl = document.getElementById('commentCount');
+
+  if (comments.length === 0) {
+    list.innerHTML = '<div class="no-comments">Nenhum comentário ainda. Clique em elementos destacados para comentar.</div>';
+    countEl.style.display = 'none';
+    return;
+  }
+
+  countEl.style.display = 'inline';
+  countEl.textContent = comments.length;
+
+  const filtered = activeTarget
+    ? [
+        ...comments.filter(c => c.target === activeTarget),
+        ...comments.filter(c => c.target !== activeTarget)
+      ]
+    : comments;
+
+  list.innerHTML = filtered.map(c => `
+    <div class="comment-item" ${c.target === activeTarget ? 'style="border-left:2px solid var(--accent)"' : ''}>
+      <div class="comment-item-header">
+        <span class="comment-item-section">#${c.target}</span>
+        <span class="comment-item-time">${new Date(c.timestamp).toLocaleString('pt-BR')}</span>
+      </div>
+      <div class="comment-item-text">${c.text}</div>
+      <button class="comment-item-delete" onclick="deleteComment(${c.id})">Remover</button>
+    </div>
+  `).join('');
+}
+
+function updateCommentHighlights() {
+  const targets = new Set(comments.map(c => c.target));
+  document.querySelectorAll('[data-c]').forEach(el => {
+    if (targets.has(el.getAttribute('data-c'))) {
+      el.classList.add('has-comment');
+    } else {
+      el.classList.remove('has-comment');
+    }
+  });
+}
+
+function closePanel() {
+  document.getElementById('commentPanel').classList.remove('open');
+  activeTarget = null;
+  document.getElementById('commentForm').style.display = 'none';
+}
+
+function exportComments() {
+  if (comments.length === 0) {
+    alert('Nenhum comentário para exportar.');
+    return;
+  }
+
+  let output = '# Solution Design Review Comments\n\n';
+  comments.forEach((c, i) => {
+    output += `## #${i + 1} — ${c.target}\n`;
+    output += `${c.text}\n\n`;
+  });
+
+  navigator.clipboard.writeText(output).then(() => {
+    alert('Comentários copiados para o clipboard! Cole de volta no Claude para revisões.');
+  }).catch(() => {
+    const textarea = document.createElement('textarea');
+    textarea.value = output;
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textarea);
+    alert('Comentários copiados para o clipboard!');
+  });
+}
+
+updateCommentHighlights();
+
+document.getElementById('commentInput')?.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    submitComment();
+  }
+});
+
+// Initialize Mermaid
+mermaid.initialize({
+  theme: 'dark',
+  themeVariables: {
+    primaryColor: '#1a1a1a',
+    primaryTextColor: '#f5f5f4',
+    primaryBorderColor: '#C2F000',
+    lineColor: '#C2F000',
+    secondaryColor: '#252525',
+    tertiaryColor: '#1a1a1a',
+    edgeLabelBackground: '#1a1a1a',
+    fontFamily: 'Inter, sans-serif',
+    fontSize: '13px',
+  },
+  flowchart: {
+    curve: 'basis',
+    useMaxWidth: true,
+  }
+});
+</script>
+
+</body>
+</html>

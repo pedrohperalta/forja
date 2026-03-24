@@ -11,6 +11,9 @@
 | complete | `plan-store-foundation_20260322` | Plan Store Foundation | — | 2026-03-22 |
 | pending | `plan-config-screens_20260322` | Plan Configuration Screens | plan-store-foundation | 2026-03-22 |
 | pending | `plan-integration-polish_20260322` | Plan Integration & Polish | plan-config-screens | 2026-03-22 |
+| pending | `import-data-layer_20260324` | Import Data Layer & Backend | — | 2026-03-24 |
+| pending | `import-ui-capture_20260324` | Import UI & Capture Flow | import-data-layer | 2026-03-24 |
+| pending | `import-review-integration_20260324` | Review Screen & Integration | import-ui-capture | 2026-03-24 |
 
 ## Dependency Graph
 
@@ -25,6 +28,10 @@ project-foundation
 plan-store-foundation
   └─► plan-config-screens
         └─► plan-integration-polish
+
+import-data-layer
+  └─► import-ui-capture
+        └─► import-review-integration
 ```
 
 ## Task Summary
@@ -40,4 +47,7 @@ plan-store-foundation
 | Plan Store Foundation | 7 | 28 |
 | Plan Configuration Screens | 6 | 18 |
 | Plan Integration & Polish | 7 | 20 |
-| **Total** | **56** | **200** |
+| Import Data Layer & Backend | 7 | 28 |
+| Import UI & Capture Flow | 6 | 16 |
+| Review Screen & Integration | 4 | 12 |
+| **Total** | **73** | **256** |
