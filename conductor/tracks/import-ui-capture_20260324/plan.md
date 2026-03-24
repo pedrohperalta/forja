@@ -18,8 +18,8 @@
 
 ## Phase 2: ImportModeSelector
 
-- [ ] Task 2.1: Write tests for `ImportModeSelector` — renders replace/add options, fires onModeChange, highlights active mode
-- [ ] Task 2.2: Implement `ImportModeSelector` in `src/components/import/ImportModeSelector.tsx`
+- [x] Task 2.1: Write tests for `ImportModeSelector` — renders replace/add options, fires onModeChange, highlights active mode
+- [x] Task 2.2: Implement `ImportModeSelector` in `src/components/import/ImportModeSelector.tsx`
 
 ### Checkpoint
 
