@@ -18,7 +18,7 @@ This track builds the data foundation: new types for AI-extracted workouts, a Su
 4. `PlanSchema` in `src/schemas/plan.ts` updated with optional `archived`
 5. `makePlan` factory in `src/test-utils/factories.ts` includes `archived: false`
 6. `planStore` bumped to v2 — migration backfills `archived: false` on existing plans
-7. `planStore.importPlans(workouts: ExtractedWorkout[], mode: 'replace' | 'add')` — returns `{ skippedPlanId?: PlanId }`. Accepts extracted workouts, generates PlanId/ExerciseId/timestamps, strips confidence. Preserves AI-extracted workout name as `plan.name`, auto-generates `plan.label` from `nextLabel`. Mode `'replace'` archives + imports in a single `set()` call (atomic).
+7. `planStore.importPlans(workouts: ExtractedWorkout[], mode: 'replace' | 'add')` — returns `{ skippedPlanId?: PlanId }`. Accepts extracted workouts, generates PlanId/ExerciseId/timestamps, strips confidence. Preserves AI-extracted workout name as `plan.name`, auto-generates `plan.label` from `nextLabel`, auto-derives `plan.focus` from unique exercise categories. Mode `'replace'` archives + imports in a single `set()` call (atomic).
 8. `planStore.archiveAllPlans()` — sets `archived: true` on all active plans (used internally by `importPlans` in replace mode)
 9. Active plans selector: all consumers of `usePlanStore(s => s.plans)` in list/grid views (home, plans screen, getNextPlanId) updated to filter `archived !== true`. Plan detail (`plans/[id]/`) keeps full `plans` for defensive ID lookup.
 10. All existing screen tests updated to work with the new selector pattern
@@ -57,6 +57,7 @@ App → importStore.confirmImport() → planStore.importPlans()
 - **Atomic replace** — `importPlans(workouts, 'replace')` archives + imports in a single `set()` to avoid flash of empty state
 - **Active workout guard** — `importPlans` in replace mode skips archiving the plan used by an active workout, returns `{ skippedPlanId }` so UI can show alert
 - **Name preservation** — `importPlans` preserves the AI-extracted workout name as `plan.name` and auto-generates `plan.label` from `nextLabel`; user sees meaningful AI names (e.g., "Treino de Peito") in the plan list
+- **Focus auto-derivation** — `importPlans` derives `plan.focus` from the unique exercise categories joined by " / " (e.g., "Peito / Ombros / Tríceps"), matching the existing `addPlan` pattern
 - **`importApi` accepts URI** — converts to base64 internally via `expo-file-system` (already in Expo SDK)
 
 ### Category Normalization
