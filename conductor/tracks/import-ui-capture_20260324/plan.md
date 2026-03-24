@@ -47,8 +47,8 @@
 
 ## Phase 5: Import Processing Screen
 
-- [ ] Task 5.1: Write tests for `ImportProcessingScreen` — shows progress, displays per-photo status, navigates to /import/review on completion, back navigation is disabled during processing
-- [ ] Task 5.2: Create route `src/app/import/processing.tsx` — `ImportProcessingScreen` with progress bar, photo status list, uses `useImportProcessing` hook, auto-navigates on success. Disable hardware back via `BackHandler` and hide header back button while processing is in flight
+- [x] Task 5.1: Write tests for `ImportProcessingScreen` — shows progress, displays per-photo status, navigates to /import/review on completion, back navigation is disabled during processing
+- [x] Task 5.2: Create route `src/app/import/processing.tsx` — `ImportProcessingScreen` with progress bar, photo status list, uses `useImportProcessing` hook, auto-navigates on success. Disable hardware back via `BackHandler` and hide header back button while processing is in flight
 
 ### Checkpoint
 
