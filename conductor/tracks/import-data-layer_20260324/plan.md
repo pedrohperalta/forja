@@ -4,7 +4,7 @@
 
 ## Phase 1: Types & Schemas
 
-- [ ] Task 1.1: Create `src/types/import.ts` — `ExtractedExercise`, `ExtractedWorkout`, `ImportPhotoStatus` types. Export from `src/types/index.ts`.
+- [ ] Task 1.1: Create `src/types/import.ts` — `ExtractedExercise` (name, category, sets, reps, restSeconds, equipment, confidence), `ExtractedWorkout` (name, exercises), `ImportPhotoStatus` (uri, status) types. Export from `src/types/index.ts`. Also export `incrementLabel` from `src/stores/planStore.ts` so the import processing hook can generate sequential labels.
 - [ ] Task 1.2: Write tests for import Zod schemas — valid workout, missing fields, out-of-range values, invalid category
 - [ ] Task 1.3: Create `src/schemas/import.ts` — `ExtractedExerciseSchema` (category validated against `MUSCLE_CATEGORIES`), `ExtractedWorkoutSchema`, `ExtractWorkoutResponseSchema`
 - [ ] Task 1.4: Add `archived?: boolean` to `Plan` type in `src/types/workout.ts`
@@ -47,8 +47,8 @@
 
 ## Phase 4: importStore
 
-- [ ] Task 4.1: Write tests for `importStore` — addPhoto, removePhoto, setMode, updatePhotoStatus, setWorkouts, updateExtractedExercise, confirmImport (sets status to 'confirmed'), reset
-- [ ] Task 4.2: Create `src/stores/importStore.ts` — ephemeral Zustand store (no persist). State: `photos: ImportPhotoStatus[]`, `workouts: ExtractedWorkout[]`, `mode: 'replace' | 'add'`, `status: 'idle' | 'capturing' | 'processing' | 'reviewing' | 'confirmed'`. All actions per spec.
+- [ ] Task 4.1: Write tests for `importStore` — addPhoto, removePhoto, setMode, updatePhotoStatus, setWorkouts, updateExtractedExercise, confirmImport (sets status to 'confirmed' and captures `skippedPlanId` from `importPlans` return), reset (clears `skippedPlanId`)
+- [ ] Task 4.2: Create `src/stores/importStore.ts` — ephemeral Zustand store (no persist). State: `photos: ImportPhotoStatus[]`, `workouts: ExtractedWorkout[]`, `mode: 'replace' | 'add'`, `status: 'idle' | 'capturing' | 'processing' | 'reviewing' | 'confirmed'`, `skippedPlanId: PlanId | null`. All actions per spec.
 - [ ] Task 4.3: `confirmImport()` implementation — reads `mode` and `workouts`, calls `usePlanStore.getState().importPlans(workouts, mode)`, captures `{ skippedPlanId }` return value and stores it in `importStore.skippedPlanId` state, sets status to `'confirmed'`
 
 ### Checkpoint
