@@ -9,7 +9,7 @@ import type { PlanId } from '@/types'
 
 /** Plan list screen — shows all plans with add and delete actions. */
 export default function PlansScreen(): React.JSX.Element {
-  const plans = usePlanStore((s) => s.plans)
+  const plans = usePlanStore((s) => s.plans.filter((p) => !p.archived))
   const addPlan = usePlanStore((s) => s.addPlan)
   const removePlan = usePlanStore((s) => s.removePlan)
   const router = useRouter()

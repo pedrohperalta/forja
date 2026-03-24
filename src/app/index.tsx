@@ -21,8 +21,8 @@ export default function HomeScreen() {
   const lastDates = useAppStore((s) => s.lastDates)
   const historyLength = useAppStore((s) => s.history.length)
 
-  // Plans from planStore instead of hardcoded constant
-  const plans = usePlanStore((s) => s.plans)
+  // Active (non-archived) plans from planStore
+  const plans = usePlanStore((s) => s.plans.filter((p) => !p.archived))
 
   // Auto-redirect to complete screen when status is 'completed'
   useEffect(() => {
