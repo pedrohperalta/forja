@@ -59,7 +59,7 @@
         "expo-image-picker",
         {
           "photosPermission": "Acesse suas fotos para adicionar ao treino",
-          "cameraPermission": "Tire fotos dos aparelhos da academia"
+          "cameraPermission": "Tire fotos para adicionar ao Forja"
         }
       ]
     ],

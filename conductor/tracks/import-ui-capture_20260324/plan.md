@@ -36,9 +36,9 @@
 
 ## Phase 4: Import Capture Screen
 
-- [ ] Task 4.1: Write tests for `ImportCaptureScreen` — renders photo cards, mode selector, PROCESSAR button disabled when no photos, navigates to /import/processing on submit, add button disabled at 5 photos, sets importStore status to `'capturing'` on mount
-- [ ] Task 4.2: Create route `src/app/import/index.tsx` — `ImportCaptureScreen` with camera capture via `expo-image-picker`, gallery selection, photo card grid (max 5 photos), mode selector, sticky bottom CTA. Sets `importStore.status` to `'capturing'` on mount. Update `app.json` camera permission string to generic: "Tire fotos para adicionar ao Forja"
-- [ ] Task 4.3: Create route layout `src/app/import/_layout.tsx` — Stack navigator for import flow
+- [x] Task 4.1: Write tests for `ImportCaptureScreen` — renders photo cards, mode selector, PROCESSAR button disabled when no photos, navigates to /import/processing on submit, add button disabled at 5 photos, sets importStore status to `'capturing'` on mount
+- [x] Task 4.2: Create route `src/app/import/index.tsx` — `ImportCaptureScreen` with camera capture via `expo-image-picker`, gallery selection, photo card grid (max 5 photos), mode selector, sticky bottom CTA. Sets `importStore.status` to `'capturing'` on mount. Update `app.json` camera permission string to generic: "Tire fotos para adicionar ao Forja"
+- [x] Task 4.3: Create route layout `src/app/import/_layout.tsx` — Stack navigator for import flow
 
 ### Checkpoint
 
