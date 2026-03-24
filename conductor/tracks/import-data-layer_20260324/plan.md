@@ -4,7 +4,7 @@
 
 ## Phase 1: Types & Schemas
 
-- [ ] Task 1.1: Create `src/types/import.ts` — `ExtractedExercise`, `ExtractedWorkout`, `ImportPhotoStatus`, `ImportSession` types. Export from `src/types/index.ts`.
+- [ ] Task 1.1: Create `src/types/import.ts` — `ExtractedExercise`, `ExtractedWorkout`, `ImportPhotoStatus` types. Export from `src/types/index.ts`.
 - [ ] Task 1.2: Write tests for import Zod schemas — valid workout, missing fields, out-of-range values, invalid category
 - [ ] Task 1.3: Create `src/schemas/import.ts` — `ExtractedExerciseSchema` (category validated against `MUSCLE_CATEGORIES`), `ExtractedWorkoutSchema`, `ExtractWorkoutResponseSchema`
 - [ ] Task 1.4: Add `archived?: boolean` to `Plan` type in `src/types/workout.ts`
@@ -24,7 +24,7 @@
 - [ ] Task 2.4: Write tests for `importPlans(workouts, 'add')` — adds plans without archiving, labels continue from `nextLabel`
 - [ ] Task 2.5: Implement planStore v2 migration in `src/stores/planStore.ts` — iterate `state.plans`, set `archived: false` on each. Bump persist version to 2.
 - [ ] Task 2.6: Implement `archiveAllPlans()` action — sets `archived: true` on all plans where `archived !== true`
-- [ ] Task 2.7: Implement `importPlans(workouts: ExtractedWorkout[], mode: 'replace' | 'add')` — single `set()` call. Converts each `ExtractedWorkout` to `Plan` (generate PlanId, ExerciseIds via `Crypto.randomUUID()`, timestamps, strip confidence). Mode `'replace'`: first archives all active plans, then creates new. Recomputes `nextLabel`. **Active workout guard**: check `useWorkoutStore.getState()` — if a workout is active, skip archiving that plan and warn caller via return value.
+- [ ] Task 2.7: Implement `importPlans(workouts: ExtractedWorkout[], mode: 'replace' | 'add')` — returns `{ skippedPlanId?: PlanId }`. Single `set()` call. Converts each `ExtractedWorkout` to `Plan`: generate PlanId, ExerciseIds via `Crypto.randomUUID()`, timestamps, strip confidence. Preserve AI-extracted workout name as `plan.name`, auto-generate `plan.label` from `nextLabel` via `incrementLabel()`. Mode `'replace'`: first archives all active plans, then creates new. Recomputes `nextLabel`. **Active workout guard**: check `useWorkoutStore.getState()` — if a workout is active, skip archiving that plan, include its id in `skippedPlanId`.
 
 ### Checkpoint
 
@@ -49,7 +49,7 @@
 
 - [ ] Task 4.1: Write tests for `importStore` — addPhoto, removePhoto, setMode, updatePhotoStatus, setWorkouts, updateExtractedExercise, confirmImport (sets status to 'confirmed'), reset
 - [ ] Task 4.2: Create `src/stores/importStore.ts` — ephemeral Zustand store (no persist). State: `photos: ImportPhotoStatus[]`, `workouts: ExtractedWorkout[]`, `mode: 'replace' | 'add'`, `status: 'idle' | 'capturing' | 'processing' | 'reviewing' | 'confirmed'`. All actions per spec.
-- [ ] Task 4.3: `confirmImport()` implementation — reads `mode` and `workouts`, calls `usePlanStore.getState().importPlans(workouts, mode)`, sets status to `'confirmed'`
+- [ ] Task 4.3: `confirmImport()` implementation — reads `mode` and `workouts`, calls `usePlanStore.getState().importPlans(workouts, mode)`, captures `{ skippedPlanId }` return value and stores it in `importStore.skippedPlanId` state, sets status to `'confirmed'`
 
 ### Checkpoint
 
@@ -69,8 +69,8 @@
 ## Phase 6: Supabase Edge Function
 
 - [ ] Task 6.1: Initialize Supabase project — `supabase/config.toml` (or manual directory creation)
-- [ ] Task 6.2: Create `supabase/functions/extract-workout/index.ts` — Deno Edge Function. Receives `{ image: string, label: string }`. Calls Claude Sonnet 4.6 via Anthropic SDK (`npm:@anthropic-ai/sdk`). Prompt specifies Portuguese categories with accents. Returns `{ workout: ExtractedWorkout }` or `{ error: string }` with 422.
-- [ ] Task 6.3: Create `.env.local.example` with `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_ANON_KEY` placeholders. Verify `.env.local` pattern exists in `.gitignore` (already present as `.env*.local`).
+- [ ] Task 6.2: Create `supabase/functions/extract-workout/index.ts` — Deno Edge Function. Receives `{ image: string, label: string }`. Calls Claude Sonnet 4.6 via Anthropic SDK (`npm:@anthropic-ai/sdk`). Reads `ANTHROPIC_API_KEY` from `Deno.env.get()`. Prompt specifies Portuguese categories with accents. Returns `{ workout: ExtractedWorkout }` or `{ error: string }` with 422.
+- [ ] Task 6.3: Create `.env.local.example` with `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_ANON_KEY` placeholders. Verify `.env.local` pattern exists in `.gitignore` (already present as `.env*.local`). Document Supabase secret setup: `supabase secrets set ANTHROPIC_API_KEY=sk-ant-...` (required for Edge Function to call Claude).
 
 ### Checkpoint
 

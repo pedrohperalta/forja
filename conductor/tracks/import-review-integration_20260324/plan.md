@@ -4,8 +4,8 @@
 
 ## Phase 1: Import Review Screen
 
-- [ ] Task 1.1: Write tests for `ImportReviewScreen` — renders extracted workouts with exercise rows, displays confidence badges, CONFIRMAR button calls confirmImport then navigates to /plans then calls reset, handles empty workouts state
-- [ ] Task 1.2: Create route `src/app/import/review.tsx` — `ImportReviewScreen` with per-workout sections, `ExtractedExerciseRow` list, sticky bottom "CONFIRMAR IMPORTAÇÃO" CTA. Confirm handler: `confirmImport()` → `router.replace('/plans')` → `importStore.reset()`
+- [ ] Task 1.1: Write tests for `ImportReviewScreen` — renders extracted workouts with exercise rows, displays confidence badges, CONFIRMAR button calls confirmImport then navigates to /plans then calls reset, handles empty workouts state, shows alert when `skippedPlanId` is set (active workout guard)
+- [ ] Task 1.2: Create route `src/app/import/review.tsx` — `ImportReviewScreen` with per-workout sections, `ExtractedExerciseRow` list, sticky bottom "CONFIRMAR IMPORTAÇÃO" CTA. Confirm handler: `confirmImport()` → check `skippedPlanId` (if set, show Alert) → `router.replace('/plans')` → `importStore.reset()`
 - [ ] Task 1.3: Write tests for inline exercise editing — tapping row enables edit mode, changes call `updateExtractedExercise`, category picker shows `MUSCLE_CATEGORIES`
 - [ ] Task 1.4: Implement inline edit mode in `ImportReviewScreen` — editable fields for name, category, sets, reps, rest, equipment
 

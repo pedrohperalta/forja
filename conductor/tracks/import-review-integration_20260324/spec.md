@@ -15,7 +15,7 @@ This track builds the review screen where users can inspect and edit extracted e
 1. `ImportReviewScreen` at `/import/review` — displays extracted workouts with editable exercise rows, confidence badges, and a "CONFIRMAR IMPORTAÇÃO" CTA
 2. Users can tap an `ExtractedExerciseRow` to edit exercise name, category, sets, reps, rest, and equipment inline
 3. `updateExtractedExercise(workoutIndex, exerciseIndex, changes)` action in importStore is used for edits
-4. "CONFIRMAR IMPORTAÇÃO" calls `importStore.confirmImport()` which triggers `planStore.importPlans()`, then navigates to plans screen via `router.replace('/plans')`, then calls `importStore.reset()` to clear ephemeral state
+4. "CONFIRMAR IMPORTAÇÃO" calls `importStore.confirmImport()` which triggers `planStore.importPlans()`, then navigates to plans screen via `router.replace('/plans')`, then calls `importStore.reset()` to clear ephemeral state. If `importStore.skippedPlanId` is set after confirm, show an alert informing the user that one plan was not archived because a workout is in progress
 5. Import button added to `src/app/plans/index.tsx` — "IMPORTAR TREINO" secondary button in the header area
 6. Import button added to `src/components/EmptyPlans.tsx` — secondary option below "CRIAR PRIMEIRO PLANO"
 7. All components follow Forja design system

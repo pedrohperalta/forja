@@ -13,7 +13,7 @@ This track builds the capture and processing UI: reusable components for display
 ## Acceptance Criteria
 
 1. `ImportPhotoCard` component — displays photo thumbnail, status indicator (pending/processing/done/error), and remove button
-2. `ExtractedExerciseRow` component — shows exercise name, category, sets×reps, equipment, with confidence badge and inline edit support
+2. `ExtractedExerciseRow` component — display-only: shows exercise name, category, sets×reps, equipment, with confidence badge (inline editing added in Track 3)
 3. `ConfidenceBadge` component — color-coded badge (green ≥0.8, yellow ≥0.5, red <0.5) showing AI confidence level
 4. `ImportModeSelector` component — toggle between 'replace' and 'add' modes with explanation text
 5. `useImportProcessing` hook — orchestrates photo processing pipeline: iterates photos, calls `importApi.extractWorkout()` for each, updates `importStore` photo statuses and aggregates workouts
