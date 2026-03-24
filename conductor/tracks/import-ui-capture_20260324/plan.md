@@ -1,6 +1,7 @@
 # Plan — Import UI & Capture Flow
 
 **Track ID:** `import-ui-capture_20260324`
+**Status:** [x] Complete
 
 ## Phase 1: Shared Components
 
@@ -57,6 +58,6 @@
 
 ## Phase 6: Final Verification & PR
 
-- [ ] Task 6.1: Run full test suite — `npx jest` — all tests pass
-- [ ] Task 6.2: Run typecheck — `npx tsc --noEmit`
-- [ ] Task 6.3: Create PR with all changes
+- [x] Task 6.1: Run full test suite — `npx jest` — all tests pass
+- [x] Task 6.2: Run typecheck — `npx tsc --noEmit`
+- [x] Task 6.3: Create PR with all changes

@@ -2,20 +2,26 @@
   "id": "import-ui-capture_20260324",
   "title": "Import UI & Capture Flow",
   "type": "feature",
-  "status": "in_progress",
+  "status": "complete",
   "created": "2026-03-24T18:00:00Z",
-  "updated": "2026-03-24T19:00:00Z",
-  "current_phase": 1,
-  "current_task": "1.1",
+  "updated": "2026-03-24T20:00:00Z",
+  "current_phase": 6,
+  "current_task": "6.3",
   "phases": {
     "total": 6,
-    "completed": 0
+    "completed": 6
   },
   "tasks": {
     "total": 16,
-    "completed": 0
+    "completed": 16
   },
   "masonsIdeaId": "smart_training_import",
   "dependsOn": ["import-data-layer_20260324"],
-  "commits": []
+  "commits": [
+    "25be6e3: feat(import): add shared import components",
+    "2662e3c: feat(import): add ImportModeSelector component",
+    "b4d125c: feat(import): add useImportProcessing hook",
+    "ae7c155: feat(import): add capture screen, layout, and camera permission update",
+    "ac56f12: feat(import): add processing screen with progress tracking and back-block"
+  ]
 }
