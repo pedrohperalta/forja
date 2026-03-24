@@ -1,0 +1,21 @@
+{
+  "id": "import-ui-capture_20260324",
+  "title": "Import UI & Capture Flow",
+  "type": "feature",
+  "status": "in_progress",
+  "created": "2026-03-24T18:00:00Z",
+  "updated": "2026-03-24T19:00:00Z",
+  "current_phase": 1,
+  "current_task": "1.1",
+  "phases": {
+    "total": 6,
+    "completed": 0
+  },
+  "tasks": {
+    "total": 16,
+    "completed": 0
+  },
+  "masonsIdeaId": "smart_training_import",
+  "dependsOn": ["import-data-layer_20260324"],
+  "commits": []
+}
