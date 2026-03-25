@@ -80,9 +80,7 @@ describe('useImportProcessing', () => {
 
     const workout1 = makeExtractedWorkout({ name: 'Treino A' })
     const workout2 = makeExtractedWorkout({ name: 'Treino B' })
-    mockExtractWorkout
-      .mockResolvedValueOnce(workout1)
-      .mockResolvedValueOnce(workout2)
+    mockExtractWorkout.mockResolvedValueOnce(workout1).mockResolvedValueOnce(workout2)
 
     const { result } = renderHook(() => useImportProcessing())
 
@@ -126,9 +124,7 @@ describe('useImportProcessing', () => {
     })
 
     const workout = makeExtractedWorkout({ name: 'Treino B' })
-    mockExtractWorkout
-      .mockRejectedValueOnce(new Error('API error'))
-      .mockResolvedValueOnce(workout)
+    mockExtractWorkout.mockRejectedValueOnce(new Error('API error')).mockResolvedValueOnce(workout)
 
     const { result } = renderHook(() => useImportProcessing())
 
@@ -179,7 +175,10 @@ describe('useImportProcessing', () => {
 
     let resolveExtract: (value: ReturnType<typeof makeExtractedWorkout>) => void
     mockExtractWorkout.mockImplementationOnce(
-      () => new Promise((resolve) => { resolveExtract = resolve }),
+      () =>
+        new Promise((resolve) => {
+          resolveExtract = resolve
+        }),
     )
 
     const { result } = renderHook(() => useImportProcessing())

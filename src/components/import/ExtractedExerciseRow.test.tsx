@@ -114,9 +114,7 @@ describe('ExtractedExerciseRow', () => {
       fireEvent.changeText(input, '4')
       fireEvent(input, 'submitEditing')
 
-      expect(editProps.onUpdate).toHaveBeenCalledWith(
-        expect.objectContaining({ sets: 4 }),
-      )
+      expect(editProps.onUpdate).toHaveBeenCalledWith(expect.objectContaining({ sets: 4 }))
     })
 
     it('shows reps input in edit mode', () => {
@@ -128,9 +126,7 @@ describe('ExtractedExerciseRow', () => {
       fireEvent.changeText(input, '8-10')
       fireEvent(input, 'submitEditing')
 
-      expect(editProps.onUpdate).toHaveBeenCalledWith(
-        expect.objectContaining({ reps: '8-10' }),
-      )
+      expect(editProps.onUpdate).toHaveBeenCalledWith(expect.objectContaining({ reps: '8-10' }))
     })
 
     it('shows equipment input in edit mode', () => {

@@ -12,6 +12,8 @@ import { BackHandler } from 'react-native'
 import ImportProcessingScreen from '@/app/import/processing'
 import type { ImportPhotoStatus } from '@/types'
 
+import { useImportStore } from '@/stores/importStore'
+
 // -- Mocks --
 
 const mockReplace = jest.fn()
@@ -39,8 +41,6 @@ jest.mock('@/stores/importStore', () => ({
 
 // Spy on BackHandler
 const backHandlerSpy = jest.spyOn(BackHandler, 'addEventListener')
-
-import { useImportStore } from '@/stores/importStore'
 
 // -- Helpers --
 

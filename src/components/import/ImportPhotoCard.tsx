@@ -54,7 +54,9 @@ export function ImportPhotoCard({
       {/* Status badge */}
       <View className="absolute bottom-0 left-0 right-0 items-center pb-2">
         <View className={`rounded-pill px-2 py-0.5 ${STATUS_COLORS[status]}`}>
-          <Text className={`font-ui text-[9px] uppercase tracking-[1px] ${STATUS_TEXT_COLORS[status]}`}>
+          <Text
+            className={`font-ui text-[9px] uppercase tracking-[1px] ${STATUS_TEXT_COLORS[status]}`}
+          >
             {STATUS_LABELS[status]}
           </Text>
         </View>

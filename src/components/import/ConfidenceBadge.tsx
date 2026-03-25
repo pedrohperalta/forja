@@ -27,9 +27,7 @@ export function ConfidenceBadge({ confidence }: ConfidenceBadgeProps): React.JSX
       accessibilityLabel={`Confianca ${pct}%`}
       className={`rounded-pill px-2 py-0.5 ${getBadgeBg(confidence)}`}
     >
-      <Text className={`font-ui text-[10px] ${getBadgeTextColor(confidence)}`}>
-        {pct}%
-      </Text>
+      <Text className={`font-ui text-[10px] ${getBadgeTextColor(confidence)}`}>{pct}%</Text>
     </View>
   )
 }

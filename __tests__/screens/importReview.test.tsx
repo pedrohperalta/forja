@@ -89,9 +89,7 @@ function setupMocks({
     reset,
     updateExtractedExercise,
   }
-  mockUseImportStore.mockImplementation(
-    (selector: (s: typeof state) => unknown) => selector(state),
-  )
+  mockUseImportStore.mockImplementation((selector: (s: typeof state) => unknown) => selector(state))
   mockGetState.mockReturnValue(state)
   return state
 }
@@ -130,10 +128,7 @@ describe('ImportReviewScreen', () => {
 
   it('renders multiple workouts', () => {
     setupMocks({
-      workouts: [
-        makeWorkout({ name: 'Treino A' }),
-        makeWorkout({ name: 'Treino B' }),
-      ],
+      workouts: [makeWorkout({ name: 'Treino A' }), makeWorkout({ name: 'Treino B' })],
     })
 
     render(<ImportReviewScreen />)
