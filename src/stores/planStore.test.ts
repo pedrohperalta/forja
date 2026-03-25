@@ -6,6 +6,7 @@
  */
 
 import type { ExerciseId, PlanId } from '@/types'
+import { makeExtractedWorkout, makeExtractedExercise } from '@/test-utils/factories'
 import { clearMockStorage } from '@/storage/__mocks__/mmkv'
 
 // Import after mocks
@@ -254,6 +255,233 @@ describe('planStore', () => {
       const reordered = usePlanStore.getState().plans[0]?.exercises
       expect(reordered![0]!.id).toBe(id2)
       expect(reordered![1]!.id).toBe(id1)
+    })
+  })
+
+  describe('v2 migration', () => {
+    it('rehydrates v1 state with archived: false on all plans', async () => {
+      jest.resetModules()
+      jest.mock('@/storage/mmkv', () => require('@/storage/__mocks__/mmkv'))
+      jest.mock('expo-crypto', () => ({
+        randomUUID: () => {
+          mockUuidCounter += 1
+          return `uuid-${mockUuidCounter}`
+        },
+      }))
+      jest.mock('@/stores/workoutStore', () => ({
+        useWorkoutStore: {
+          getState: () => mockWorkoutStoreState,
+        },
+      }))
+
+      const { mmkvStateStorage: mockStorage } =
+        require('@/storage/__mocks__/mmkv') as typeof import('@/storage/__mocks__/mmkv')
+
+      const now = '2026-01-01T00:00:00.000Z'
+      const v1State = {
+        state: {
+          plans: [
+            {
+              id: 'uuid-1',
+              label: 'A',
+              name: 'Old Plan',
+              focus: 'Peito',
+              exercises: [],
+              createdAt: now,
+              updatedAt: now,
+            },
+            {
+              id: 'uuid-2',
+              label: 'B',
+              name: 'Old Plan 2',
+              focus: 'Costas',
+              exercises: [],
+              createdAt: now,
+              updatedAt: now,
+            },
+          ],
+          nextLabel: 'C',
+        },
+        version: 1,
+      }
+      mockStorage.setItem('plan-store', JSON.stringify(v1State))
+
+      const { usePlanStore: freshStore } =
+        require('@/stores/planStore') as typeof import('@/stores/planStore')
+
+      await new Promise<void>((resolve) => {
+        if (freshStore.persist.hasHydrated()) {
+          resolve()
+          return
+        }
+        const unsub = freshStore.persist.onFinishHydration(() => {
+          unsub()
+          resolve()
+        })
+      })
+
+      const plans = freshStore.getState().plans
+      expect(plans).toHaveLength(2)
+      expect(plans[0]?.archived).toBe(false)
+      expect(plans[1]?.archived).toBe(false)
+    })
+  })
+
+  describe('archiveAllPlans', () => {
+    it('sets archived: true on all plans', () => {
+      usePlanStore.getState().addPlan('Plan A', 'Peito')
+      usePlanStore.getState().addPlan('Plan B', 'Costas')
+
+      usePlanStore.getState().archiveAllPlans()
+
+      const plans = usePlanStore.getState().plans
+      expect(plans[0]?.archived).toBe(true)
+      expect(plans[1]?.archived).toBe(true)
+    })
+
+    it('does not affect already archived plans', () => {
+      usePlanStore.getState().addPlan('Plan A', 'Peito')
+      usePlanStore.getState().archiveAllPlans()
+
+      const beforeCount = usePlanStore.getState().plans.filter((p) => p.archived).length
+      usePlanStore.getState().archiveAllPlans()
+      const afterCount = usePlanStore.getState().plans.filter((p) => p.archived).length
+
+      expect(beforeCount).toBe(afterCount)
+    })
+  })
+
+  describe('importPlans (replace mode)', () => {
+    it('archives active plans and creates new plans from extracted workouts', () => {
+      // Create existing plan
+      usePlanStore.getState().addPlan('Old Plan', 'Peito')
+
+      const workouts = [
+        makeExtractedWorkout({
+          name: 'Treino de Peito',
+          exercises: [
+            makeExtractedExercise({ name: 'Supino Reto', category: 'Peito' }),
+            makeExtractedExercise({ name: 'Elevacao Lateral', category: 'Ombros' }),
+          ],
+        }),
+      ]
+
+      usePlanStore.getState().importPlans(workouts, 'replace')
+
+      const plans = usePlanStore.getState().plans
+      // Old plan archived + new plan created
+      expect(plans.filter((p) => p.archived)).toHaveLength(1)
+      expect(plans.filter((p) => !p.archived)).toHaveLength(1)
+
+      // New plan has correct fields
+      const newPlan = plans.find((p) => !p.archived)!
+      expect(newPlan.name).toBe('Treino de Peito')
+      expect(newPlan.focus).toBe('Peito / Ombros')
+      expect(newPlan.exercises).toHaveLength(2)
+      expect(newPlan.label).toBeTruthy()
+      expect(newPlan.id).toBeTruthy()
+    })
+
+    it('generates sequential labels starting from current nextLabel', () => {
+      const workouts = [
+        makeExtractedWorkout({ name: 'Workout 1' }),
+        makeExtractedWorkout({ name: 'Workout 2' }),
+      ]
+
+      usePlanStore.getState().importPlans(workouts, 'replace')
+
+      const plans = usePlanStore.getState().plans.filter((p) => !p.archived)
+      expect(plans[0]?.label).toBe('A')
+      expect(plans[1]?.label).toBe('B')
+      expect(usePlanStore.getState().nextLabel).toBe('C')
+    })
+
+    it('strips confidence from exercises', () => {
+      const workouts = [
+        makeExtractedWorkout({
+          exercises: [makeExtractedExercise({ confidence: 0.95 })],
+        }),
+      ]
+
+      usePlanStore.getState().importPlans(workouts, 'replace')
+
+      const newPlan = usePlanStore.getState().plans.find((p) => !p.archived)!
+      const exercise = newPlan.exercises[0]!
+      expect(exercise).not.toHaveProperty('confidence')
+    })
+
+    it('derives focus from unique exercise categories joined by " / "', () => {
+      const workouts = [
+        makeExtractedWorkout({
+          exercises: [
+            makeExtractedExercise({ category: 'Peito' }),
+            makeExtractedExercise({ category: 'Ombros' }),
+            makeExtractedExercise({ category: 'Peito' }),
+            makeExtractedExercise({ category: 'Tríceps' }),
+          ],
+        }),
+      ]
+
+      usePlanStore.getState().importPlans(workouts, 'replace')
+
+      const newPlan = usePlanStore.getState().plans.find((p) => !p.archived)!
+      expect(newPlan.focus).toBe('Peito / Ombros / Tríceps')
+    })
+
+    it('skips archiving the plan used by an active workout and returns skippedPlanId', () => {
+      const activePlanId = usePlanStore.getState().addPlan('Active', 'Peito')
+      usePlanStore.getState().addPlan('Inactive', 'Costas')
+
+      // Simulate active workout
+      mockWorkoutStoreState.status = 'active'
+      mockWorkoutStoreState.activePlan = { id: activePlanId }
+
+      const workouts = [makeExtractedWorkout({ name: 'New Plan' })]
+      const result = usePlanStore.getState().importPlans(workouts, 'replace')
+
+      expect(result.skippedPlanId).toBe(activePlanId)
+
+      const plans = usePlanStore.getState().plans
+      // Active plan NOT archived
+      const activePlan = plans.find((p) => p.id === activePlanId)!
+      expect(activePlan.archived).not.toBe(true)
+
+      // Inactive plan IS archived
+      const inactivePlan = plans.find((p) => p.name === 'Inactive')!
+      expect(inactivePlan.archived).toBe(true)
+    })
+
+    it('returns empty object when no workout is active', () => {
+      const workouts = [makeExtractedWorkout()]
+
+      const result = usePlanStore.getState().importPlans(workouts, 'replace')
+
+      expect(result.skippedPlanId).toBeUndefined()
+    })
+  })
+
+  describe('importPlans (add mode)', () => {
+    it('adds plans without archiving existing ones', () => {
+      usePlanStore.getState().addPlan('Existing', 'Peito')
+
+      const workouts = [makeExtractedWorkout({ name: 'New Plan' })]
+      usePlanStore.getState().importPlans(workouts, 'add')
+
+      const plans = usePlanStore.getState().plans
+      expect(plans.filter((p) => p.archived)).toHaveLength(0)
+      expect(plans).toHaveLength(2)
+    })
+
+    it('labels continue from nextLabel', () => {
+      usePlanStore.getState().addPlan('Existing', 'Peito')
+      // nextLabel should be B after adding one plan
+
+      const workouts = [makeExtractedWorkout({ name: 'New Plan' })]
+      usePlanStore.getState().importPlans(workouts, 'add')
+
+      const newPlan = usePlanStore.getState().plans.find((p) => p.name === 'New Plan')!
+      expect(newPlan.label).toBe('B')
+      expect(usePlanStore.getState().nextLabel).toBe('C')
     })
   })
 

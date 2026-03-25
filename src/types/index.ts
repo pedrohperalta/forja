@@ -9,3 +9,4 @@ export type {
   CompletedExercise,
   WorkoutSession,
 } from './workout'
+export type { ExtractedExercise, ExtractedWorkout, ImportPhotoStatus } from './import'

@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { View, Text, Pressable, ScrollView, LayoutAnimation } from 'react-native'
 import { useRouter } from 'expo-router'
 import Svg, { Path } from 'react-native-svg'
@@ -9,7 +10,8 @@ import type { PlanId } from '@/types'
 
 /** Plan list screen — shows all plans with add and delete actions. */
 export default function PlansScreen(): React.JSX.Element {
-  const plans = usePlanStore((s) => s.plans)
+  const allPlans = usePlanStore((s) => s.plans)
+  const plans = useMemo(() => allPlans.filter((p) => !p.archived), [allPlans])
   const addPlan = usePlanStore((s) => s.addPlan)
   const removePlan = usePlanStore((s) => s.removePlan)
   const router = useRouter()
@@ -84,7 +86,7 @@ export default function PlansScreen(): React.JSX.Element {
         )}
       </ScrollView>
 
-      {/* Sticky bottom CTA */}
+      {/* Sticky bottom CTAs */}
       <View className="border-t border-border bg-background px-6 pb-10 pt-4">
         <Pressable
           accessibilityRole="button"
@@ -93,6 +95,15 @@ export default function PlansScreen(): React.JSX.Element {
         >
           <Text className="font-ui text-[14px] font-semibold uppercase tracking-[2px] text-background">
             NOVO PLANO
+          </Text>
+        </Pressable>
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => router.push('/import')}
+          className="mt-3 h-[46px] items-center justify-center rounded-pill border border-border-med"
+        >
+          <Text className="font-ui text-[12px] uppercase tracking-[2px] text-text-med">
+            IMPORTAR TREINO
           </Text>
         </Pressable>
       </View>

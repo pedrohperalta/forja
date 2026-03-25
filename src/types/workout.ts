@@ -40,6 +40,7 @@ export type Plan = {
   name: string
   focus: string
   exercises: Exercise[]
+  archived?: boolean
   createdAt: string
   updatedAt: string
 }

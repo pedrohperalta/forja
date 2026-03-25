@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { View, Text, Pressable, ScrollView } from 'react-native'
 import { useRouter } from 'expo-router'
 
@@ -21,8 +21,9 @@ export default function HomeScreen() {
   const lastDates = useAppStore((s) => s.lastDates)
   const historyLength = useAppStore((s) => s.history.length)
 
-  // Plans from planStore instead of hardcoded constant
-  const plans = usePlanStore((s) => s.plans)
+  // All plans from store, filtered to active below
+  const allPlans = usePlanStore((s) => s.plans)
+  const plans = useMemo(() => allPlans.filter((p) => !p.archived), [allPlans])
 
   // Auto-redirect to complete screen when status is 'completed'
   useEffect(() => {

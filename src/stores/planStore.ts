@@ -1,12 +1,12 @@
 import { create } from 'zustand'
 import { devtools, persist, createJSONStorage } from 'zustand/middleware'
 import * as Crypto from 'expo-crypto'
-import type { Exercise, ExerciseId, Plan, PlanId } from '@/types'
+import type { Exercise, ExerciseId, ExtractedWorkout, Plan, PlanId } from '@/types'
 import { mmkvStateStorage } from '@/storage/mmkv'
 import { useWorkoutStore } from '@/stores/workoutStore'
 
 /** Increments a label string: A->B, Z->AA, AA->AB, AZ->BA, etc. */
-function incrementLabel(label: string): string {
+export function incrementLabel(label: string): string {
   const chars = label.split('')
   let carry = true
 
@@ -27,6 +27,9 @@ function incrementLabel(label: string): string {
   return chars.join('')
 }
 
+/** Return value from importPlans — contains skippedPlanId if active workout guard fired. */
+export type ImportPlansResult = { skippedPlanId?: PlanId }
+
 /** Plan store state with CRUD operations. */
 export interface PlanState {
   plans: Plan[]
@@ -34,6 +37,8 @@ export interface PlanState {
   addPlan: (name: string, focus: string) => PlanId
   updatePlan: (id: PlanId, changes: Partial<Pick<Plan, 'name' | 'focus'>>) => void
   removePlan: (id: PlanId) => void
+  archiveAllPlans: () => void
+  importPlans: (workouts: ExtractedWorkout[], mode: 'replace' | 'add') => ImportPlansResult
   addExercise: (
     planId: PlanId,
     exercise: Omit<Exercise, 'id' | 'createdAt' | 'updatedAt'>,
@@ -96,6 +101,85 @@ export const usePlanStore = create<PlanState>()(
         set({
           plans: get().plans.filter((plan) => plan.id !== id),
         })
+      },
+
+      archiveAllPlans: (): void => {
+        set({
+          plans: get().plans.map((plan) =>
+            plan.archived !== true ? { ...plan, archived: true } : plan,
+          ),
+        })
+      },
+
+      importPlans: (workouts: ExtractedWorkout[], mode: 'replace' | 'add'): ImportPlansResult => {
+        const now = new Date().toISOString()
+        const currentPlans = get().plans
+        let label = get().nextLabel
+        let skippedPlanId: PlanId | undefined
+
+        // Archive existing plans in replace mode
+        let updatedPlans = currentPlans
+        if (mode === 'replace') {
+          const workoutState = useWorkoutStore.getState()
+          const activePlanId =
+            workoutState.status === 'active' ? workoutState.activePlan?.id : undefined
+
+          updatedPlans = currentPlans.map((plan) => {
+            if (plan.archived === true) return plan
+            if (activePlanId && plan.id === activePlanId) {
+              skippedPlanId = plan.id as PlanId
+              return plan
+            }
+            return { ...plan, archived: true }
+          })
+        }
+
+        // Convert extracted workouts to plans
+        const newPlans: Plan[] = workouts.map((workout) => {
+          const planId = Crypto.randomUUID() as PlanId
+          const planLabel = label
+          label = incrementLabel(label)
+
+          // Derive focus from unique exercise categories
+          const uniqueCategories: string[] = []
+          for (const ex of workout.exercises) {
+            if (!uniqueCategories.includes(ex.category)) {
+              uniqueCategories.push(ex.category)
+            }
+          }
+          const focus = uniqueCategories.join(' / ')
+
+          // Convert exercises, stripping confidence
+          const exercises: Exercise[] = workout.exercises.map((ex) => ({
+            id: Crypto.randomUUID() as ExerciseId,
+            name: ex.name,
+            category: ex.category,
+            equipment: ex.equipment,
+            reps: ex.reps,
+            sets: ex.sets,
+            restSeconds: ex.restSeconds,
+            createdAt: now,
+            updatedAt: now,
+          }))
+
+          return {
+            id: planId,
+            label: planLabel,
+            name: workout.name,
+            focus,
+            exercises,
+            createdAt: now,
+            updatedAt: now,
+          }
+        })
+
+        // Single atomic set()
+        set({
+          plans: [...updatedPlans, ...newPlans],
+          nextLabel: label,
+        })
+
+        return skippedPlanId ? { skippedPlanId } : {}
       },
 
       addExercise: (
@@ -184,8 +268,21 @@ export const usePlanStore = create<PlanState>()(
     {
       name: 'plan-store',
       storage: createJSONStorage(() => mmkvStateStorage),
-      version: 1,
-      migrate: (state) => state as PlanState,
+      version: 2,
+      migrate: (state, version) => {
+        const s = state as PlanState
+        // v1 → v2: backfill archived: false on all plans
+        if (version === 1) {
+          return {
+            ...s,
+            plans: s.plans.map((plan) => ({
+              ...plan,
+              archived: plan.archived ?? false,
+            })),
+          } as PlanState
+        }
+        return s
+      },
       partialize: (state) => ({
         plans: state.plans,
         nextLabel: state.nextLabel,

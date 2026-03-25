@@ -30,6 +30,7 @@ export const PlanSchema = z.object({
   name: z.string(),
   focus: z.string(),
   exercises: z.array(ExerciseSchema),
+  archived: z.boolean().optional(),
   createdAt: z.string(),
   updatedAt: z.string(),
 })
