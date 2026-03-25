@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react'
 
 import { useImportStore } from '@/stores/importStore'
-import { usePlanStore , incrementLabel } from '@/stores/planStore'
+import { usePlanStore, incrementLabel } from '@/stores/planStore'
 import { extractWorkout } from '@/services/importApi'
 import type { ExtractedWorkout } from '@/types'
 
