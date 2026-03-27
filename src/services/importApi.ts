@@ -1,4 +1,5 @@
-import { readAsStringAsync } from 'expo-file-system'
+import { File } from 'expo-file-system'
+import { ImageManipulator, SaveFormat } from 'expo-image-manipulator'
 import { ExtractWorkoutResponseSchema } from '@/schemas/import'
 import { MUSCLE_CATEGORIES } from '@/constants/categories'
 import type { ExtractedWorkout } from '@/types'
@@ -43,9 +44,14 @@ function normalizeCategory(category: string): string {
  * normalizes categories, and validates the response with Zod.
  */
 export async function extractWorkout(imageUri: string, label: string): Promise<ExtractedWorkout> {
-  const base64 = await readAsStringAsync(imageUri, {
-    encoding: 'base64',
-  })
+  // Compress image to stay under Claude's 5MB base64 limit
+  const compressed = await ImageManipulator.manipulate(imageUri)
+    .resize({ width: 1536 })
+    .renderAsync()
+  const saved = await compressed.saveAsync({ format: SaveFormat.JPEG, compress: 0.7 })
+
+  const file = new File(saved.uri)
+  const base64 = await file.base64()
 
   const url = `${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1/extract-workout`
   const response = await fetch(url, {

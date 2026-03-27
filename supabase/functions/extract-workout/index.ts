@@ -47,6 +47,8 @@ Rules:
 - Exercise names should be in Portuguese
 - If you cannot determine the category, use "Corpo Inteiro"
 - Sets must be between 1 and 20
+- When a range is given for sets (e.g., "2-3"), always use the HIGHER value (e.g., 3)
+- When a range is given for reps (e.g., "10-12"), preserve the full range as a string (e.g., "10-12")
 - Rest seconds must be between 0 and 600 (default to 60 if not specified)
 - Confidence is 0-1 indicating how sure you are about the extraction
 - Return ONLY the JSON object, no markdown or explanation`
@@ -79,7 +81,7 @@ Deno.serve(async (req) => {
     const client = new Anthropic({ apiKey: ANTHROPIC_API_KEY })
 
     const message = await client.messages.create({
-      model: 'claude-sonnet-4-6-20250514',
+      model: 'claude-sonnet-4-6',
       max_tokens: 4096,
       messages: [
         {
@@ -112,8 +114,11 @@ Deno.serve(async (req) => {
       })
     }
 
-    // Parse the JSON response
-    const responseText = (textBlock as { type: 'text'; text: string }).text
+    // Parse the JSON response — strip markdown code fences if present
+    let responseText = (textBlock as { type: 'text'; text: string }).text.trim()
+    if (responseText.startsWith('```')) {
+      responseText = responseText.replace(/^```(?:json)?\s*/, '').replace(/\s*```$/, '')
+    }
     const parsed = JSON.parse(responseText)
 
     return new Response(JSON.stringify(parsed), {

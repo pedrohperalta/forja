@@ -14,6 +14,7 @@ export default function ImportReviewScreen(): React.JSX.Element {
   const confirmImport = useImportStore((s) => s.confirmImport)
   const reset = useImportStore((s) => s.reset)
   const updateExtractedExercise = useImportStore((s) => s.updateExtractedExercise)
+  const removeExtractedExercise = useImportStore((s) => s.removeExtractedExercise)
   const router = useRouter()
   const haptics = useHaptics()
 
@@ -99,7 +100,7 @@ export default function ImportReviewScreen(): React.JSX.Element {
             <View className="gap-2">
               {workout.exercises.map((exercise, ei) => (
                 <ExtractedExerciseRow
-                  key={`exercise-${wi}-${ei}`}
+                  key={`exercise-${wi}-${exercise.name}-${ei}`}
                   name={exercise.name}
                   category={exercise.category}
                   sets={exercise.sets}
@@ -108,6 +109,7 @@ export default function ImportReviewScreen(): React.JSX.Element {
                   confidence={exercise.confidence}
                   editable
                   onUpdate={handleExerciseUpdate(wi, ei)}
+                  onRemove={() => removeExtractedExercise(wi, ei)}
                 />
               ))}
             </View>

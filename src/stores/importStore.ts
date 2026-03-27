@@ -23,6 +23,7 @@ export interface ImportState {
     exerciseIndex: number,
     changes: Partial<ExtractedExercise>,
   ) => void
+  removeExtractedExercise: (workoutIndex: number, exerciseIndex: number) => void
   setStatus: (status: ImportStatus) => void
   confirmImport: () => void
   reset: () => void
@@ -76,6 +77,19 @@ export const useImportStore = create<ImportState>()(
           ),
         }
       })
+      set({ workouts })
+    },
+
+    removeExtractedExercise: (workoutIndex: number, exerciseIndex: number): void => {
+      const workouts = get()
+        .workouts.map((workout, wi) => {
+          if (wi !== workoutIndex) return workout
+          return {
+            ...workout,
+            exercises: workout.exercises.filter((_, ei) => ei !== exerciseIndex),
+          }
+        })
+        .filter((w) => w.exercises.length > 0)
       set({ workouts })
     },
 

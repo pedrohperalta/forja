@@ -1,12 +1,13 @@
 import { useMemo } from 'react'
-import { View, Text, Pressable, ScrollView, LayoutAnimation } from 'react-native'
+import { View, Text, Pressable, LayoutAnimation } from 'react-native'
 import { useRouter } from 'expo-router'
 import Svg, { Path } from 'react-native-svg'
+import DraggableFlatList, { ScaleDecorator, type RenderItemParams } from 'react-native-draggable-flatlist'
 
 import { usePlanStore } from '@/stores/planStore'
 import { useHaptics } from '@/hooks/useHaptics'
 import { PlanCard } from '@/components/PlanCard'
-import type { PlanId } from '@/types'
+import type { Plan, PlanId } from '@/types'
 
 /** Plan list screen — shows all plans with add and delete actions. */
 export default function PlansScreen(): React.JSX.Element {
@@ -14,6 +15,7 @@ export default function PlansScreen(): React.JSX.Element {
   const plans = useMemo(() => allPlans.filter((p) => !p.archived), [allPlans])
   const addPlan = usePlanStore((s) => s.addPlan)
   const removePlan = usePlanStore((s) => s.removePlan)
+  const reorderPlans = usePlanStore((s) => s.reorderPlans)
   const router = useRouter()
   const haptics = useHaptics()
 
@@ -32,6 +34,29 @@ export default function PlansScreen(): React.JSX.Element {
     haptics.warning()
     removePlan(id)
   }
+
+  const handleDragEnd = ({ data }: { data: Plan[] }): void => {
+    haptics.light()
+    reorderPlans(data.map((p) => p.id))
+  }
+
+  const renderItem = ({ item: plan, drag, isActive }: RenderItemParams<Plan>): React.JSX.Element => (
+    <ScaleDecorator>
+      <View className="px-6 pb-3">
+        <PlanCard
+          id={plan.id}
+          label={plan.label}
+          name={plan.name}
+          focus={plan.focus}
+          exerciseCount={plan.exercises.length}
+          onPress={() => handlePressPlan(plan.id)}
+          onDelete={() => handleDeletePlan(plan.id)}
+          drag={drag}
+          isActive={isActive}
+        />
+      </View>
+    </ScaleDecorator>
+  )
 
   return (
     <View className="flex-1 bg-background">
@@ -63,28 +88,21 @@ export default function PlansScreen(): React.JSX.Element {
       </View>
 
       {/* Plan list */}
-      <ScrollView className="flex-1 px-6 pt-6" showsVerticalScrollIndicator={false}>
-        {plans.length === 0 ? (
-          <View className="items-center py-16">
-            <Text className="font-ui text-[14px] text-muted">Nenhum plano criado</Text>
-          </View>
-        ) : (
-          <View className="gap-3 pb-6">
-            {plans.map((plan) => (
-              <PlanCard
-                key={plan.id}
-                id={plan.id}
-                label={plan.label}
-                name={plan.name}
-                focus={plan.focus}
-                exerciseCount={plan.exercises.length}
-                onPress={() => handlePressPlan(plan.id)}
-                onDelete={() => handleDeletePlan(plan.id)}
-              />
-            ))}
-          </View>
-        )}
-      </ScrollView>
+      {plans.length === 0 ? (
+        <View className="flex-1 items-center py-16">
+          <Text className="font-ui text-[14px] text-muted">Nenhum plano criado</Text>
+        </View>
+      ) : (
+        <DraggableFlatList
+          data={plans}
+          keyExtractor={(item) => item.id}
+          renderItem={renderItem}
+          onDragEnd={handleDragEnd}
+          containerStyle={{ flex: 1 }}
+          contentContainerStyle={{ paddingTop: 24 }}
+          showsVerticalScrollIndicator={false}
+        />
+      )}
 
       {/* Sticky bottom CTAs */}
       <View className="border-t border-border bg-background px-6 pb-10 pt-4">

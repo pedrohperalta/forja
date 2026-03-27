@@ -49,11 +49,15 @@ export default function ImportCaptureScreen(): React.JSX.Element {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images' as ImagePicker.MediaType],
       quality: 0.8,
+      allowsMultipleSelection: true,
+      selectionLimit: MAX_PHOTOS - photos.length,
     })
 
-    if (!result.canceled && result.assets[0]) {
+    if (!result.canceled && result.assets.length > 0) {
       haptics.light()
-      addPhoto(result.assets[0].uri)
+      for (const asset of result.assets) {
+        addPhoto(asset.uri)
+      }
     }
   }
 

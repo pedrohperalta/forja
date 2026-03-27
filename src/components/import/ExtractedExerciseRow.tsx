@@ -14,6 +14,7 @@ type ExtractedExerciseRowProps = {
   confidence: number
   editable?: boolean
   onUpdate?: (changes: Partial<ExtractedExercise>) => void
+  onRemove?: () => void
 }
 
 /** Display row with optional inline edit mode for extracted exercises. */
@@ -26,6 +27,7 @@ export function ExtractedExerciseRow({
   confidence,
   editable = false,
   onUpdate,
+  onRemove,
 }: ExtractedExerciseRowProps): React.JSX.Element {
   const [editing, setEditing] = useState(false)
   const [editName, setEditName] = useState(name)
@@ -158,16 +160,33 @@ export function ExtractedExerciseRow({
           />
         </View>
 
-        {/* Close button */}
-        <Pressable
-          accessibilityRole="button"
-          onPress={handleClose}
-          className="items-center rounded-pill border border-border-med py-2"
-        >
-          <Text className="font-ui text-[11px] uppercase tracking-[1.5px] text-text-med">
-            FECHAR
-          </Text>
-        </Pressable>
+        {/* Action buttons */}
+        <View className="flex-row gap-3">
+          {onRemove ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Remover exercício"
+              onPress={() => {
+                setEditing(false)
+                onRemove?.()
+              }}
+              className="flex-1 items-center rounded-pill border border-danger-dim bg-danger-dim py-2"
+            >
+              <Text className="font-ui text-[11px] uppercase tracking-[1.5px] text-danger">
+                REMOVER
+              </Text>
+            </Pressable>
+          ) : null}
+          <Pressable
+            accessibilityRole="button"
+            onPress={handleClose}
+            className="flex-1 items-center rounded-pill border border-border-med py-2"
+          >
+            <Text className="font-ui text-[11px] uppercase tracking-[1.5px] text-text-med">
+              FECHAR
+            </Text>
+          </Pressable>
+        </View>
       </View>
     )
   }

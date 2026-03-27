@@ -11,6 +11,8 @@ type PlanCardProps = {
   exerciseCount: number
   onPress: () => void
   onDelete: () => void
+  drag?: () => void
+  isActive?: boolean
 }
 
 /** Card displaying a plan with accent bar, info, and two-step delete. */
@@ -21,13 +23,21 @@ export function PlanCard({
   exerciseCount,
   onPress,
   onDelete,
+  drag,
+  isActive = false,
 }: PlanCardProps): React.JSX.Element {
   const { deleteState, requestDelete, confirmDelete, cancelDelete } = useTwoStepDelete(onDelete)
 
   const exerciseLabel = exerciseCount === 1 ? 'exercicio' : 'exercicios'
 
   return (
-    <View className="flex-row overflow-hidden rounded-lg border border-border bg-surface">
+    <Pressable
+      onLongPress={drag}
+      delayLongPress={200}
+      disabled={isActive}
+      className="flex-row overflow-hidden rounded-lg border border-border bg-surface"
+      style={isActive ? { opacity: 0.9, transform: [{ scale: 1.03 }] } : undefined}
+    >
       {/* Accent bar */}
       <View className="w-[3px] bg-accent" />
 
@@ -96,6 +106,6 @@ export function PlanCard({
           )}
         </View>
       </View>
-    </View>
+    </Pressable>
   )
 }

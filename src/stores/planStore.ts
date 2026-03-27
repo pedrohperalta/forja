@@ -51,6 +51,7 @@ export interface PlanState {
   ) => void
   removeExercise: (planId: PlanId, exerciseId: ExerciseId) => void
   reorderExercises: (planId: PlanId, orderedIds: ExerciseId[]) => void
+  reorderPlans: (orderedIds: PlanId[]) => void
   reset: () => void
 }
 
@@ -256,6 +257,16 @@ export const usePlanStore = create<PlanState>()(
             return { ...plan, exercises: reordered, updatedAt: now }
           }),
         })
+      },
+
+      reorderPlans: (orderedIds: PlanId[]): void => {
+        const planMap = new Map(get().plans.map((p) => [p.id, p]))
+        const reordered = orderedIds
+          .map((id) => planMap.get(id))
+          .filter((p): p is Plan => p !== undefined)
+        // Append any plans not in orderedIds (e.g., archived)
+        const remaining = get().plans.filter((p) => !orderedIds.includes(p.id))
+        set({ plans: [...reordered, ...remaining] })
       },
 
       reset: (): void => {
