@@ -1,0 +1,1410 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PRD — Smart Training Import | Forja</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --stone-50: #fafaf9;
+    --stone-100: #f5f5f4;
+    --stone-200: #e7e5e4;
+    --stone-300: #d6d3d1;
+    --stone-400: #a8a29e;
+    --stone-500: #78716c;
+    --stone-600: #57534e;
+    --stone-700: #44403c;
+    --stone-800: #292524;
+    --stone-900: #1c1917;
+    --accent: #C2F000;
+    --accent-dim: rgba(194, 240, 0, 0.12);
+    --danger: #ef4444;
+    --warning: #f59e0b;
+    --p0: #ef4444;
+    --p1: #f59e0b;
+    --p2: #3b82f6;
+    --bg: #0e0e0e;
+    --surface: #1a1a1a;
+    --surface-2: #252525;
+    --border: #2a2a2a;
+    --text: #f5f5f4;
+    --text-med: #a8a29e;
+    --text-dim: #57534e;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    padding: 0;
+  }
+
+  /* Header */
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 32px 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-inner {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .header h1 {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--accent);
+    letter-spacing: -0.5px;
+  }
+  .header .meta {
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+  .review-toggle {
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    padding: 8px 20px;
+    border-radius: 100px;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .review-toggle:hover { opacity: 0.85; }
+  .review-toggle.active {
+    background: var(--danger);
+    color: white;
+  }
+
+  /* Main content */
+  .content {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 32px 120px;
+  }
+
+  /* Sections */
+  section {
+    margin-bottom: 48px;
+  }
+  .section-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+  h2 {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: var(--text);
+  }
+  h3 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: var(--text);
+  }
+  p, li {
+    font-size: 14px;
+    color: var(--text-med);
+    line-height: 1.7;
+  }
+  ul, ol {
+    padding-left: 20px;
+    margin-bottom: 16px;
+  }
+  li { margin-bottom: 6px; }
+
+  /* Cards */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 16px;
+  }
+  .card h3 { margin-bottom: 8px; }
+
+  /* Priority badges */
+  .badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  .badge-p0 { background: rgba(239,68,68,0.15); color: var(--p0); }
+  .badge-p1 { background: rgba(245,158,11,0.15); color: var(--p1); }
+  .badge-p2 { background: rgba(59,130,246,0.15); color: var(--p2); }
+  .badge-accent { background: var(--accent-dim); color: var(--accent); }
+
+  /* Feature grid */
+  .feature-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  @media (max-width: 640px) {
+    .feature-grid { grid-template-columns: 1fr; }
+  }
+
+  /* Metric grid */
+  .metric-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 640px) {
+    .metric-grid { grid-template-columns: 1fr; }
+  }
+  .metric-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+  }
+  .metric-value {
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--accent);
+    line-height: 1;
+  }
+  .metric-label {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-top: 6px;
+  }
+
+  /* User story */
+  .story {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 12px 12px 0;
+    padding: 20px 24px;
+    margin-bottom: 12px;
+  }
+  .story .role {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+  .story p { color: var(--text); font-size: 14px; }
+  .story .story-badges {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+  .story-id {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  /* Acceptance criteria */
+  .criteria {
+    background: var(--surface-2);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-top: 10px;
+    font-size: 13px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    color: var(--text-med);
+  }
+  .criteria strong { color: var(--accent); font-weight: 600; }
+
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 16px;
+    font-size: 13px;
+  }
+  th {
+    text-align: left;
+    padding: 10px 14px;
+    background: var(--surface-2);
+    color: var(--text-dim);
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-med);
+  }
+
+  /* Mockup frame */
+  .mockup-frame {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    margin: 24px 0;
+    max-width: 375px;
+  }
+  .mockup-frame.wide {
+    max-width: 100%;
+  }
+  .mockup-pair {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .mockup-status-bar {
+    background: var(--bg);
+    padding: 8px 24px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .mockup-content {
+    padding: 0 24px 32px;
+  }
+  .mockup-label {
+    font-size: 11px;
+    color: var(--text-dim);
+    text-align: center;
+    margin-top: 8px;
+    font-style: italic;
+  }
+
+  /* Mockup internal elements */
+  .m-hero { font-size: 28px; font-weight: 800; color: var(--text); margin: 16px 0 4px; font-family: 'Inter'; letter-spacing: -1px; }
+  .m-sub { font-size: 12px; color: var(--text-dim); margin-bottom: 20px; }
+  .m-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 10px;
+  }
+  .m-card-title { font-size: 14px; font-weight: 700; color: var(--text); }
+  .m-card-sub { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+  .m-card-meta { font-size: 10px; color: var(--text-dim); margin-top: 8px; display: flex; gap: 8px; }
+  .m-chip {
+    display: inline-block;
+    padding: 2px 8px;
+    background: var(--surface-2);
+    border-radius: 100px;
+    font-size: 10px;
+    color: var(--text-med);
+  }
+  .m-chip.active { background: var(--accent-dim); color: var(--accent); }
+  .m-btn {
+    display: block;
+    text-align: center;
+    padding: 14px;
+    border-radius: 100px;
+    font-weight: 700;
+    font-size: 13px;
+    margin-top: 16px;
+  }
+  .m-btn-primary { background: var(--accent); color: var(--bg); }
+  .m-btn-secondary { background: transparent; border: 1px solid var(--border); color: var(--text-med); }
+  .m-input {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 13px;
+    color: var(--text);
+    width: 100%;
+    margin-bottom: 10px;
+  }
+  .m-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-dim); margin-bottom: 6px; }
+  .m-back { font-size: 12px; color: var(--text-med); margin-bottom: 12px; cursor: pointer; }
+  .m-section-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: var(--accent); margin: 16px 0 8px; }
+  .m-exercise-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .m-exercise-name { font-size: 13px; color: var(--text); font-weight: 500; }
+  .m-exercise-meta { font-size: 11px; color: var(--text-dim); }
+  .m-scan-area {
+    border: 2px dashed var(--border);
+    border-radius: 16px;
+    padding: 32px 16px;
+    text-align: center;
+    margin-bottom: 16px;
+  }
+  .m-progress { height: 3px; background: var(--surface-2); border-radius: 2px; margin: 8px 0; overflow: hidden; }
+  .m-progress-fill { height: 100%; background: var(--accent); border-radius: 2px; }
+  .m-search {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 14px;
+    color: var(--text-dim);
+    font-size: 13px;
+    margin-bottom: 12px;
+  }
+  .m-filter-row { display: flex; gap: 6px; margin-bottom: 12px; overflow-x: auto; }
+  .m-filter {
+    background: var(--surface-2);
+    color: var(--text-dim);
+    font-size: 11px;
+    padding: 5px 12px;
+    border-radius: 100px;
+    white-space: nowrap;
+  }
+  .m-filter.active { background: var(--accent-dim); color: var(--accent); }
+  .m-add-btn {
+    background: var(--accent-dim);
+    color: var(--accent);
+    padding: 4px 12px;
+    border-radius: 100px;
+    font-size: 10px;
+    font-weight: 700;
+  }
+  .m-badge-check { color: #22c55e; font-size: 12px; }
+  .m-badge-warn { color: var(--warning); font-size: 12px; }
+
+  /* Flow diagram */
+  .flow-diagram {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 24px 0;
+  }
+  .flow-step {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    text-align: center;
+    min-width: 130px;
+  }
+  .flow-step-icon { font-size: 24px; margin-bottom: 4px; }
+  .flow-step-label { font-size: 13px; font-weight: 600; color: var(--text); }
+  .flow-step-desc { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+  .flow-arrow { font-size: 18px; color: var(--text-dim); padding: 0 8px; }
+
+  /* Risk table */
+  .risk-high { color: var(--danger); font-weight: 600; }
+  .risk-med { color: var(--warning); font-weight: 600; }
+  .risk-low { color: var(--p2); font-weight: 600; }
+
+  /* Divider */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 48px 0;
+  }
+
+  /* Commentable highlight */
+  [data-c].commentable {
+    cursor: pointer;
+    position: relative;
+    transition: outline 0.15s, background 0.15s;
+    outline: 2px solid transparent;
+    border-radius: 4px;
+  }
+  [data-c].commentable:hover {
+    outline: 2px solid var(--accent);
+    background: rgba(194, 240, 0, 0.04);
+  }
+  [data-c].commentable.has-comment {
+    outline: 2px solid var(--warning);
+    background: rgba(245, 158, 11, 0.06);
+  }
+
+  /* Comment panel */
+  .comment-panel {
+    display: none;
+    position: fixed;
+    right: 0;
+    top: 0;
+    width: 360px;
+    height: 100vh;
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    z-index: 200;
+    flex-direction: column;
+  }
+  .comment-panel.open { display: flex; }
+  .comment-panel-header {
+    padding: 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .comment-panel-header h3 {
+    font-size: 14px;
+    font-weight: 700;
+    margin: 0;
+  }
+  .comment-panel-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+  }
+  .comment-panel-footer {
+    padding: 16px 20px;
+    border-top: 1px solid var(--border);
+  }
+  .comment-input {
+    width: 100%;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 13px;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    resize: vertical;
+    min-height: 60px;
+  }
+  .comment-input:focus { outline: none; border-color: var(--accent); }
+  .comment-submit {
+    margin-top: 8px;
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    padding: 8px 16px;
+    border-radius: 100px;
+    font-weight: 700;
+    font-size: 12px;
+    cursor: pointer;
+    width: 100%;
+  }
+  .comment-item {
+    background: var(--surface-2);
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 8px;
+  }
+  .comment-item-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 6px;
+  }
+  .comment-item-section {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+  .comment-item-time {
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+  .comment-item-text {
+    font-size: 13px;
+    color: var(--text-med);
+  }
+  .comment-item-delete {
+    font-size: 11px;
+    color: var(--danger);
+    cursor: pointer;
+    margin-top: 6px;
+    background: none;
+    border: none;
+    padding: 0;
+  }
+  .comment-count {
+    background: var(--warning);
+    color: var(--bg);
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 100px;
+    margin-left: 6px;
+  }
+  .export-btn {
+    background: var(--surface-2);
+    color: var(--text-med);
+    border: 1px solid var(--border);
+    padding: 6px 14px;
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .export-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .close-btn {
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    font-size: 20px;
+    cursor: pointer;
+  }
+  .no-comments {
+    text-align: center;
+    color: var(--text-dim);
+    font-size: 13px;
+    padding: 40px 0;
+  }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-inner">
+    <div>
+      <h1>FORJA — Smart Training Import</h1>
+      <div class="meta">PRD v1 &middot; 23 Mar 2026 &middot; Feature</div>
+    </div>
+    <div style="display: flex; gap: 8px; align-items: center;">
+      <button class="export-btn" id="exportBtn" style="display:none;" onclick="exportComments()">Exportar Comentários</button>
+      <button class="review-toggle" id="reviewToggle" onclick="toggleReviewMode()">Review Mode</button>
+    </div>
+  </div>
+</div>
+
+<!-- Comment Panel -->
+<div class="comment-panel" id="commentPanel">
+  <div class="comment-panel-header">
+    <h3>Comentários <span class="comment-count" id="commentCount" style="display:none">0</span></h3>
+    <button class="close-btn" onclick="closePanel()">&times;</button>
+  </div>
+  <div class="comment-panel-body" id="commentList">
+    <div class="no-comments" id="noComments">Nenhum comentário ainda. Clique em elementos destacados para comentar.</div>
+  </div>
+  <div class="comment-panel-footer" id="commentForm" style="display:none">
+    <div style="font-size:11px;color:var(--accent);font-weight:700;margin-bottom:6px" id="commentTarget"></div>
+    <textarea class="comment-input" id="commentInput" placeholder="Deixe seu comentário..."></textarea>
+    <button class="comment-submit" onclick="submitComment()">Adicionar Comentário</button>
+  </div>
+</div>
+
+<!-- Content -->
+<div class="content">
+
+  <!-- 1. Overview -->
+  <section>
+    <div class="section-label" data-c="sec-overview">Visão Geral</div>
+    <h2 data-c="title-overview">Importação Inteligente de Treinos</h2>
+    <p data-c="desc-overview">O processo atual de cadastro de treinos no Forja é inteiramente manual: o usuário precisa digitar o nome de cada exercício, selecionar categorias, e configurar séries, repetições e descanso — um por um. Quando o treinador envia um novo programa (geralmente como PDF ou imagem), são necessários ~15-20 exercícios para configurar, o que leva tempo e é propenso a erros de digitação. Esta feature permite importar o programa automaticamente a partir de uma foto ou PDF, com um catálogo de exercícios integrado para ajustes rápidos.</p>
+  </section>
+
+  <!-- 2. Metrics -->
+  <section>
+    <div class="section-label" data-c="sec-metrics">Impacto Esperado</div>
+    <h2 data-c="title-metrics">Números</h2>
+    <div class="metric-grid">
+      <div class="metric-card" data-c="metric-time-before">
+        <div class="metric-value">~30min</div>
+        <div class="metric-label">Tempo atual de setup</div>
+      </div>
+      <div class="metric-card" data-c="metric-time-after">
+        <div class="metric-value">~3min</div>
+        <div class="metric-label">Tempo esperado com import</div>
+      </div>
+      <div class="metric-card" data-c="metric-errors">
+        <div class="metric-value">90%</div>
+        <div class="metric-label">Redução em erros de digitação</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. Problem -->
+  <section>
+    <div class="section-label" data-c="sec-problem">Problema</div>
+    <h2 data-c="title-problem">Por que isso importa</h2>
+    <div class="card" data-c="problem-1">
+      <h3>Digitação manual de exercícios</h3>
+      <p>Cada exercício exige digitar nome, equipamento e repetições manualmente. Com 15-20 exercícios por programa, erros de digitação são frequentes e difíceis de notar.</p>
+    </div>
+    <div class="card" data-c="problem-2">
+      <h3>Configuração repetitiva de detalhes</h3>
+      <p>Para cada exercício: selecionar categorias, definir séries, repetições e tempo de descanso. Multiplicado por ~18 exercícios, é um processo tedioso e desmotivante.</p>
+    </div>
+    <div class="card" data-c="problem-3">
+      <h3>Ausência de catálogo de exercícios</h3>
+      <p>Não existe uma base de exercícios pré-cadastrados. Toda vez que o usuário cria um exercício, parte do zero — mesmo para exercícios comuns como "Supino Reto" ou "Agachamento".</p>
+    </div>
+    <div class="card" data-c="problem-4">
+      <h3>Troca de programa é dolorosa</h3>
+      <p>Quando o treinador envia um novo programa, o usuário precisa deletar os planos antigos e recriar tudo do zero. Não há opção de importação ou substituição em lote.</p>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 4. Flow -->
+  <section>
+    <div class="section-label" data-c="sec-flow">Fluxo Principal</div>
+    <h2 data-c="title-flow">Da foto ao treino configurado</h2>
+    <p data-c="desc-flow" style="margin-bottom:16px">O fluxo combina três capacidades: importação via IA, catálogo de exercícios e substituição de programa. Abaixo está o caminho principal quando o treinador envia um novo programa.</p>
+    <div class="flow-diagram" data-c="flow-diagram">
+      <div class="flow-step">
+        <div class="flow-step-icon">📷</div>
+        <div class="flow-step-label">Capturar</div>
+        <div class="flow-step-desc">Foto ou PDF</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="flow-step-icon">🤖</div>
+        <div class="flow-step-label">Extrair (IA)</div>
+        <div class="flow-step-desc">Claude Vision</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="flow-step-icon">✏️</div>
+        <div class="flow-step-label">Revisar</div>
+        <div class="flow-step-desc">Conferir e ajustar</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="flow-step-icon">✅</div>
+        <div class="flow-step-label">Confirmar</div>
+        <div class="flow-step-desc">Substituir programa</div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 5. User Stories - Scan -->
+  <section>
+    <div class="section-label" data-c="sec-scan">Scan Inteligente (IA)</div>
+    <h2 data-c="title-scan">Importação por foto ou PDF <span class="badge badge-p0">P0</span></h2>
+
+    <div class="story" data-c="story-import">
+      <div class="story-badges">
+        <span class="story-id">US-01</span>
+        <span class="badge badge-p0">P0</span>
+      </div>
+      <div class="role">Como praticante de musculação</div>
+      <p>Quero tirar uma foto do programa do meu treinador para que o app importe automaticamente todos os exercícios e planos.</p>
+      <div class="criteria">
+        <strong>Dado</strong> que estou na tela de importação<br>
+        <strong>Quando</strong> tiro uma foto ou seleciono uma imagem/PDF da galeria<br>
+        <strong>Então</strong> o app envia para a API de visão, extrai os planos e exercícios, e me apresenta um resumo para revisão
+      </div>
+    </div>
+
+    <div class="story" data-c="story-review">
+      <div class="story-badges">
+        <span class="story-id">US-02</span>
+        <span class="badge badge-p0">P0</span>
+      </div>
+      <div class="role">Como praticante de musculação</div>
+      <p>Quero revisar e corrigir os dados extraídos antes de importar, para garantir que tudo está correto.</p>
+      <div class="criteria">
+        <strong>Dado</strong> que a IA extraiu os dados do programa<br>
+        <strong>Quando</strong> vejo a tela de revisão<br>
+        <strong>Então</strong> posso ver cada plano com seus exercícios, editar nomes, categorias, séries, repetições e descanso antes de confirmar a importação
+      </div>
+    </div>
+
+    <div class="story" data-c="story-match">
+      <div class="story-badges">
+        <span class="story-id">US-03</span>
+        <span class="badge badge-p1">P1</span>
+      </div>
+      <div class="role">Como praticante de musculação</div>
+      <p>Quero que os exercícios extraídos sejam automaticamente associados ao catálogo, para que categorias e equipamentos sejam preenchidos corretamente.</p>
+      <div class="criteria">
+        <strong>Dado</strong> que a IA identificou um exercício (ex: "Supino Reto")<br>
+        <strong>Quando</strong> o nome corresponde a um exercício do catálogo (fuzzy match)<br>
+        <strong>Então</strong> a categoria e equipamento são preenchidos automaticamente a partir do catálogo, e o usuário vê um indicador de "match encontrado"
+      </div>
+    </div>
+  </section>
+
+  <!-- Mockup: Scan -->
+  <section>
+    <div class="section-label" data-c="sec-mockup-scan">Mockup</div>
+    <h2 data-c="title-mockup-scan">Tela — Importação</h2>
+
+    <div class="mockup-pair">
+      <div>
+        <div class="mockup-frame" data-c="mockup-capture" style="margin-left:auto;margin-right:auto">
+          <div class="mockup-status-bar">
+            <span>9:41</span>
+            <span>⦿ ▮▮ ⟩</span>
+          </div>
+          <div class="mockup-content">
+            <div class="m-back">‹ PLANOS</div>
+            <div class="m-section-label">IMPORTAR</div>
+            <div class="m-hero">Importar Treino</div>
+            <div class="m-sub">Tire uma foto ou selecione o programa do treinador</div>
+
+            <div class="m-scan-area">
+              <div style="font-size:36px;margin-bottom:8px">📷</div>
+              <div style="color:var(--text-dim);font-size:13px">Toque para capturar</div>
+              <div style="color:var(--text-dim);font-size:11px;margin-top:4px">Foto, imagem ou PDF</div>
+            </div>
+
+            <div class="m-btn m-btn-primary">TIRAR FOTO</div>
+            <div class="m-btn m-btn-secondary" style="margin-top:8px">SELECIONAR DA GALERIA</div>
+
+            <div style="text-align:center;margin-top:16px">
+              <div style="color:var(--text-dim);font-size:10px">Formatos: JPG, PNG, PDF</div>
+              <div style="color:var(--text-dim);font-size:10px;margin-top:2px">Powered by Claude Vision API</div>
+            </div>
+          </div>
+        </div>
+        <div class="mockup-label">Captura — entrada do programa</div>
+      </div>
+
+      <div>
+        <div class="mockup-frame" data-c="mockup-processing" style="margin-left:auto;margin-right:auto">
+          <div class="mockup-status-bar">
+            <span>9:41</span>
+            <span>⦿ ▮▮ ⟩</span>
+          </div>
+          <div class="mockup-content">
+            <div class="m-back">‹ IMPORTAR</div>
+            <div class="m-section-label">PROCESSANDO</div>
+            <div class="m-hero">Analisando...</div>
+            <div class="m-sub">Extraindo exercícios do programa</div>
+
+            <div style="text-align:center;padding:24px 0">
+              <div style="font-size:40px;margin-bottom:12px">🤖</div>
+              <div class="m-progress" style="width:180px;margin:0 auto">
+                <div class="m-progress-fill" style="width:65%"></div>
+              </div>
+              <div style="color:var(--text-dim);font-size:11px;margin-top:10px">Identificando planos e exercícios...</div>
+            </div>
+
+            <div class="m-card" style="opacity:0.7">
+              <div class="m-card-title">✅ 3 planos detectados</div>
+              <div class="m-card-sub">A, B, C</div>
+            </div>
+            <div class="m-card" style="opacity:0.4">
+              <div class="m-card-title">⏳ Extraindo exercícios...</div>
+              <div class="m-card-sub">12 de ~18 identificados</div>
+            </div>
+          </div>
+        </div>
+        <div class="mockup-label">Processamento — feedback em tempo real</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Mockup: Review -->
+  <section>
+    <div class="section-label" data-c="sec-mockup-review">Mockup</div>
+    <h2 data-c="title-mockup-review">Tela — Revisão</h2>
+
+    <div class="mockup-frame" data-c="mockup-review" style="margin-left:auto;margin-right:auto">
+      <div class="mockup-status-bar">
+        <span>9:42</span>
+        <span>⦿ ▮▮ ⟩</span>
+      </div>
+      <div class="mockup-content">
+        <div class="m-back">‹ IMPORTAR</div>
+        <div class="m-section-label">REVISÃO</div>
+        <div class="m-hero">Revisão</div>
+        <div class="m-sub">18 exercícios em 3 planos • Toque para editar</div>
+
+        <!-- Plan A -->
+        <div class="m-section-label" style="margin-top:8px">Plano A — Peito / Ombros / Tríceps</div>
+        <div class="m-exercise-row">
+          <div style="flex:1">
+            <div class="m-exercise-name">Supino Reto <span class="m-badge-check">✓</span></div>
+            <div class="m-exercise-meta">4×10-12 · 60s · Barra</div>
+          </div>
+          <span style="color:var(--accent);font-size:11px;font-weight:600">EDITAR</span>
+        </div>
+        <div class="m-exercise-row">
+          <div style="flex:1">
+            <div class="m-exercise-name">Crucifixo Inclinado <span class="m-badge-check">✓</span></div>
+            <div class="m-exercise-meta">3×12-15 · 45s · Halter</div>
+          </div>
+          <span style="color:var(--accent);font-size:11px;font-weight:600">EDITAR</span>
+        </div>
+        <div class="m-exercise-row">
+          <div style="flex:1">
+            <div class="m-exercise-name">Desenv. Militar <span class="m-badge-warn">⚠</span></div>
+            <div class="m-exercise-meta">4×8-10 · 90s · Barra</div>
+          </div>
+          <span style="color:var(--accent);font-size:11px;font-weight:600">EDITAR</span>
+        </div>
+        <div class="m-exercise-row">
+          <div style="flex:1">
+            <div class="m-exercise-name">Elevação Lateral <span class="m-badge-check">✓</span></div>
+            <div class="m-exercise-meta">3×12-15 · 45s · Halter</div>
+          </div>
+          <span style="color:var(--accent);font-size:11px;font-weight:600">EDITAR</span>
+        </div>
+        <div class="m-exercise-row" style="border:none">
+          <div style="flex:1">
+            <div class="m-exercise-name">Tríceps Testa <span class="m-badge-check">✓</span></div>
+            <div class="m-exercise-meta">3×10-12 · 60s · Barra EZ</div>
+          </div>
+          <span style="color:var(--accent);font-size:11px;font-weight:600">EDITAR</span>
+        </div>
+
+        <div style="display:flex;gap:8px;align-items:center;margin:12px 0 4px">
+          <span class="m-badge-check">✓</span>
+          <span style="color:var(--text-dim);font-size:10px">= match no catálogo</span>
+          <span class="m-badge-warn" style="margin-left:6px">⚠</span>
+          <span style="color:var(--text-dim);font-size:10px">= requer atenção</span>
+        </div>
+
+        <div class="m-btn m-btn-primary">IMPORTAR PROGRAMA</div>
+        <div class="m-btn m-btn-secondary" style="margin-top:8px">CANCELAR</div>
+      </div>
+    </div>
+    <div class="mockup-label">Revisão — exercícios com indicador de match no catálogo</div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 6. User Stories - Catalog -->
+  <section>
+    <div class="section-label" data-c="sec-catalog">Catálogo de Exercícios</div>
+    <h2 data-c="title-catalog">Base de exercícios pré-carregada <span class="badge badge-p0">P0</span></h2>
+
+    <p data-c="desc-catalog" style="margin-bottom:16px">Um banco de dados local com exercícios pré-cadastrados em pt-BR, organizados por grupo muscular e equipamento. Serve como base para o matching automático durante importação e como alternativa rápida ao cadastro manual.</p>
+
+    <div class="story" data-c="story-catalog-search">
+      <div class="story-badges">
+        <span class="story-id">US-04</span>
+        <span class="badge badge-p0">P0</span>
+      </div>
+      <div class="role">Como praticante de musculação</div>
+      <p>Quero buscar exercícios em um catálogo pré-carregado para adicioná-los ao meu plano sem precisar digitar todos os detalhes.</p>
+      <div class="criteria">
+        <strong>Dado</strong> que estou adicionando um exercício a um plano<br>
+        <strong>Quando</strong> acesso a opção "Buscar no Catálogo"<br>
+        <strong>Então</strong> posso buscar por nome ou filtrar por grupo muscular/equipamento, selecionar um exercício e ele é adicionado ao plano com nome, categoria e equipamento pré-preenchidos
+      </div>
+    </div>
+
+    <div class="story" data-c="story-custom-save">
+      <div class="story-badges">
+        <span class="story-id">US-05</span>
+        <span class="badge badge-p1">P1</span>
+      </div>
+      <div class="role">Como praticante de musculação</div>
+      <p>Quero salvar exercícios personalizados no catálogo para reutilizá-los em planos futuros.</p>
+      <div class="criteria">
+        <strong>Dado</strong> que criei um exercício manualmente no formulário<br>
+        <strong>Quando</strong> salvo o exercício<br>
+        <strong>Então</strong> ele é automaticamente adicionado ao catálogo local para uso futuro, marcado como "personalizado"
+      </div>
+    </div>
+
+    <div class="story" data-c="story-autocomplete">
+      <div class="story-badges">
+        <span class="story-id">US-06</span>
+        <span class="badge badge-p1">P1</span>
+      </div>
+      <div class="role">Como praticante de musculação</div>
+      <p>Quero sugestões de autocomplete ao digitar o nome de um exercício, para não precisar lembrar o nome exato.</p>
+      <div class="criteria">
+        <strong>Dado</strong> que estou digitando o nome de um exercício no formulário<br>
+        <strong>Quando</strong> digito 2+ caracteres<br>
+        <strong>Então</strong> vejo sugestões do catálogo que correspondem (fuzzy match), e ao selecionar uma sugestão, os campos de categoria e equipamento são preenchidos automaticamente
+      </div>
+    </div>
+  </section>
+
+  <!-- Mockup: Catalog -->
+  <section>
+    <div class="section-label" data-c="sec-mockup-catalog">Mockup</div>
+    <h2 data-c="title-mockup-catalog">Tela — Catálogo de Exercícios</h2>
+
+    <div class="mockup-frame" data-c="mockup-catalog" style="margin-left:auto;margin-right:auto">
+      <div class="mockup-status-bar">
+        <span>9:41</span>
+        <span>⦿ ▮▮ ⟩</span>
+      </div>
+      <div class="mockup-content">
+        <div class="m-back">‹ PLANO A</div>
+        <div class="m-section-label">CATÁLOGO</div>
+        <div class="m-hero">Catálogo</div>
+        <div class="m-sub">800+ exercícios disponíveis</div>
+
+        <div class="m-search">🔍 Buscar exercício...</div>
+
+        <div class="m-filter-row">
+          <div class="m-filter active">Todos</div>
+          <div class="m-filter">Peito</div>
+          <div class="m-filter">Costas</div>
+          <div class="m-filter">Ombros</div>
+          <div class="m-filter">Bíceps</div>
+          <div class="m-filter">Tríceps</div>
+        </div>
+
+        <div class="m-exercise-row">
+          <div style="flex:1">
+            <div class="m-exercise-name">Supino Reto</div>
+            <div class="m-exercise-meta">Peito · Barra</div>
+          </div>
+          <span class="m-add-btn">+ ADICIONAR</span>
+        </div>
+        <div class="m-exercise-row">
+          <div style="flex:1">
+            <div class="m-exercise-name">Supino Inclinado</div>
+            <div class="m-exercise-meta">Peito · Halter</div>
+          </div>
+          <span class="m-add-btn">+ ADICIONAR</span>
+        </div>
+        <div class="m-exercise-row">
+          <div style="flex:1">
+            <div class="m-exercise-name">Crucifixo Reto</div>
+            <div class="m-exercise-meta">Peito · Halter</div>
+          </div>
+          <span class="m-add-btn">+ ADICIONAR</span>
+        </div>
+        <div class="m-exercise-row">
+          <div style="flex:1">
+            <div class="m-exercise-name">Crossover</div>
+            <div class="m-exercise-meta">Peito · Cabo</div>
+          </div>
+          <span class="m-add-btn">+ ADICIONAR</span>
+        </div>
+        <div class="m-exercise-row" style="border:none;opacity:0.5">
+          <div style="flex:1">
+            <div class="m-exercise-name">Peck Deck</div>
+            <div class="m-exercise-meta">Peito · Máquina</div>
+          </div>
+          <span class="m-add-btn">+ ADICIONAR</span>
+        </div>
+      </div>
+    </div>
+    <div class="mockup-label">Catálogo — busca + filtros por grupo muscular</div>
+
+    <div class="card" data-c="catalog-seed-data" style="margin-top:20px">
+      <h3>Dados iniciais do catálogo</h3>
+      <p>O catálogo será populado a partir de uma curadoria de ~200 exercícios comuns em academias brasileiras, organizada por:</p>
+      <ul style="margin-top:8px">
+        <li><strong>Grupo muscular primário</strong> — alinhado com as 12 categorias existentes</li>
+        <li><strong>Equipamento</strong> — Barra, Halter, Máquina, Cabo, Peso Corporal, etc.</li>
+        <li><strong>Nome em pt-BR</strong> — com variantes e apelidos comuns para fuzzy match</li>
+      </ul>
+      <p style="margin-top:8px;font-size:12px;color:var(--text-dim)">Fonte potencial: adaptação do free-exercise-db (800+ exercícios, domínio público) traduzido para pt-BR, ou curadoria manual dos mais comuns.</p>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 7. User Stories - Program Replacement -->
+  <section>
+    <div class="section-label" data-c="sec-replace">Substituição de Programa</div>
+    <h2 data-c="title-replace">Trocar programa completo <span class="badge badge-p0">P0</span></h2>
+
+    <div class="story" data-c="story-replace-all">
+      <div class="story-badges">
+        <span class="story-id">US-07</span>
+        <span class="badge badge-p0">P0</span>
+      </div>
+      <div class="role">Como praticante de musculação</div>
+      <p>Quero substituir todo o meu programa atual de uma vez ao importar um novo, para não precisar deletar planos um a um.</p>
+      <div class="criteria">
+        <strong>Dado</strong> que estou na tela de confirmação da importação<br>
+        <strong>Quando</strong> confirmo com a opção "Substituir programa"<br>
+        <strong>Então</strong> os planos antigos são arquivados (não deletados permanentemente), os novos planos são criados, e as labels (A, B, C...) são reiniciadas
+      </div>
+    </div>
+
+    <div class="story" data-c="story-add-existing">
+      <div class="story-badges">
+        <span class="story-id">US-08</span>
+        <span class="badge badge-p1">P1</span>
+      </div>
+      <div class="role">Como praticante de musculação</div>
+      <p>Quero a opção de manter o programa anterior ao importar um novo, caso queira mesclar os dois.</p>
+      <div class="criteria">
+        <strong>Dado</strong> que estou na tela de confirmação da importação<br>
+        <strong>Quando</strong> escolho "Adicionar ao existente"<br>
+        <strong>Então</strong> os novos planos são adicionados após os existentes, com labels continuando a sequência (ex: D, E, F)
+      </div>
+    </div>
+
+    <div class="story" data-c="story-preserve-weights">
+      <div class="story-badges">
+        <span class="story-id">US-09</span>
+        <span class="badge badge-p0">P0</span>
+      </div>
+      <div class="role">Como praticante de musculação</div>
+      <p>Quero que meu histórico de pesos seja preservado ao trocar de programa, para não perder o progresso.</p>
+      <div class="criteria">
+        <strong>Dado</strong> que estou substituindo o programa<br>
+        <strong>Quando</strong> um exercício do novo programa tem o mesmo nome de um exercício anterior<br>
+        <strong>Então</strong> o último peso utilizado é mantido e exibido como referência no próximo treino
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 8. Data Model -->
+  <section>
+    <div class="section-label" data-c="sec-model">Modelo de Dados</div>
+    <h2 data-c="title-model">Novas Entidades</h2>
+
+    <div class="card" data-c="model-catalog">
+      <h3>CatalogExercise <span class="badge badge-accent">novo</span></h3>
+      <table>
+        <tr><th>Campo</th><th>Tipo</th><th>Descrição</th></tr>
+        <tr data-c="model-catalog-id"><td><code>id</code></td><td>string</td><td>Identificador único no catálogo</td></tr>
+        <tr data-c="model-catalog-name"><td><code>name</code></td><td>string</td><td>Nome principal (pt-BR)</td></tr>
+        <tr data-c="model-catalog-aliases"><td><code>aliases</code></td><td>string[]</td><td>Nomes alternativos para fuzzy match</td></tr>
+        <tr data-c="model-catalog-category"><td><code>category</code></td><td>string</td><td>Grupo muscular primário (pipe-separated)</td></tr>
+        <tr data-c="model-catalog-equipment"><td><code>equipment</code></td><td>string</td><td>Equipamento principal</td></tr>
+        <tr data-c="model-catalog-source"><td><code>source</code></td><td>'builtin' | 'custom'</td><td>Pré-carregado ou criado pelo usuário</td></tr>
+      </table>
+    </div>
+
+    <div class="card" data-c="model-import-result">
+      <h3>ImportResult <span class="badge badge-accent">intermediário</span></h3>
+      <table>
+        <tr><th>Campo</th><th>Tipo</th><th>Descrição</th></tr>
+        <tr data-c="model-import-plans"><td><code>plans</code></td><td>ImportedPlan[]</td><td>Planos extraídos pela IA</td></tr>
+        <tr data-c="model-import-confidence"><td><code>confidence</code></td><td>number</td><td>Confiança geral da extração (0-1)</td></tr>
+        <tr data-c="model-import-warnings"><td><code>warnings</code></td><td>string[]</td><td>Avisos sobre dados ambíguos</td></tr>
+      </table>
+    </div>
+
+    <div class="card" data-c="model-imported-exercise">
+      <h3>ImportedExercise <span class="badge badge-accent">dentro de ImportedPlan</span></h3>
+      <table>
+        <tr><th>Campo</th><th>Tipo</th><th>Descrição</th></tr>
+        <tr data-c="model-ex-name"><td><code>name</code></td><td>string</td><td>Nome extraído pela IA</td></tr>
+        <tr data-c="model-ex-sets"><td><code>sets</code></td><td>number</td><td>Número de séries</td></tr>
+        <tr data-c="model-ex-reps"><td><code>reps</code></td><td>string</td><td>Faixa de repetições (ex: "10-12")</td></tr>
+        <tr data-c="model-ex-rest"><td><code>restSeconds</code></td><td>number</td><td>Tempo de descanso em segundos</td></tr>
+        <tr data-c="model-ex-match"><td><code>catalogMatchId</code></td><td>string | null</td><td>ID do exercício correspondente no catálogo</td></tr>
+        <tr data-c="model-ex-confidence"><td><code>matchConfidence</code></td><td>number</td><td>Confiança do match (0-1)</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 9. Implementation Plan -->
+  <section>
+    <div class="section-label" data-c="sec-impl">Implementação</div>
+    <h2 data-c="title-impl">Fases</h2>
+
+    <div class="card" data-c="phase-1" style="border-left:3px solid var(--accent)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <h3 style="margin:0">Fase 1 — Catálogo de Exercícios</h3>
+        <span class="badge badge-p0">P0</span>
+      </div>
+      <ul>
+        <li><strong>Tipo CatalogExercise</strong> e exerciseCatalogStore (Zustand + MMKV)</li>
+        <li><strong>Seed data</strong>: JSON com ~200 exercícios em pt-BR (curadoria dos mais comuns)</li>
+        <li><strong>Tela de catálogo</strong>: busca por nome + filtro por grupo muscular</li>
+        <li><strong>Integração com formulário</strong>: "Buscar no Catálogo" como alternativa ao cadastro manual</li>
+        <li><strong>Autocomplete</strong>: sugestões fuzzy no campo de nome do exercício</li>
+      </ul>
+    </div>
+
+    <div class="card" data-c="phase-2" style="border-left:3px solid var(--p1)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <h3 style="margin:0">Fase 2 — Scan Inteligente com IA</h3>
+        <span class="badge badge-p0">P0</span>
+      </div>
+      <ul>
+        <li><strong>Edge function</strong>: proxy autenticado para Claude Vision API (Supabase Functions ou similar)</li>
+        <li><strong>Prompt engineering</strong>: prompt otimizado para extrair planos + exercícios de imagens de treino</li>
+        <li><strong>Tela de captura</strong>: câmera + seleção de galeria (reuso do expo-image-picker)</li>
+        <li><strong>Tela de processamento</strong>: feedback visual durante análise</li>
+        <li><strong>Matching automático</strong>: fuzzy match dos exercícios extraídos contra o catálogo</li>
+      </ul>
+    </div>
+
+    <div class="card" data-c="phase-3" style="border-left:3px solid var(--p1)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <h3 style="margin:0">Fase 3 — Revisão e Importação</h3>
+        <span class="badge badge-p0">P0</span>
+      </div>
+      <ul>
+        <li><strong>Tela de revisão</strong>: visualização completa do programa extraído com indicadores de match</li>
+        <li><strong>Edição inline</strong>: corrigir nomes, categorias, séries, reps, descanso antes de importar</li>
+        <li><strong>Ação de substituição</strong>: substituir programa completo ou adicionar ao existente</li>
+        <li><strong>Arquivamento</strong>: planos antigos arquivados (não deletados), preservando histórico</li>
+        <li><strong>Migração de pesos</strong>: manter lastWeights para exercícios com mesmo nome</li>
+      </ul>
+    </div>
+
+    <div class="card" data-c="phase-4" style="border-left:3px solid var(--p2)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <h3 style="margin:0">Fase 4 — Refinamento</h3>
+        <span class="badge badge-p1">P1</span>
+      </div>
+      <ul>
+        <li><strong>Feedback de erro</strong>: tratamento de falhas na extração (imagem ruim, formato inesperado)</li>
+        <li><strong>Exercícios personalizados</strong>: salvar exercícios criados pelo usuário no catálogo</li>
+        <li><strong>Melhorias de UX</strong>: animações de transição, estados de loading, acessibilidade</li>
+        <li><strong>Testes E2E</strong>: fluxo completo com mocks da API de visão</li>
+      </ul>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 10. Risks -->
+  <section>
+    <div class="section-label" data-c="sec-risks">Riscos e Mitigação</div>
+    <h2 data-c="title-risks">O que pode dar errado</h2>
+
+    <table data-c="risk-table">
+      <tr><th>Risco</th><th>Severidade</th><th>Mitigação</th></tr>
+      <tr data-c="risk-image-quality">
+        <td>Qualidade da imagem/PDF — fotos com má iluminação ou texto cortado reduzem precisão</td>
+        <td class="risk-high">Alta</td>
+        <td>Guias visuais na câmera, suporte a múltiplas fotos, fallback para catálogo manual</td>
+      </tr>
+      <tr data-c="risk-format-variety">
+        <td>Variação de formato entre treinadores — cada um tem um layout diferente</td>
+        <td class="risk-med">Média</td>
+        <td>Prompt engineering robusto com exemplos diversos. Tela de revisão garante validação antes de importar</td>
+      </tr>
+      <tr data-c="risk-api-cost">
+        <td>Custo da API de visão — cada chamada tem custo, pode escalar com múltiplas tentativas</td>
+        <td class="risk-low">Baixa</td>
+        <td>Resize da imagem para ~1568px, cache por hash. Uso pessoal: ~1 importação/mês, custo marginal</td>
+      </tr>
+      <tr data-c="risk-catalog-ptbr">
+        <td>Qualidade do catálogo em pt-BR — bases open-source são majoritariamente em inglês</td>
+        <td class="risk-med">Média</td>
+        <td>Curadoria manual dos ~200 exercícios mais comuns em academias brasileiras com nomes validados</td>
+      </tr>
+      <tr data-c="risk-backend">
+        <td>Necessidade de backend — API key não pode ficar no app por segurança</td>
+        <td class="risk-med">Média</td>
+        <td>Edge function leve (Supabase Functions ou Cloudflare Workers) — proxy autenticado sem estado</td>
+      </tr>
+    </table>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 11. Success Metrics -->
+  <section>
+    <div class="section-label" data-c="sec-success">Métricas de Sucesso</div>
+    <h2 data-c="title-success">Como sabemos que funcionou</h2>
+
+    <div class="feature-grid">
+      <div class="card" data-c="success-setup-time">
+        <h3>Tempo de configuração</h3>
+        <p><strong style="color:var(--danger)">Antes:</strong> ~30 min para cadastrar 3 planos com ~18 exercícios</p>
+        <p><strong style="color:var(--accent)">Depois:</strong> &lt;5 min com scan + revisão rápida</p>
+      </div>
+      <div class="card" data-c="success-error-rate">
+        <h3>Taxa de erro de digitação</h3>
+        <p><strong style="color:var(--danger)">Antes:</strong> Erros frequentes em nomes, categorias incorretas</p>
+        <p><strong style="color:var(--accent)">Depois:</strong> Nomes padronizados via catálogo, categorias automáticas</p>
+      </div>
+      <div class="card" data-c="success-ai-accuracy">
+        <h3>Precisão da extração por IA</h3>
+        <p><strong>Meta:</strong> &gt;85% dos exercícios extraídos corretamente sem edição manual</p>
+      </div>
+      <div class="card" data-c="success-catalog-match">
+        <h3>Taxa de match no catálogo</h3>
+        <p><strong>Meta:</strong> &gt;70% dos exercícios extraídos têm correspondência automática no catálogo</p>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 12. Out of Scope -->
+  <section>
+    <div class="section-label" data-c="sec-oos">Fora do Escopo</div>
+    <h2 data-c="title-oos">O que NÃO está incluído</h2>
+
+    <div class="card" data-c="oos-items">
+      <ul>
+        <li><strong>OCR on-device</strong> — extração feita na nuvem via Claude Vision, não localmente</li>
+        <li><strong>Importação de texto puro / planilha</strong> — apenas imagem e PDF na v1</li>
+        <li><strong>Sync cloud do catálogo</strong> — catálogo é local, sem sincronização entre dispositivos</li>
+        <li><strong>Vídeos de demonstração de exercícios</strong> — apenas nomes e metadados no catálogo</li>
+        <li><strong>Suporte a múltiplos idiomas no catálogo</strong> — apenas pt-BR na v1</li>
+        <li><strong>Importação parcial</strong> — importa o programa completo, sem selecionar planos individuais</li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<!-- Commenting System JS -->
+<script>
+const STORAGE_KEY = 'prd-comments-smart_training_import-v1';
+let reviewMode = false;
+let activeTarget = null;
+let comments = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+
+function toggleReviewMode() {
+  reviewMode = !reviewMode;
+  const btn = document.getElementById('reviewToggle');
+  const exportBtn = document.getElementById('exportBtn');
+  const panel = document.getElementById('commentPanel');
+
+  if (reviewMode) {
+    btn.textContent = 'Exit Review';
+    btn.classList.add('active');
+    exportBtn.style.display = 'inline-block';
+    panel.classList.add('open');
+    document.querySelectorAll('[data-c]').forEach(el => {
+      el.classList.add('commentable');
+      el.addEventListener('click', onElementClick);
+    });
+  } else {
+    btn.textContent = 'Review Mode';
+    btn.classList.remove('active');
+    exportBtn.style.display = 'none';
+    panel.classList.remove('open');
+    document.querySelectorAll('[data-c]').forEach(el => {
+      el.classList.remove('commentable');
+      el.removeEventListener('click', onElementClick);
+    });
+  }
+  updateCommentHighlights();
+}
+
+function onElementClick(e) {
+  e.stopPropagation();
+  const target = e.currentTarget.getAttribute('data-c');
+  activeTarget = target;
+  document.getElementById('commentTarget').textContent = '#' + target;
+  document.getElementById('commentForm').style.display = 'block';
+  document.getElementById('commentInput').value = '';
+  document.getElementById('commentInput').focus();
+  renderComments();
+}
+
+function submitComment() {
+  const input = document.getElementById('commentInput');
+  const text = input.value.trim();
+  if (!text || !activeTarget) return;
+
+  comments.push({
+    id: Date.now(),
+    target: activeTarget,
+    text: text,
+    timestamp: new Date().toISOString()
+  });
+
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(comments));
+  input.value = '';
+  renderComments();
+  updateCommentHighlights();
+}
+
+function deleteComment(id) {
+  comments = comments.filter(c => c.id !== id);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(comments));
+  renderComments();
+  updateCommentHighlights();
+}
+
+function renderComments() {
+  const list = document.getElementById('commentList');
+  const countEl = document.getElementById('commentCount');
+
+  if (comments.length === 0) {
+    list.innerHTML = '<div class="no-comments">Nenhum comentário ainda. Clique em elementos destacados para comentar.</div>';
+    countEl.style.display = 'none';
+    return;
+  }
+
+  countEl.style.display = 'inline';
+  countEl.textContent = comments.length;
+
+  const filtered = activeTarget
+    ? [
+        ...comments.filter(c => c.target === activeTarget),
+        ...comments.filter(c => c.target !== activeTarget)
+      ]
+    : comments;
+
+  list.innerHTML = filtered.map(c => `
+    <div class="comment-item" ${c.target === activeTarget ? 'style="border-left:2px solid var(--accent)"' : ''}>
+      <div class="comment-item-header">
+        <span class="comment-item-section">#${c.target}</span>
+        <span class="comment-item-time">${new Date(c.timestamp).toLocaleString('pt-BR')}</span>
+      </div>
+      <div class="comment-item-text">${c.text}</div>
+      <button class="comment-item-delete" onclick="deleteComment(${c.id})">Remover</button>
+    </div>
+  `).join('');
+}
+
+function updateCommentHighlights() {
+  const targets = new Set(comments.map(c => c.target));
+  document.querySelectorAll('[data-c]').forEach(el => {
+    if (targets.has(el.getAttribute('data-c'))) {
+      el.classList.add('has-comment');
+    } else {
+      el.classList.remove('has-comment');
+    }
+  });
+}
+
+function closePanel() {
+  document.getElementById('commentPanel').classList.remove('open');
+  activeTarget = null;
+  document.getElementById('commentForm').style.display = 'none';
+}
+
+function exportComments() {
+  if (comments.length === 0) {
+    alert('Nenhum comentário para exportar.');
+    return;
+  }
+
+  let output = '# PRD Review Comments\n\n';
+  comments.forEach((c, i) => {
+    output += `## #${i + 1} — ${c.target}\n`;
+    output += `${c.text}\n\n`;
+  });
+
+  navigator.clipboard.writeText(output).then(() => {
+    alert('Comentários copiados para o clipboard! Cole de volta no Claude para revisões.');
+  }).catch(() => {
+    const textarea = document.createElement('textarea');
+    textarea.value = output;
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textarea);
+    alert('Comentários copiados para o clipboard!');
+  });
+}
+
+// Init
+updateCommentHighlights();
+
+document.getElementById('commentInput')?.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    submitComment();
+  }
+});
+</script>
+
+</body>
+</html>

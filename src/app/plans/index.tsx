@@ -2,7 +2,10 @@ import { useMemo } from 'react'
 import { View, Text, Pressable, LayoutAnimation } from 'react-native'
 import { useRouter } from 'expo-router'
 import Svg, { Path } from 'react-native-svg'
-import DraggableFlatList, { ScaleDecorator, type RenderItemParams } from 'react-native-draggable-flatlist'
+import DraggableFlatList, {
+  ScaleDecorator,
+  type RenderItemParams,
+} from 'react-native-draggable-flatlist'
 
 import { usePlanStore } from '@/stores/planStore'
 import { useHaptics } from '@/hooks/useHaptics'
@@ -40,7 +43,11 @@ export default function PlansScreen(): React.JSX.Element {
     reorderPlans(data.map((p) => p.id))
   }
 
-  const renderItem = ({ item: plan, drag, isActive }: RenderItemParams<Plan>): React.JSX.Element => (
+  const renderItem = ({
+    item: plan,
+    drag,
+    isActive,
+  }: RenderItemParams<Plan>): React.JSX.Element => (
     <ScaleDecorator>
       <View className="px-6 pb-3">
         <PlanCard

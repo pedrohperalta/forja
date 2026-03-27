@@ -1,0 +1,1230 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PRD — Registro Retroativo de Treino | Forja</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --stone-50: #fafaf9;
+    --stone-100: #f5f5f4;
+    --stone-200: #e7e5e4;
+    --stone-300: #d6d3d1;
+    --stone-400: #a8a29e;
+    --stone-500: #78716c;
+    --stone-600: #57534e;
+    --stone-700: #44403c;
+    --stone-800: #292524;
+    --stone-900: #1c1917;
+    --accent: #C2F000;
+    --accent-dim: rgba(194, 240, 0, 0.12);
+    --danger: #ef4444;
+    --warning: #f59e0b;
+    --p0: #ef4444;
+    --p1: #f59e0b;
+    --p2: #3b82f6;
+    --bg: #0e0e0e;
+    --surface: #1a1a1a;
+    --surface-2: #252525;
+    --border: #2a2a2a;
+    --text: #f5f5f4;
+    --text-med: #a8a29e;
+    --text-dim: #57534e;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    padding: 0;
+  }
+
+  /* Header */
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 32px 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-inner {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .header h1 {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--accent);
+    letter-spacing: -0.5px;
+  }
+  .header .meta {
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+  .review-toggle {
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    padding: 8px 20px;
+    border-radius: 100px;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .review-toggle:hover { opacity: 0.85; }
+  .review-toggle.active {
+    background: var(--danger);
+    color: white;
+  }
+
+  /* Main content */
+  .content {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 32px 120px;
+  }
+
+  /* Sections */
+  section {
+    margin-bottom: 48px;
+  }
+  .section-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+  h2 {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: var(--text);
+  }
+  h3 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: var(--text);
+  }
+  p, li {
+    font-size: 14px;
+    color: var(--text-med);
+    line-height: 1.7;
+  }
+  ul, ol {
+    padding-left: 20px;
+    margin-bottom: 16px;
+  }
+  li { margin-bottom: 6px; }
+
+  /* Cards */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 16px;
+  }
+  .card h3 { margin-bottom: 8px; }
+
+  /* Priority badges */
+  .badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  .badge-p0 { background: rgba(239,68,68,0.15); color: var(--p0); }
+  .badge-p1 { background: rgba(245,158,11,0.15); color: var(--p1); }
+  .badge-p2 { background: rgba(59,130,246,0.15); color: var(--p2); }
+  .badge-accent { background: var(--accent-dim); color: var(--accent); }
+
+  /* Feature grid */
+  .feature-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  @media (max-width: 640px) {
+    .feature-grid { grid-template-columns: 1fr; }
+  }
+
+  /* User story */
+  .story {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 12px 12px 0;
+    padding: 20px 24px;
+    margin-bottom: 12px;
+  }
+  .story .role {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+  .story p { color: var(--text); font-size: 14px; }
+
+  /* Acceptance criteria */
+  .criteria {
+    background: var(--surface-2);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 8px;
+    font-size: 13px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    color: var(--text-med);
+  }
+  .criteria strong { color: var(--accent); font-weight: 600; }
+
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 16px;
+    font-size: 13px;
+  }
+  th {
+    text-align: left;
+    padding: 10px 14px;
+    background: var(--surface-2);
+    color: var(--text-dim);
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-med);
+  }
+
+  /* Mockup frame */
+  .mockup-frame {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    margin: 24px 0;
+    max-width: 375px;
+  }
+  .mockup-status-bar {
+    background: var(--bg);
+    padding: 8px 24px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .mockup-content {
+    padding: 0 24px 32px;
+  }
+  .mockup-label {
+    font-size: 11px;
+    color: var(--text-dim);
+    text-align: center;
+    margin-top: 8px;
+    font-style: italic;
+  }
+
+  /* Mockup internal elements */
+  .m-hero { font-size: 28px; font-weight: 800; color: var(--text); margin: 16px 0 4px; font-family: 'Inter'; letter-spacing: -1px; }
+  .m-sub { font-size: 12px; color: var(--text-dim); margin-bottom: 20px; }
+  .m-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 10px;
+  }
+  .m-card-title { font-size: 14px; font-weight: 700; color: var(--text); }
+  .m-card-sub { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+  .m-card-meta { font-size: 10px; color: var(--text-dim); margin-top: 8px; display: flex; gap: 8px; }
+  .m-chip {
+    display: inline-block;
+    padding: 2px 8px;
+    background: var(--surface-2);
+    border-radius: 100px;
+    font-size: 10px;
+    color: var(--text-med);
+  }
+  .m-btn {
+    display: block;
+    text-align: center;
+    padding: 14px;
+    border-radius: 100px;
+    font-weight: 700;
+    font-size: 13px;
+    margin-top: 16px;
+  }
+  .m-btn-primary { background: var(--accent); color: var(--bg); }
+  .m-btn-secondary { background: transparent; border: 1px solid var(--border); color: var(--text-med); }
+  .m-btn-disabled { background: var(--surface-2); color: var(--text-dim); }
+  .m-input {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 13px;
+    color: var(--text);
+    width: 100%;
+    margin-bottom: 10px;
+  }
+  .m-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-dim); margin-bottom: 6px; }
+  .m-row { display: flex; gap: 8px; }
+  .m-row > * { flex: 1; }
+  .m-back { font-size: 12px; color: var(--text-med); margin-bottom: 12px; cursor: pointer; }
+  .m-section-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: var(--accent); margin: 16px 0 8px; }
+  .m-exercise-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .m-exercise-name { font-size: 13px; color: var(--text); font-weight: 500; }
+  .m-exercise-meta { font-size: 11px; color: var(--text-dim); }
+  .m-weight-input {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 10px;
+    color: var(--accent);
+    font-weight: 700;
+    text-align: center;
+    width: 64px;
+    font-size: 14px;
+  }
+  .m-date-chips {
+    display: flex;
+    gap: 8px;
+    overflow-x: hidden;
+    margin-bottom: 4px;
+  }
+  .m-date-chip {
+    background: var(--surface-2);
+    border-radius: 100px;
+    padding: 8px 12px;
+    text-align: center;
+    min-width: 48px;
+    border: 1px solid var(--border);
+    font-size: 10px;
+    color: var(--text-med);
+  }
+  .m-date-chip.selected {
+    background: var(--accent);
+    color: var(--bg);
+    border-color: var(--accent);
+  }
+  .m-date-chip .day-name { font-size: 9px; text-transform: uppercase; opacity: 0.6; }
+  .m-date-chip .day-num { font-size: 16px; font-weight: 700; }
+  .m-date-chip.selected .day-name { opacity: 1; }
+  .m-empty { text-align: center; color: var(--text-dim); font-size: 13px; padding: 32px 0; }
+
+  /* Flow diagram */
+  .flow {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin: 16px 0;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .flow-step {
+    background: var(--accent-dim);
+    color: var(--accent);
+    padding: 10px 18px;
+    border-radius: 100px;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .flow-arrow {
+    color: var(--text-dim);
+    font-size: 18px;
+    padding: 0 8px;
+  }
+
+  /* Anti-req list */
+  .anti-list { list-style: none; padding: 0; }
+  .anti-list li {
+    padding: 10px 16px;
+    background: rgba(239,68,68,0.08);
+    border-radius: 8px;
+    margin-bottom: 8px;
+    font-size: 13px;
+    color: var(--danger);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .anti-list li::before { content: '\2718'; font-weight: 700; }
+
+  /* Divider */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 48px 0;
+  }
+
+  /* Risk table */
+  .risk-high { color: var(--danger); font-weight: 600; }
+  .risk-med { color: var(--warning); font-weight: 600; }
+  .risk-low { color: var(--p2); font-weight: 600; }
+
+  /* Commentable highlight */
+  [data-c].commentable {
+    cursor: pointer;
+    position: relative;
+    transition: outline 0.15s, background 0.15s;
+    outline: 2px solid transparent;
+    border-radius: 4px;
+  }
+  [data-c].commentable:hover {
+    outline: 2px solid var(--accent);
+    background: rgba(194, 240, 0, 0.04);
+  }
+  [data-c].commentable.has-comment {
+    outline: 2px solid var(--warning);
+    background: rgba(245, 158, 11, 0.06);
+  }
+
+  /* Comment panel */
+  .comment-panel {
+    display: none;
+    position: fixed;
+    right: 0;
+    top: 0;
+    width: 360px;
+    height: 100vh;
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    z-index: 200;
+    flex-direction: column;
+  }
+  .comment-panel.open { display: flex; }
+  .comment-panel-header {
+    padding: 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .comment-panel-header h3 {
+    font-size: 14px;
+    font-weight: 700;
+    margin: 0;
+  }
+  .comment-panel-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+  }
+  .comment-panel-footer {
+    padding: 16px 20px;
+    border-top: 1px solid var(--border);
+  }
+  .comment-input {
+    width: 100%;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 13px;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    resize: vertical;
+    min-height: 60px;
+  }
+  .comment-input:focus { outline: none; border-color: var(--accent); }
+  .comment-submit {
+    margin-top: 8px;
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    padding: 8px 16px;
+    border-radius: 100px;
+    font-weight: 700;
+    font-size: 12px;
+    cursor: pointer;
+    width: 100%;
+  }
+  .comment-item {
+    background: var(--surface-2);
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 8px;
+  }
+  .comment-item-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 6px;
+  }
+  .comment-item-section {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+  .comment-item-time {
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+  .comment-item-text {
+    font-size: 13px;
+    color: var(--text-med);
+  }
+  .comment-item-delete {
+    font-size: 11px;
+    color: var(--danger);
+    cursor: pointer;
+    margin-top: 6px;
+    background: none;
+    border: none;
+    padding: 0;
+  }
+  .comment-count {
+    background: var(--warning);
+    color: var(--bg);
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 100px;
+    margin-left: 6px;
+  }
+  .export-btn {
+    background: var(--surface-2);
+    color: var(--text-med);
+    border: 1px solid var(--border);
+    padding: 6px 14px;
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .export-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .close-btn {
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    font-size: 20px;
+    cursor: pointer;
+  }
+  .no-comments {
+    text-align: center;
+    color: var(--text-dim);
+    font-size: 13px;
+    padding: 40px 0;
+  }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-inner">
+    <div>
+      <h1>FORJA — Registro Retroativo</h1>
+      <div class="meta">PRD v1 &middot; 27 Mar 2026 &middot; Feature</div>
+    </div>
+    <div style="display: flex; gap: 8px; align-items: center;">
+      <button class="export-btn" id="exportBtn" style="display:none;" onclick="exportComments()">Exportar Comentarios</button>
+      <button class="review-toggle" id="reviewToggle" onclick="toggleReviewMode()">Review Mode</button>
+    </div>
+  </div>
+</div>
+
+<!-- Comment Panel -->
+<div class="comment-panel" id="commentPanel">
+  <div class="comment-panel-header">
+    <h3>Comentarios <span class="comment-count" id="commentCount" style="display:none">0</span></h3>
+    <button class="close-btn" onclick="closePanel()">&times;</button>
+  </div>
+  <div class="comment-panel-body" id="commentList">
+    <div class="no-comments" id="noComments">Nenhum comentario ainda. Clique em elementos destacados para comentar.</div>
+  </div>
+  <div class="comment-panel-footer" id="commentForm" style="display:none">
+    <div style="font-size:11px;color:var(--accent);font-weight:700;margin-bottom:6px" id="commentTarget"></div>
+    <textarea class="comment-input" id="commentInput" placeholder="Deixe seu comentario..."></textarea>
+    <button class="comment-submit" onclick="submitComment()">Adicionar Comentario</button>
+  </div>
+</div>
+
+<!-- Content -->
+<div class="content">
+
+  <!-- 1. Overview -->
+  <section>
+    <div class="section-label" data-c="sec-overview">Visao Geral</div>
+    <h2 data-c="title-overview">Registro Retroativo de Treino</h2>
+    <p data-c="desc-overview">Permitir que o usuario registre treinos realizados no passado de forma rapida, sem precisar passar pelo fluxo de treino em tempo real. O Forja permite que usuarios registrem treinos de academia em tempo real, acompanhando series, pesos e descanso. Porem, nem sempre o usuario consegue abrir o app durante o treino. Este documento especifica uma funcionalidade para registro simplificado de treinos passados, mantendo o historico completo e a progressao de cargas precisa.</p>
+  </section>
+
+  <!-- 2. Problem -->
+  <section>
+    <div class="section-label" data-c="sec-problem">Problema & Oportunidade</div>
+    <h2 data-c="title-problem">Por que isso importa</h2>
+    <div class="card" data-c="problem-1">
+      <h3>Historico incompleto</h3>
+      <p>Quando o usuario esquece de abrir o app durante o treino, o historico fica com lacunas. Isso prejudica a visualizacao da evolucao e a confiabilidade dos dados de progressao.</p>
+    </div>
+    <div class="card" data-c="problem-2">
+      <h3>Cargas desatualizadas</h3>
+      <p>Sem o registro, as "ultimas cargas" ficam desatualizadas, fazendo o app sugerir pesos incorretos no proximo treino real.</p>
+    </div>
+    <div class="card" data-c="problem-3">
+      <h3>Atrito do fluxo atual</h3>
+      <p>O fluxo de treino em tempo real (serie por serie, com timer de descanso) e inapropriado para um registro rapido retroativo. O usuario quer apenas informar "fiz este plano neste dia com estes pesos".</p>
+    </div>
+
+    <h3 data-c="opportunity" style="margin-top:20px">Oportunidade</h3>
+    <p data-c="opportunity-desc">Ao permitir o registro retroativo, o Forja se torna a fonte unica e confiavel do historico de treinos do usuario. Isso aumenta o engajamento (menos frustracao com lacunas), melhora a precisao das sugestoes de carga e fortalece a retencao &mdash; o usuario passa a confiar no app como seu diario completo de treinos.</p>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 3. Target Audience -->
+  <section>
+    <div class="section-label" data-c="sec-audience">Publico-Alvo</div>
+    <h2 data-c="title-audience">Para quem e essa feature</h2>
+    <p data-c="audience-desc">Usuarios ativos do Forja que treinam regularmente e ocasionalmente esquecem de registrar o treino no app. Tipicamente lembram dos pesos utilizados e querem registrar dentro de uma semana.</p>
+
+    <div class="feature-grid" style="margin-top:16px">
+      <div class="card" data-c="audience-primary">
+        <h3>Perfil Primario</h3>
+        <p>Praticante de musculacao que treina 3-5x por semana. Usa o Forja como principal ferramenta de acompanhamento, mas eventualmente treina sem o celular ou esquece de abrir o app.</p>
+      </div>
+      <div class="card" data-c="audience-motivation">
+        <h3>Motivacao</h3>
+        <p>Manter o historico completo para acompanhar a evolucao de cargas e ter um registro confiavel de frequencia de treinos.</p>
+      </div>
+    </div>
+
+    <h3 data-c="assumptions-title" style="margin-top:20px">Premissas</h3>
+    <p>Assumimos que o usuario:</p>
+    <ul>
+      <li data-c="assumption-1">Lembra dos pesos utilizados (pelo menos aproximadamente)</li>
+      <li data-c="assumption-2">Registra o treino em ate 7 dias apos a realizacao</li>
+      <li data-c="assumption-3">Ja possui planos de treino criados no app</li>
+    </ul>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 4. User Flow -->
+  <section>
+    <div class="section-label" data-c="sec-flow">Fluxo do Usuario</div>
+    <h2 data-c="title-flow">Jornada simplificada</h2>
+    <p data-c="flow-desc">O usuario acessa a funcionalidade a partir da tela de historico ou da tela inicial, preenche as informacoes em uma unica tela e salva.</p>
+
+    <div class="flow" data-c="flow-diagram">
+      <div class="flow-step">Home ou Historico</div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-step">Selecionar Plano</div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-step">Escolher Data</div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-step">Informar Pesos</div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-step">Confirmar</div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-step">Historico Atualizado</div>
+    </div>
+
+    <p data-c="flow-detail" style="margin-top:12px">Todo o fluxo ocorre em uma unica tela rolavel. O usuario nao precisa navegar entre multiplas telas, reduzindo o atrito ao minimo.</p>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 5. User Stories -->
+  <section>
+    <div class="section-label" data-c="sec-stories">Historias de Usuario</div>
+    <h2 data-c="title-stories">O que o usuario precisa fazer</h2>
+
+    <!-- Story 1: Plan Selection -->
+    <div class="story" data-c="story-1">
+      <div class="role">P0 &mdash; Selecao de Plano</div>
+      <p>Como praticante de musculacao, quero selecionar qual plano de treino realizei, para que o registro retroativo use os exercicios corretos.</p>
+    </div>
+    <div class="criteria" data-c="ac-story-1">
+      <strong>Given</strong> que o usuario abriu a tela de registro retroativo<br>
+      <strong>When</strong> ele visualiza a lista de planos<br>
+      <strong>Then</strong> deve ver todos os planos ativos (nao arquivados) com nome, foco e numero de exercicios<br>
+      <strong>And</strong> ao tocar em um plano, ele e selecionado e os exercicios sao exibidos
+    </div>
+
+    <!-- Story 2: Date Selection -->
+    <div class="story" data-c="story-2" style="margin-top:20px">
+      <div class="role">P0 &mdash; Selecao de Data</div>
+      <p>Como praticante de musculacao, quero escolher a data em que realizei o treino, para que o historico registre o dia correto.</p>
+    </div>
+    <div class="criteria" data-c="ac-story-2">
+      <strong>Given</strong> que o usuario selecionou um plano<br>
+      <strong>When</strong> ele visualiza o seletor de data<br>
+      <strong>Then</strong> deve ver os ultimos 30 dias como chips horizontais rolaveis<br>
+      <strong>And</strong> o dia de ontem deve estar pre-selecionado<br>
+      <strong>And</strong> o dia de hoje deve estar desabilitado (treino de hoje usa o fluxo normal)
+    </div>
+
+    <!-- Story 3: Weight Registration -->
+    <div class="story" data-c="story-3" style="margin-top:20px">
+      <div class="role">P0 &mdash; Registro de Pesos</div>
+      <p>Como praticante de musculacao, quero informar os pesos usados em cada exercicio, para que minhas cargas fiquem atualizadas no historico.</p>
+    </div>
+    <div class="criteria" data-c="ac-story-3">
+      <strong>Given</strong> que o usuario selecionou um plano<br>
+      <strong>When</strong> ele visualiza a lista de exercicios<br>
+      <strong>Then</strong> deve ver cada exercicio do plano com campo de peso pre-preenchido com a ultima carga registrada<br>
+      <strong>And</strong> deve poder ajustar o numero de series (padrao: series prescritas pelo plano)<br>
+      <strong>And</strong> exercicios com peso 0 serao ignorados no registro (considerados como nao realizados)
+    </div>
+
+    <!-- Story 4: Optional Duration -->
+    <div class="story" data-c="story-4" style="margin-top:20px">
+      <div class="role">P1 &mdash; Duracao Opcional</div>
+      <p>Como praticante de musculacao, quero opcionalmente informar a duracao do treino, para manter o registro mais completo.</p>
+    </div>
+    <div class="criteria" data-c="ac-story-4">
+      <strong>Given</strong> que o usuario esta registrando um treino retroativo<br>
+      <strong>When</strong> ele visualiza o campo de duracao<br>
+      <strong>Then</strong> o campo deve ser opcional, com placeholder "min"<br>
+      <strong>And</strong> se nao preenchido, a duracao sera registrada como 0
+    </div>
+
+    <!-- Story 5: Entry Points -->
+    <div class="story" data-c="story-5" style="margin-top:20px">
+      <div class="role">P0 &mdash; Pontos de Entrada</div>
+      <p>Como praticante de musculacao, quero acessar o registro retroativo de forma facil a partir da home ou do historico.</p>
+    </div>
+    <div class="criteria" data-c="ac-story-5">
+      <strong>Given</strong> que o usuario quer registrar um treino passado<br>
+      <strong>When</strong> ele esta na tela de historico<br>
+      <strong>Then</strong> deve haver um botao "+" visivel no cabecalho que leva a tela de registro<br>
+      <strong>And</strong> na tela inicial (home), deve haver um link discreto "Registrar treino passado" abaixo dos cards de plano
+    </div>
+
+    <!-- Story 6: Smart Pre-fill -->
+    <div class="story" data-c="story-6" style="margin-top:20px">
+      <div class="role">P0 &mdash; Pre-Preenchimento Inteligente</div>
+      <p>Como praticante de musculacao, quero que os campos de peso venham pre-preenchidos com a ultima carga, para nao precisar digitar tudo do zero.</p>
+    </div>
+    <div class="criteria" data-c="ac-story-6">
+      <strong>Given</strong> que o usuario ja realizou treinos anteriores com o plano selecionado<br>
+      <strong>When</strong> os campos de peso sao exibidos<br>
+      <strong>Then</strong> cada exercicio deve ter o campo de peso pre-preenchido com a ultima carga registrada<br>
+      <strong>And</strong> se nao houver registro anterior, o campo deve iniciar vazio
+    </div>
+
+    <!-- Story 7: Confirmation -->
+    <div class="story" data-c="story-7" style="margin-top:20px">
+      <div class="role">P0 &mdash; Confirmacao e Salvamento</div>
+      <p>Como praticante de musculacao, quero confirmar e salvar o registro, atualizando meu historico e minhas ultimas cargas.</p>
+    </div>
+    <div class="criteria" data-c="ac-story-7">
+      <strong>Given</strong> que o usuario preencheu plano, data e ao menos um peso<br>
+      <strong>When</strong> ele pressiona "REGISTRAR"<br>
+      <strong>Then</strong> o treino deve ser salvo no historico com a data selecionada<br>
+      <strong>And</strong> as ultimas cargas devem ser atualizadas para cada exercicio registrado<br>
+      <strong>And</strong> o usuario deve receber feedback haptico de sucesso<br>
+      <strong>And</strong> deve ser redirecionado para a tela de historico
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 6. Mockups -->
+  <section>
+    <div class="section-label" data-c="sec-mockup-plan">Mockup</div>
+    <h2 data-c="title-mockup-plan">Tela &mdash; Selecao de Plano</h2>
+
+    <div class="mockup-frame" data-c="mockup-plan-selection" style="margin-left:auto;margin-right:auto">
+      <div class="mockup-status-bar">
+        <span>9:41</span>
+        <span>&#x29BF; &#x25AE;&#x25AE; &#x27E9;</span>
+      </div>
+      <div class="mockup-content">
+        <div class="m-back">&lsaquo; HISTORICO</div>
+        <div class="m-section-label">REGISTRAR TREINO</div>
+        <div class="m-hero">Registro Retroativo</div>
+        <div class="m-sub">Selecione o plano realizado</div>
+
+        <div class="m-section-label">PLANO</div>
+        <div class="m-card" style="display:flex;align-items:center;gap:12px;border-color:var(--accent)">
+          <div style="width:3px;height:40px;background:var(--accent);border-radius:2px"></div>
+          <div style="flex:1">
+            <div class="m-card-title">Treino A</div>
+            <div class="m-card-sub">Peito / Ombros / Triceps</div>
+            <div class="m-card-meta">
+              <span class="m-chip">7 exercicios</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="m-card" style="display:flex;align-items:center;gap:12px">
+          <div style="width:3px;height:40px;background:var(--accent);border-radius:2px"></div>
+          <div style="flex:1">
+            <div class="m-card-title">Treino B</div>
+            <div class="m-card-sub">Costas / Biceps</div>
+            <div class="m-card-meta">
+              <span class="m-chip">7 exercicios</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="m-card" style="display:flex;align-items:center;gap:12px">
+          <div style="width:3px;height:40px;background:var(--accent);border-radius:2px"></div>
+          <div style="flex:1">
+            <div class="m-card-title">Treino C</div>
+            <div class="m-card-sub">Quadriceps / Posterior / Gluteos</div>
+            <div class="m-card-meta">
+              <span class="m-chip">7 exercicios</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="mockup-label">Selecao de plano &mdash; planos ativos com foco e contagem de exercicios</div>
+  </section>
+
+  <!-- Mockup: Date Selection -->
+  <section>
+    <div class="section-label" data-c="sec-mockup-date">Mockup</div>
+    <h2 data-c="title-mockup-date">Tela &mdash; Selecao de Data</h2>
+
+    <div class="mockup-frame" data-c="mockup-date-selection" style="margin-left:auto;margin-right:auto">
+      <div class="mockup-status-bar">
+        <span>9:41</span>
+        <span>&#x29BF; &#x25AE;&#x25AE; &#x27E9;</span>
+      </div>
+      <div class="mockup-content">
+        <div class="m-section-label">DATA</div>
+        <div class="m-date-chips">
+          <div class="m-date-chip">
+            <div class="day-name">Seg</div>
+            <div class="day-num">24</div>
+          </div>
+          <div class="m-date-chip selected">
+            <div class="day-name">Ter</div>
+            <div class="day-num">25</div>
+          </div>
+          <div class="m-date-chip">
+            <div class="day-name">Qua</div>
+            <div class="day-num">26</div>
+          </div>
+          <div class="m-date-chip" style="opacity:0.3;">
+            <div class="day-name">Qui</div>
+            <div class="day-num">27</div>
+          </div>
+        </div>
+        <div style="font-size:10px;color:var(--text-dim);margin-top:4px">&larr; Rolar para ver mais datas</div>
+      </div>
+    </div>
+    <div class="mockup-label">Seletor de data &mdash; chips horizontais rolaveis, hoje desabilitado</div>
+  </section>
+
+  <!-- Mockup: Weight Registration -->
+  <section>
+    <div class="section-label" data-c="sec-mockup-weights">Mockup</div>
+    <h2 data-c="title-mockup-weights">Tela &mdash; Registro de Pesos</h2>
+
+    <div class="mockup-frame" data-c="mockup-weights" style="margin-left:auto;margin-right:auto">
+      <div class="mockup-status-bar">
+        <span>9:41</span>
+        <span>&#x29BF; &#x25AE;&#x25AE; &#x27E9;</span>
+      </div>
+      <div class="mockup-content">
+        <div class="m-section-label">EXERCICIOS</div>
+
+        <div class="m-exercise-row">
+          <div>
+            <div class="m-exercise-name">Supino Reto</div>
+            <div class="m-exercise-meta">3 series</div>
+          </div>
+          <div class="m-weight-input">80 kg</div>
+        </div>
+        <div class="m-exercise-row">
+          <div>
+            <div class="m-exercise-name">Crucifixo</div>
+            <div class="m-exercise-meta">3 series</div>
+          </div>
+          <div class="m-weight-input">16 kg</div>
+        </div>
+        <div class="m-exercise-row">
+          <div>
+            <div class="m-exercise-name">Elevacao Lateral</div>
+            <div class="m-exercise-meta">3 series</div>
+          </div>
+          <div class="m-weight-input">10 kg</div>
+        </div>
+        <div class="m-exercise-row" style="border:none">
+          <div>
+            <div class="m-exercise-name">Triceps Corda</div>
+            <div class="m-exercise-meta">3 series</div>
+          </div>
+          <div class="m-weight-input">25 kg</div>
+        </div>
+
+        <div class="m-section-label" style="margin-top:16px">DURACAO (OPCIONAL)</div>
+        <div class="m-input" style="color:var(--text-dim)">60 min</div>
+
+        <div class="m-btn m-btn-primary">REGISTRAR</div>
+      </div>
+    </div>
+    <div class="mockup-label">Registro de pesos &mdash; pre-preenchido com ultimas cargas, duracao opcional</div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 7. Anti-Requirements -->
+  <section>
+    <div class="section-label" data-c="sec-anti">Anti-Requisitos</div>
+    <h2 data-c="title-anti">O que esta funcionalidade NAO faz</h2>
+    <ul class="anti-list">
+      <li data-c="anti-1">Nao permite editar treinos ja registrados no historico</li>
+      <li data-c="anti-2">Nao permite criar novos planos &mdash; so registra treinos de planos existentes</li>
+      <li data-c="anti-3">Nao importa dados de outros aplicativos ou formatos de arquivo</li>
+      <li data-c="anti-4">Nao substitui o fluxo de treino em tempo real &mdash; e um complemento para registros esquecidos</li>
+      <li data-c="anti-5">Nao inclui timer de descanso, contagem de series em tempo real, ou qualquer elemento do fluxo ativo</li>
+    </ul>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 8. Edge Cases -->
+  <section>
+    <div class="section-label" data-c="sec-edge">Erros & Casos Limites</div>
+    <h2 data-c="title-edge">Cenarios excepcionais</h2>
+
+    <table data-c="edge-table">
+      <tr><th>Cenario</th><th>Comportamento Esperado</th></tr>
+      <tr data-c="edge-1">
+        <td>Usuario nao tem planos criados</td>
+        <td>Exibir mensagem orientando o usuario a criar um plano primeiro, com link para a tela de planos</td>
+      </tr>
+      <tr data-c="edge-2">
+        <td>Usuario nao preenche nenhum peso</td>
+        <td>Botao "REGISTRAR" permanece desabilitado</td>
+      </tr>
+      <tr data-c="edge-3">
+        <td>Dois registros do mesmo plano na mesma data</td>
+        <td>Permitir &mdash; o ID unico garante que nao haja conflito</td>
+      </tr>
+      <tr data-c="edge-4">
+        <td>Plano tem 15+ exercicios</td>
+        <td>Lista rolavel com todos os exercicios, sem limite</td>
+      </tr>
+      <tr data-c="edge-5">
+        <td>Usuario tenta selecionar data futura</td>
+        <td>Impossivel &mdash; o seletor mostra apenas datas passadas (hoje desabilitado)</td>
+      </tr>
+    </table>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 9. Success Metrics -->
+  <section>
+    <div class="section-label" data-c="sec-metrics">Metricas de Sucesso</div>
+    <h2 data-c="title-metrics">Como medir o impacto</h2>
+
+    <table data-c="metrics-table">
+      <tr><th>Objetivo</th><th>Metrica</th><th>Meta</th><th>Frequencia</th></tr>
+      <tr data-c="metric-1">
+        <td>Adocao da funcionalidade</td>
+        <td>% de usuarios ativos que usam registro retroativo</td>
+        <td>&ge; 20%</td>
+        <td>Mensal</td>
+      </tr>
+      <tr data-c="metric-2">
+        <td>Completude do historico</td>
+        <td>Reducao de lacunas semanais no historico</td>
+        <td>-50%</td>
+        <td>Mensal</td>
+      </tr>
+      <tr data-c="metric-3">
+        <td>Rapidez do registro</td>
+        <td>Tempo medio para completar um registro retroativo</td>
+        <td>&le; 60 segundos</td>
+        <td>Semanal</td>
+      </tr>
+    </table>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 10. Assumptions & Validation -->
+  <section>
+    <div class="section-label" data-c="sec-validation">Premissas & Validacao</div>
+    <h2 data-c="title-validation">Hipoteses a validar</h2>
+
+    <table data-c="validation-table">
+      <tr><th>Premissa</th><th>Validacao</th></tr>
+      <tr data-c="validation-1">
+        <td>Usuarios lembram dos pesos usados em treinos recentes</td>
+        <td>Pre-preencher com ultima carga reduz a carga cognitiva; monitorar % de campos alterados vs. aceitos</td>
+      </tr>
+      <tr data-c="validation-2">
+        <td>Registros retroativos ocorrem dentro de 7 dias</td>
+        <td>Monitorar distribuicao de datas selecionadas; se &gt;30% sao &gt;7 dias, expandir janela</td>
+      </tr>
+      <tr data-c="validation-3">
+        <td>Funcionalidade sera usada raramente (1-2x/mes por usuario)</td>
+        <td>Monitorar frequencia de uso; se alta, pode indicar problema com o fluxo principal</td>
+      </tr>
+    </table>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 11. Risks -->
+  <section>
+    <div class="section-label" data-c="sec-risks">Riscos & Mitigacoes</div>
+    <h2 data-c="title-risks">O que pode dar errado</h2>
+
+    <table data-c="risk-table">
+      <tr><th>Risco</th><th>Severidade</th><th>Mitigacao</th></tr>
+      <tr data-c="risk-1">
+        <td>Dados imprecisos poluem o historico</td>
+        <td class="risk-med">Media</td>
+        <td>Pre-preencher com ultima carga (referencia), janela limitada a 30 dias.</td>
+      </tr>
+      <tr data-c="risk-2">
+        <td>Usuarios preferem o retroativo ao fluxo real</td>
+        <td class="risk-med">Media</td>
+        <td>O fluxo real oferece beneficios (timer, progressao automatica) que o retroativo nao tem. Monitorar proporcao de registros retroativos vs. normais.</td>
+      </tr>
+    </table>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 12. Delivery -->
+  <section>
+    <div class="section-label" data-c="sec-delivery">Entrega</div>
+    <h2 data-c="title-delivery">Fase Unica</h2>
+
+    <div class="card" data-c="delivery-scope">
+      <h3>Registro Retroativo Completo</h3>
+      <ul>
+        <li>Tela de registro com selecao de plano, data, pesos e duracao</li>
+        <li>Seletor de data com chips horizontais (ultimos 30 dias)</li>
+        <li>Pre-preenchimento de cargas a partir do historico</li>
+        <li>Salvamento no historico com atualizacao de ultimas cargas</li>
+        <li>Pontos de entrada na tela de historico e na home</li>
+      </ul>
+      <p style="margin-top:8px"><strong>Dependencia:</strong> Planos de treino ja criados pelo usuario.</p>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 13. Out of Scope -->
+  <section>
+    <div class="section-label" data-c="sec-oos">Fora do Escopo</div>
+    <h2 data-c="title-oos">O que NAO esta incluido</h2>
+
+    <ul class="anti-list">
+      <li data-c="oos-1">Edicao de treinos ja salvos no historico</li>
+      <li data-c="oos-2">Registro detalhado serie por serie (peso diferente por serie)</li>
+      <li data-c="oos-3">Visualizacao de calendario completo com marcacoes</li>
+      <li data-c="oos-4">Importacao de dados de outros aplicativos</li>
+      <li data-c="oos-5">Registro de treinos avulsos (sem plano associado)</li>
+    </ul>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 14. References -->
+  <section>
+    <div class="section-label" data-c="sec-refs">Referencias</div>
+    <h2 data-c="title-refs">Inspiracoes e leitura</h2>
+
+    <div class="card" data-c="refs-list">
+      <ul>
+        <li><a href="https://www.hevyapp.com/" target="_blank" style="color:var(--accent)">Hevy</a> &mdash; referencia de UX para registro rapido de treinos com pre-preenchimento de cargas</li>
+        <li><a href="https://apps.apple.com/us/app/strong-workout-tracker-gym-log/id464254577" target="_blank" style="color:var(--accent)">Strong</a> &mdash; referencia de UX para copiar e modificar treinos anteriores</li>
+        <li><a href="https://georgewang89.medium.com/designing-a-lightweight-workout-log-bd430039762f" target="_blank" style="color:var(--accent)">Designing a Lightweight Workout Log</a> &mdash; principios de design para logs minimalistas</li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<!-- Commenting System JS -->
+<script>
+const STORAGE_KEY = 'prd-comments-forja-retroactive-log-v1';
+let reviewMode = false;
+let activeTarget = null;
+let comments = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+
+function toggleReviewMode() {
+  reviewMode = !reviewMode;
+  const btn = document.getElementById('reviewToggle');
+  const exportBtn = document.getElementById('exportBtn');
+  const panel = document.getElementById('commentPanel');
+
+  if (reviewMode) {
+    btn.textContent = 'Exit Review';
+    btn.classList.add('active');
+    exportBtn.style.display = 'inline-block';
+    panel.classList.add('open');
+    document.querySelectorAll('[data-c]').forEach(el => {
+      el.classList.add('commentable');
+      el.addEventListener('click', onElementClick);
+    });
+  } else {
+    btn.textContent = 'Review Mode';
+    btn.classList.remove('active');
+    exportBtn.style.display = 'none';
+    panel.classList.remove('open');
+    document.querySelectorAll('[data-c]').forEach(el => {
+      el.classList.remove('commentable');
+      el.removeEventListener('click', onElementClick);
+    });
+  }
+  updateCommentHighlights();
+}
+
+function onElementClick(e) {
+  e.stopPropagation();
+  const target = e.currentTarget.getAttribute('data-c');
+  activeTarget = target;
+  document.getElementById('commentTarget').textContent = '#' + target;
+  document.getElementById('commentForm').style.display = 'block';
+  document.getElementById('commentInput').value = '';
+  document.getElementById('commentInput').focus();
+  renderComments();
+}
+
+function submitComment() {
+  const input = document.getElementById('commentInput');
+  const text = input.value.trim();
+  if (!text || !activeTarget) return;
+
+  comments.push({
+    id: Date.now(),
+    target: activeTarget,
+    text: text,
+    timestamp: new Date().toISOString()
+  });
+
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(comments));
+  input.value = '';
+  renderComments();
+  updateCommentHighlights();
+}
+
+function deleteComment(id) {
+  comments = comments.filter(c => c.id !== id);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(comments));
+  renderComments();
+  updateCommentHighlights();
+}
+
+function renderComments() {
+  const list = document.getElementById('commentList');
+  const countEl = document.getElementById('commentCount');
+
+  if (comments.length === 0) {
+    list.innerHTML = '<div class="no-comments">Nenhum comentario ainda. Clique em elementos destacados para comentar.</div>';
+    countEl.style.display = 'none';
+    return;
+  }
+
+  countEl.style.display = 'inline';
+  countEl.textContent = comments.length;
+
+  const filtered = activeTarget
+    ? [
+        ...comments.filter(c => c.target === activeTarget),
+        ...comments.filter(c => c.target !== activeTarget)
+      ]
+    : comments;
+
+  list.innerHTML = filtered.map(c => `
+    <div class="comment-item" ${c.target === activeTarget ? 'style="border-left:2px solid var(--accent)"' : ''}>
+      <div class="comment-item-header">
+        <span class="comment-item-section">#${c.target}</span>
+        <span class="comment-item-time">${new Date(c.timestamp).toLocaleString('pt-BR')}</span>
+      </div>
+      <div class="comment-item-text">${c.text}</div>
+      <button class="comment-item-delete" onclick="deleteComment(${c.id})">Remover</button>
+    </div>
+  `).join('');
+}
+
+function updateCommentHighlights() {
+  const targets = new Set(comments.map(c => c.target));
+  document.querySelectorAll('[data-c]').forEach(el => {
+    if (targets.has(el.getAttribute('data-c'))) {
+      el.classList.add('has-comment');
+    } else {
+      el.classList.remove('has-comment');
+    }
+  });
+}
+
+function closePanel() {
+  document.getElementById('commentPanel').classList.remove('open');
+  activeTarget = null;
+  document.getElementById('commentForm').style.display = 'none';
+}
+
+function exportComments() {
+  if (comments.length === 0) {
+    alert('Nenhum comentario para exportar.');
+    return;
+  }
+
+  let output = '# PRD Review Comments\n\n';
+  comments.forEach((c, i) => {
+    output += `## #${i + 1} — ${c.target}\n`;
+    output += `${c.text}\n\n`;
+  });
+
+  navigator.clipboard.writeText(output).then(() => {
+    alert('Comentarios copiados para o clipboard! Cole de volta no Claude para revisoes.');
+  }).catch(() => {
+    const textarea = document.createElement('textarea');
+    textarea.value = output;
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textarea);
+    alert('Comentarios copiados para o clipboard!');
+  });
+}
+
+// Init highlights
+updateCommentHighlights();
+
+// Enter key to submit
+document.getElementById('commentInput')?.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    submitComment();
+  }
+});
+</script>
+
+</body>
+</html>

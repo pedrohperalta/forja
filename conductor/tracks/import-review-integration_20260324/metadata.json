@@ -1,0 +1,18 @@
+{
+  "id": "import-review-integration_20260324",
+  "title": "Review Screen & Integration",
+  "type": "feature",
+  "status": "pending",
+  "created": "2026-03-24T18:00:00Z",
+  "updated": "2026-03-24T18:00:00Z",
+  "phases": {
+    "total": 3,
+    "completed": 0
+  },
+  "tasks": {
+    "total": 10,
+    "completed": 0
+  },
+  "masonsIdeaId": "smart_training_import",
+  "dependsOn": ["import-ui-capture_20260324"]
+}

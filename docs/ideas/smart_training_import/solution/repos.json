@@ -1,0 +1,16 @@
+[
+  {
+    "name": "forja",
+    "owner": "local",
+    "defaultBranch": "main",
+    "scope": "App mobile — novas telas de importação, stores, tipos, componentes",
+    "dependsOn": []
+  },
+  {
+    "name": "forja-supabase",
+    "owner": "local",
+    "defaultBranch": "main",
+    "scope": "Edge Function extract-workout para processamento de imagens via Claude Vision",
+    "dependsOn": []
+  }
+]

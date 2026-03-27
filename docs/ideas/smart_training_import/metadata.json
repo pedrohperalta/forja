@@ -1,0 +1,73 @@
+{
+  "id": "smart_training_import",
+  "title": "Smart Training Import",
+  "slug": "smart_training_import",
+  "createdAt": "2026-03-23T12:00:00Z",
+  "updatedAt": "2026-03-24T17:30:00Z",
+  "phase": "track-creation",
+  "status": "completed",
+  "phaseHistory": [
+    {
+      "phase": "discovery",
+      "status": "completed",
+      "startedAt": "2026-03-23T12:00:00Z",
+      "completedAt": "2026-03-23T14:00:00Z"
+    },
+    {
+      "phase": "solution",
+      "status": "completed",
+      "startedAt": "2026-03-24T16:00:00Z",
+      "completedAt": "2026-03-24T17:00:00Z"
+    },
+    {
+      "phase": "track-creation",
+      "status": "in_progress",
+      "startedAt": "2026-03-24T17:30:00Z",
+      "completedAt": "2026-03-24T18:00:00Z"
+    }
+  ],
+  "originalInput": "Adding trainings and exercises is very time consuming and error prone. Given that it changes over time, I'd like to easily input this information into the app.",
+  "versions": {
+    "discovery": {
+      "current": 3,
+      "history": [
+        { "version": 1, "createdAt": "2026-03-23T12:30:00Z" },
+        { "version": 2, "createdAt": "2026-03-23T13:00:00Z", "commentCount": 2 },
+        { "version": 3, "createdAt": "2026-03-23T13:30:00Z", "commentCount": 1 }
+      ]
+    },
+    "solution": {
+      "current": 2,
+      "history": [
+        { "version": 1, "createdAt": "2026-03-24T16:30:00Z" },
+        { "version": 2, "createdAt": "2026-03-24T16:45:00Z", "commentCount": 3 }
+      ]
+    }
+  },
+  "repos": [
+    {
+      "name": "forja",
+      "owner": "local",
+      "tracks": [
+        {
+          "trackId": "import-data-layer_20260324",
+          "title": "Import Data Layer & Backend",
+          "status": "created",
+          "dependsOn": []
+        },
+        {
+          "trackId": "import-ui-capture_20260324",
+          "title": "Import UI & Capture Flow",
+          "status": "created",
+          "dependsOn": ["import-data-layer_20260324"]
+        },
+        {
+          "trackId": "import-review-integration_20260324",
+          "title": "Review Screen & Integration",
+          "status": "created",
+          "dependsOn": ["import-ui-capture_20260324"]
+        }
+      ]
+    }
+  ]
+}
