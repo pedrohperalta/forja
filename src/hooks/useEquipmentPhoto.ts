@@ -49,6 +49,7 @@ export function useEquipmentPhoto(exerciseId: ExerciseId): UseEquipmentPhotoRetu
         quality: 0.7,
         allowsEditing: true,
         aspect: [4, 3],
+        legacy: true,
       })
     }
 

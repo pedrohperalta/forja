@@ -51,6 +51,7 @@ export default function ImportCaptureScreen(): React.JSX.Element {
       quality: 0.8,
       allowsMultipleSelection: true,
       selectionLimit: MAX_PHOTOS - photos.length,
+      legacy: true,
     })
 
     if (!result.canceled && result.assets.length > 0) {
