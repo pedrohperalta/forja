@@ -43,7 +43,8 @@ export function useImportProcessing(): UseImportProcessingReturn {
         const workout = await extractWorkout(photo.uri, label)
         aggregatedWorkouts.push(workout)
         updatePhotoStatus(photo.uri, 'done')
-      } catch {
+      } catch (err) {
+        console.error('[ImportProcessing] extractWorkout failed:', err)
         updatePhotoStatus(photo.uri, 'error')
       }
     }

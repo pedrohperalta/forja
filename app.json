@@ -61,7 +61,8 @@
           "photosPermission": "Acesse suas fotos para adicionar ao treino",
           "cameraPermission": "Tire fotos para adicionar ao Forja"
         }
-      ]
+      ],
+      "./plugins/withLegacyImagePickerChooser"
     ],
     "extra": {
       "router": {

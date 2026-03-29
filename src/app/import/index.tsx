@@ -1,5 +1,5 @@
-import { useEffect } from 'react'
-import { View, Text, Pressable, ScrollView } from 'react-native'
+import { useEffect, useState } from 'react'
+import { View, Text, Pressable, ScrollView, ActivityIndicator } from 'react-native'
 import { useRouter } from 'expo-router'
 import Svg, { Path } from 'react-native-svg'
 import * as ImagePicker from 'expo-image-picker'
@@ -22,6 +22,7 @@ export default function ImportCaptureScreen(): React.JSX.Element {
   const router = useRouter()
   const haptics = useHaptics()
 
+  const [isLoadingGallery, setIsLoadingGallery] = useState(false)
   const canAddPhoto = photos.length < MAX_PHOTOS
   const hasPhotos = photos.length > 0
 
@@ -46,19 +47,24 @@ export default function ImportCaptureScreen(): React.JSX.Element {
   }
 
   const handleGallery = async (): Promise<void> => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images' as ImagePicker.MediaType],
-      quality: 0.8,
-      allowsMultipleSelection: true,
-      selectionLimit: MAX_PHOTOS - photos.length,
-      legacy: true,
-    })
+    setIsLoadingGallery(true)
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images' as ImagePicker.MediaType],
+        quality: 0.8,
+        allowsMultipleSelection: true,
+        selectionLimit: MAX_PHOTOS - photos.length,
+        legacy: true,
+      })
 
-    if (!result.canceled && result.assets.length > 0) {
-      haptics.light()
-      for (const asset of result.assets) {
-        addPhoto(asset.uri)
+      if (!result.canceled && result.assets.length > 0) {
+        haptics.light()
+        for (const asset of result.assets) {
+          addPhoto(asset.uri)
+        }
       }
+    } finally {
+      setIsLoadingGallery(false)
     }
   }
 
@@ -125,8 +131,16 @@ export default function ImportCaptureScreen(): React.JSX.Element {
             ))}
           </View>
 
+          {/* Loading indicator */}
+          {isLoadingGallery ? (
+            <View className="items-center py-6">
+              <ActivityIndicator size="large" color="#C2F000" />
+              <Text className="mt-2 font-ui text-[12px] text-muted">Carregando fotos...</Text>
+            </View>
+          ) : null}
+
           {/* Add photo buttons */}
-          {canAddPhoto ? (
+          {canAddPhoto && !isLoadingGallery ? (
             <View className="mt-4 flex-row gap-3">
               <Pressable
                 accessibilityRole="button"
