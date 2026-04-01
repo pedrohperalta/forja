@@ -44,8 +44,13 @@ export const useAuthStore = create<AuthState>((set) => ({
       const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo)
 
       if (result.type === 'success') {
-        await supabase.auth.exchangeCodeForSession(result.url)
+        const url = new URL(result.url)
+        const code = url.searchParams.get('code')
+        if (!code) throw new Error('No code in redirect URL')
+        await supabase.auth.exchangeCodeForSession(code)
       }
+    } catch (err) {
+      console.error('[Auth] signInWithGoogle error:', err)
     } finally {
       set({ isLoading: false })
     }
