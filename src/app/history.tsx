@@ -1,9 +1,11 @@
-import { View, Text, Pressable } from 'react-native'
+import { View, Text, Pressable, ActivityIndicator } from 'react-native'
 import { useRouter } from 'expo-router'
 import { FlashList } from '@shopify/flash-list'
-import Svg, { Path } from 'react-native-svg'
+import Svg, { Path, Circle } from 'react-native-svg'
 
 import { useAppStore } from '@/stores/appStore'
+import { useAuthStore } from '@/stores/authStore'
+import { sync, deleteSessionFromServer } from '@/services/syncService'
 import { WorkoutHistoryCard } from '@/components/WorkoutHistoryCard'
 import type { WorkoutId, WorkoutSession } from '@/types'
 
@@ -28,6 +30,14 @@ function getMonthLabel(dateStr: string): string {
   const monthKey = parts[1] ?? ''
   const month = months[monthKey] ?? monthKey
   return `${month} ${parts[0] ?? ''}`
+}
+
+/** Formats an ISO timestamp as HH:MM. */
+function formatTime(isoDate: string): string {
+  const d = new Date(isoDate)
+  const h = String(d.getHours()).padStart(2, '0')
+  const m = String(d.getMinutes()).padStart(2, '0')
+  return `${h}:${m}`
 }
 
 type HistoryListItem =
@@ -55,6 +65,14 @@ export default function HistoryScreen() {
   const router = useRouter()
   const history = useAppStore((s) => s.history)
   const deleteWorkout = useAppStore((s) => s.deleteWorkout)
+  const lastSyncedAt = useAppStore((s) => s.lastSyncedAt)
+  const isSyncing = useAppStore((s) => s.isSyncing)
+  const syncError = useAppStore((s) => s.syncError)
+
+  const user = useAuthStore((s) => s.user)
+  const isAuthLoading = useAuthStore((s) => s.isLoading)
+  const signInWithGoogle = useAuthStore((s) => s.signInWithGoogle)
+  const signOut = useAuthStore((s) => s.signOut)
 
   // Sort by date descending, then createdAt descending for same-date workouts
   const sorted = [...history].sort((a, b) => {
@@ -65,8 +83,14 @@ export default function HistoryScreen() {
 
   const sectionedData = buildSectionedList(sorted)
 
-  const handleDelete = (id: WorkoutId): void => {
+  const handleDelete = async (id: WorkoutId): Promise<void> => {
     deleteWorkout(id)
+    // Best-effort delete from server — silent on failure
+    deleteSessionFromServer(id).catch(() => {})
+  }
+
+  const handleSync = (): void => {
+    sync().catch(() => {})
   }
 
   const renderItem = ({ item }: { item: HistoryListItem }): React.JSX.Element => {
@@ -92,18 +116,9 @@ export default function HistoryScreen() {
           date={session.date}
           durationMinutes={session.durationMinutes}
           exercises={session.exercises}
+          syncStatus={session.syncStatus}
           onDelete={() => handleDelete(session.id)}
         />
-      </View>
-    )
-  }
-
-  if (sorted.length === 0) {
-    return (
-      <View className="flex-1 items-center justify-center bg-background px-6">
-        <Text className="font-ui text-[15px] tracking-[0.5px] text-muted">
-          Nenhum treino registrado ainda.
-        </Text>
       </View>
     )
   }
@@ -133,22 +148,152 @@ export default function HistoryScreen() {
       </View>
       <Text className="mb-4 font-display text-[28px] tracking-[1px] text-text">Historico</Text>
 
-      {/* Workout count summary */}
-      <View className="mb-4 flex-row items-center">
-        <View className="h-[6px] w-[6px] rounded-full bg-accent" />
-        <Text className="ml-2 font-ui text-[12px] text-muted">
-          {sorted.length} {sorted.length === 1 ? 'treino' : 'treinos'} registrados
-        </Text>
+      {/* Sync panel */}
+      <View className="mb-5 rounded-lg border border-border bg-surface px-4 py-3">
+        {user ? (
+          /* Logged in state */
+          <View>
+            <View className="flex-row items-center justify-between">
+              <View className="flex-row items-center gap-2">
+                {/* User avatar placeholder */}
+                <View className="h-[28px] w-[28px] items-center justify-center rounded-full bg-accent-dim">
+                  <Svg width={14} height={14} viewBox="0 0 16 16" fill="none">
+                    <Circle cx="8" cy="5" r="3" stroke="#C2F000" strokeWidth={1.2} />
+                    <Path
+                      d="M2 14c0-3.314 2.686-5 6-5s6 1.686 6 5"
+                      stroke="#C2F000"
+                      strokeWidth={1.2}
+                      strokeLinecap="round"
+                    />
+                  </Svg>
+                </View>
+                <View>
+                  <Text className="font-ui text-[12px] text-text" numberOfLines={1}>
+                    {user.email}
+                  </Text>
+                  {syncError ? (
+                    <Text className="font-ui text-[10px] text-danger">{syncError}</Text>
+                  ) : lastSyncedAt ? (
+                    <Text className="font-ui text-[10px] text-muted">
+                      Sincronizado às {formatTime(lastSyncedAt)}
+                    </Text>
+                  ) : (
+                    <Text className="font-ui text-[10px] text-muted">Nunca sincronizado</Text>
+                  )}
+                </View>
+              </View>
+
+              {/* Sync button */}
+              <Pressable
+                onPress={handleSync}
+                disabled={isSyncing}
+                accessibilityRole="button"
+                accessibilityLabel="Sincronizar"
+                className="h-[34px] w-[34px] items-center justify-center rounded-full border border-border-med"
+              >
+                {isSyncing ? (
+                  <ActivityIndicator size={14} color="#888888" />
+                ) : (
+                  <Svg width={16} height={16} viewBox="0 0 16 16" fill="none">
+                    <Path
+                      d="M13.5 8A5.5 5.5 0 1 1 8 2.5"
+                      stroke="#888888"
+                      strokeWidth={1.4}
+                      strokeLinecap="round"
+                    />
+                    <Path
+                      d="M8 2.5L10.5 5M8 2.5L10.5 0"
+                      stroke="#888888"
+                      strokeWidth={1.4}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </Svg>
+                )}
+              </Pressable>
+            </View>
+
+            {/* Sign out */}
+            <Pressable
+              onPress={() => signOut()}
+              accessibilityRole="button"
+              accessibilityLabel="Sair da conta"
+              className="mt-3 border-t border-border pt-3"
+            >
+              <Text className="font-ui text-[11px] text-dim">Sair da conta</Text>
+            </Pressable>
+          </View>
+        ) : (
+          /* Logged out state */
+          <View>
+            <View className="mb-3 flex-row items-center gap-2">
+              <Svg width={16} height={16} viewBox="0 0 16 16" fill="none">
+                <Path
+                  d="M3 13A5 5 0 0 1 3 3a6 6 0 0 1 10 1A3.5 3.5 0 0 1 13 13H3Z"
+                  stroke="#555555"
+                  strokeWidth={1.2}
+                  strokeLinejoin="round"
+                />
+                <Path
+                  d="M5 8.5L7 10.5L11 6.5"
+                  stroke="#555555"
+                  strokeWidth={1.2}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </Svg>
+              <Text className="font-ui text-[12px] text-text-med">
+                Sincronize seu histórico na nuvem
+              </Text>
+            </View>
+            <Text className="mb-3 font-ui text-[11px] leading-[16px] text-muted">
+              Faça login para salvar seus treinos e recuperá-los em qualquer dispositivo.
+            </Text>
+            <Pressable
+              onPress={() => signInWithGoogle()}
+              disabled={isAuthLoading}
+              accessibilityRole="button"
+              accessibilityLabel="Entrar com Google"
+              className="h-[38px] items-center justify-center rounded-pill border border-border-med bg-surface-2"
+            >
+              {isAuthLoading ? (
+                <ActivityIndicator size={14} color="#888888" />
+              ) : (
+                <Text className="font-ui text-[12px] uppercase tracking-[1px] text-text-med">
+                  Entrar com Google
+                </Text>
+              )}
+            </Pressable>
+          </View>
+        )}
       </View>
 
-      <FlashList
-        data={sectionedData}
-        renderItem={renderItem}
-        keyExtractor={(item: HistoryListItem) => item.key}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 32 }}
-        getItemType={(item: HistoryListItem) => item.type}
-      />
+      {sorted.length === 0 ? (
+        <View className="flex-1 items-center justify-center">
+          <Text className="font-ui text-[15px] tracking-[0.5px] text-muted">
+            Nenhum treino registrado ainda.
+          </Text>
+        </View>
+      ) : (
+        <>
+          {/* Workout count summary */}
+          <View className="mb-4 flex-row items-center">
+            <View className="h-[6px] w-[6px] rounded-full bg-accent" />
+            <Text className="ml-2 font-ui text-[12px] text-muted">
+              {sorted.length} {sorted.length === 1 ? 'treino' : 'treinos'} registrados
+            </Text>
+          </View>
+
+          <FlashList
+            data={sectionedData}
+            renderItem={renderItem}
+            keyExtractor={(item: HistoryListItem) => item.key}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 32 }}
+            getItemType={(item: HistoryListItem) => item.type}
+          />
+        </>
+      )}
     </View>
   )
 }

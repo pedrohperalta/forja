@@ -7,6 +7,8 @@ import { StatusBar } from 'expo-status-bar'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { KeyboardProvider } from 'react-native-keyboard-controller'
 import * as SplashScreen from 'expo-splash-screen'
+import { useAuthStore } from '@/stores/authStore'
+import { sync } from '@/services/syncService'
 
 // Keep splash visible until fonts are loaded
 SplashScreen.preventAutoHideAsync()
@@ -24,6 +26,18 @@ export default function RootLayout() {
       SplashScreen.hideAsync()
     }
   }, [loaded, error])
+
+  // Initialize auth session and trigger background sync on startup
+  useEffect(() => {
+    useAuthStore
+      .getState()
+      .initialize()
+      .then(() => {
+        if (useAuthStore.getState().user) {
+          sync().catch(() => {}) // silent — user sees last synced state
+        }
+      })
+  }, [])
 
   // Wait for fonts before rendering
   if (!loaded && !error) return null
