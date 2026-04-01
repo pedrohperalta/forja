@@ -41,8 +41,17 @@ export const useAuthStore = create<AuthState>((set) => ({
 
       if (error ?? !data.url) throw error ?? new Error('No OAuth URL')
 
-      await WebBrowser.openAuthSessionAsync(data.url, redirectTo)
-      // Session exchange is handled by the deep link listener in _layout.tsx
+      const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo)
+
+      // On iOS, ASWebAuthenticationSession intercepts the redirect internally —
+      // Linking events never fire. Exchange the code here as the primary path.
+      // On Android, the Linking listener in _layout.tsx handles it as a fallback.
+      if (result.type === 'success') {
+        const code = new URL(result.url).searchParams.get('code')
+        if (code) {
+          await supabase.auth.exchangeCodeForSession(code)
+        }
+      }
     } catch (err) {
       console.error('[Auth] signInWithGoogle error:', err)
     } finally {
