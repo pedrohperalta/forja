@@ -41,6 +41,7 @@ export type Plan = {
   focus: string
   exercises: Exercise[]
   archived?: boolean
+  syncStatus?: 'local' | 'synced'
   createdAt: string
   updatedAt: string
 }

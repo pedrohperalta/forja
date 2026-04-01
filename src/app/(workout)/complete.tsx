@@ -6,6 +6,8 @@ import { useWorkoutStore } from '@/stores/workoutStore'
 import { useAppStore } from '@/stores/appStore'
 import { useHaptics } from '@/hooks/useHaptics'
 import { buildWorkoutSession } from '@/utils/buildWorkoutSession'
+import { sync } from '@/services/syncService'
+import { useAuthStore } from '@/stores/authStore'
 import type { CompletedExercise, ExerciseLog } from '@/types'
 
 export default function CompleteScreen(): React.JSX.Element {
@@ -67,6 +69,11 @@ export default function CompleteScreen(): React.JSX.Element {
       }
     }
     updateLastWeights(weights)
+
+    // Push new session to server if authenticated
+    if (useAuthStore.getState().user) {
+      sync().catch(() => {})
+    }
   }, [status, activePlan, log, startedAt, completedAt, complete, saveWorkout, updateLastWeights])
 
   const handleGoHome = (): void => {

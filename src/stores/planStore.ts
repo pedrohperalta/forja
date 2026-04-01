@@ -27,6 +27,11 @@ export function incrementLabel(label: string): string {
   return chars.join('')
 }
 
+/** Marks a synced plan as needing a re-push. No-op on 'local' plans. */
+function markModified(plan: Plan): Plan {
+  return plan.syncStatus === 'synced' ? { ...plan, syncStatus: 'local' as const } : plan
+}
+
 /** Return value from importPlans — contains skippedPlanId if active workout guard fired. */
 export type ImportPlansResult = { skippedPlanId?: PlanId }
 
@@ -53,6 +58,8 @@ export interface PlanState {
   reorderExercises: (planId: PlanId, orderedIds: ExerciseId[]) => void
   reorderPlans: (orderedIds: PlanId[]) => void
   reset: () => void
+  markPlansSynced: (ids: PlanId[]) => void
+  mergeFromServer: (serverPlans: Plan[]) => void
 }
 
 export const usePlanStore = create<PlanState>()(
@@ -72,6 +79,7 @@ export const usePlanStore = create<PlanState>()(
           name,
           focus,
           exercises: [],
+          syncStatus: 'local',
           createdAt: now,
           updatedAt: now,
         }
@@ -88,7 +96,7 @@ export const usePlanStore = create<PlanState>()(
         const now = new Date().toISOString()
         set({
           plans: get().plans.map((plan) =>
-            plan.id === id ? { ...plan, ...changes, updatedAt: now } : plan,
+            plan.id === id ? markModified({ ...plan, ...changes, updatedAt: now }) : plan,
           ),
         })
       },
@@ -107,7 +115,7 @@ export const usePlanStore = create<PlanState>()(
       archiveAllPlans: (): void => {
         set({
           plans: get().plans.map((plan) =>
-            plan.archived !== true ? { ...plan, archived: true } : plan,
+            plan.archived !== true ? markModified({ ...plan, archived: true }) : plan,
           ),
         })
       },
@@ -131,7 +139,7 @@ export const usePlanStore = create<PlanState>()(
               skippedPlanId = plan.id as PlanId
               return plan
             }
-            return { ...plan, archived: true }
+            return markModified({ ...plan, archived: true })
           })
         }
 
@@ -169,6 +177,7 @@ export const usePlanStore = create<PlanState>()(
             name: workout.name,
             focus,
             exercises,
+            syncStatus: 'local',
             createdAt: now,
             updatedAt: now,
           }
@@ -199,7 +208,11 @@ export const usePlanStore = create<PlanState>()(
         set({
           plans: get().plans.map((plan) =>
             plan.id === planId
-              ? { ...plan, exercises: [...plan.exercises, newExercise], updatedAt: now }
+              ? markModified({
+                  ...plan,
+                  exercises: [...plan.exercises, newExercise],
+                  updatedAt: now,
+                })
               : plan,
           ),
         })
@@ -216,13 +229,13 @@ export const usePlanStore = create<PlanState>()(
         set({
           plans: get().plans.map((plan) =>
             plan.id === planId
-              ? {
+              ? markModified({
                   ...plan,
                   exercises: plan.exercises.map((ex) =>
                     ex.id === exerciseId ? { ...ex, ...changes, updatedAt: now } : ex,
                   ),
                   updatedAt: now,
-                }
+                })
               : plan,
           ),
         })
@@ -233,11 +246,11 @@ export const usePlanStore = create<PlanState>()(
         set({
           plans: get().plans.map((plan) =>
             plan.id === planId
-              ? {
+              ? markModified({
                   ...plan,
                   exercises: plan.exercises.filter((ex) => ex.id !== exerciseId),
                   updatedAt: now,
-                }
+                })
               : plan,
           ),
         })
@@ -254,7 +267,7 @@ export const usePlanStore = create<PlanState>()(
               .map((id) => exerciseMap.get(id))
               .filter((ex): ex is Exercise => ex !== undefined)
 
-            return { ...plan, exercises: reordered, updatedAt: now }
+            return markModified({ ...plan, exercises: reordered, updatedAt: now })
           }),
         })
       },
@@ -275,11 +288,34 @@ export const usePlanStore = create<PlanState>()(
           nextLabel: 'A',
         })
       },
+
+      markPlansSynced: (ids: PlanId[]): void => {
+        const idSet = new Set<string>(ids)
+        set({
+          plans: get().plans.map((p) =>
+            idSet.has(p.id) ? { ...p, syncStatus: 'synced' as const } : p,
+          ),
+        })
+      },
+
+      mergeFromServer: (serverPlans: Plan[]): void => {
+        const local = get().plans
+        const localIds = new Set(local.map((p) => p.id))
+        const serverMap = new Map(serverPlans.map((p) => [p.id, p]))
+
+        // Server wins for plans that exist on both sides
+        const updated = local.map((p) => serverMap.get(p.id) ?? p)
+
+        // Add plans from server not present locally (e.g. after reinstall)
+        const serverOnly = serverPlans.filter((p) => !localIds.has(p.id))
+
+        set({ plans: [...updated, ...serverOnly] })
+      },
     })),
     {
       name: 'plan-store',
       storage: createJSONStorage(() => mmkvStateStorage),
-      version: 2,
+      version: 3,
       migrate: (state, version) => {
         const s = state as PlanState
         // v1 → v2: backfill archived: false on all plans
@@ -289,6 +325,16 @@ export const usePlanStore = create<PlanState>()(
             plans: s.plans.map((plan) => ({
               ...plan,
               archived: plan.archived ?? false,
+            })),
+          } as PlanState
+        }
+        // v2 → v3: backfill syncStatus: 'local' on all plans
+        if (version < 3) {
+          return {
+            ...s,
+            plans: s.plans.map((plan) => ({
+              ...plan,
+              syncStatus: plan.syncStatus ?? 'local',
             })),
           } as PlanState
         }

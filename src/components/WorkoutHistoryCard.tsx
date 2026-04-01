@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { View, Text, Pressable } from 'react-native'
+import Svg, { Path } from 'react-native-svg'
 
 import { useTwoStepDelete } from '@/hooks/useTwoStepDelete'
 import type { CompletedExercise, PlanId, WorkoutId } from '@/types'
@@ -13,6 +14,7 @@ type WorkoutHistoryCardProps = {
   date: string
   durationMinutes: number
   exercises: CompletedExercise[]
+  syncStatus?: 'local' | 'synced' | 'pending'
   onDelete: () => void
 }
 
@@ -25,6 +27,7 @@ export function WorkoutHistoryCard({
   date,
   durationMinutes,
   exercises,
+  syncStatus,
   onDelete,
 }: WorkoutHistoryCardProps): React.JSX.Element {
   const [expanded, setExpanded] = useState(false)
@@ -57,12 +60,39 @@ export function WorkoutHistoryCard({
 
         {/* Content */}
         <View className="flex-1 px-4 py-3">
-          {/* Top row: plan name + date */}
+          {/* Top row: plan name + sync icon + date */}
           <View className="flex-row items-baseline justify-between">
             <Text className="font-display text-[20px] tracking-[1px] text-text" numberOfLines={1}>
               {displayName}
             </Text>
-            <Text className="font-ui text-[11px] tracking-[0.5px] text-dim">{date}</Text>
+            <View className="flex-row items-center gap-1.5">
+              {syncStatus === 'synced' && (
+                <Svg
+                  width={12}
+                  height={12}
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  accessibilityLabel="Sincronizado"
+                >
+                  {/* Cloud shape */}
+                  <Path
+                    d="M3.5 12A3 3 0 0 1 3.5 6a4.5 4.5 0 0 1 9 .5A2.5 2.5 0 0 1 12 12H3.5Z"
+                    stroke="#555555"
+                    strokeWidth={1.2}
+                    strokeLinejoin="round"
+                  />
+                  {/* Checkmark */}
+                  <Path
+                    d="M5.5 9L7 10.5L10.5 7"
+                    stroke="#555555"
+                    strokeWidth={1.2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </Svg>
+              )}
+              <Text className="font-ui text-[11px] tracking-[0.5px] text-dim">{date}</Text>
+            </View>
           </View>
 
           {/* Focus */}
