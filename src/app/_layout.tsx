@@ -5,6 +5,7 @@ import { Stack } from 'expo-router'
 import { useFonts } from 'expo-font'
 import { StatusBar } from 'expo-status-bar'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
+import { KeyboardProvider } from 'react-native-keyboard-controller'
 import * as SplashScreen from 'expo-splash-screen'
 
 // Keep splash visible until fonts are loaded
@@ -29,14 +30,16 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <StatusBar style="light" />
-      <Stack
-        screenOptions={{
-          headerShown: false,
-          contentStyle: { backgroundColor: '#080808' },
-          animation: 'fade',
-        }}
-      />
+      <KeyboardProvider>
+        <StatusBar style="light" />
+        <Stack
+          screenOptions={{
+            headerShown: false,
+            contentStyle: { backgroundColor: '#080808' },
+            animation: 'fade',
+          }}
+        />
+      </KeyboardProvider>
     </GestureHandlerRootView>
   )
 }

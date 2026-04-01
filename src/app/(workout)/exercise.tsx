@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { View, Text, Pressable, ScrollView, KeyboardAvoidingView, Platform } from 'react-native'
+import { View, Text, Pressable } from 'react-native'
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller'
 import Svg, { Path } from 'react-native-svg'
 import { useRouter, useFocusEffect } from 'expo-router'
 import { useWorkoutStore } from '@/stores/workoutStore'
@@ -39,11 +40,6 @@ export default function ExerciseScreen(): React.JSX.Element | null {
   // Weight input state
   const [weight, setWeight] = useState('')
   const isNavigating = useRef(false)
-  const scrollViewRef = useRef<ScrollView>(null)
-
-  const handleWeightFocus = (): void => {
-    scrollViewRef.current?.scrollToEnd({ animated: true })
-  }
 
   // Reset navigation guard when screen regains focus (e.g. returning from rest)
   useFocusEffect(
@@ -143,17 +139,14 @@ export default function ExerciseScreen(): React.JSX.Element | null {
   const isWeightValid = weight !== '' && !isNaN(parseFloat(weight)) && parseFloat(weight) >= 0
 
   return (
-    <KeyboardAvoidingView
-      className="flex-1 bg-background"
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
+    <View className="flex-1 bg-background">
       {/* Scrollable content area */}
-      <ScrollView
-        ref={scrollViewRef}
+      <KeyboardAwareScrollView
         className="flex-1 px-6 pt-14"
         contentContainerStyle={{ paddingBottom: 16 }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
+        bottomOffset={16}
       >
         {/* Back navigation — chevron integrated with section label */}
         <View className="mb-2 flex-row items-center">
@@ -228,12 +221,11 @@ export default function ExerciseScreen(): React.JSX.Element | null {
             key={currentExercise.id}
             value={weight}
             onChange={setWeight}
-            onFocus={handleWeightFocus}
             exerciseName={currentExercise.name}
             setNumber={currentSet}
           />
         </View>
-      </ScrollView>
+      </KeyboardAwareScrollView>
 
       {/* Sticky bottom actions — thumb zone */}
       <View className="border-t border-border bg-background px-6 pb-8 pt-4">
@@ -279,6 +271,6 @@ export default function ExerciseScreen(): React.JSX.Element | null {
           </View>
         )}
       </View>
-    </KeyboardAvoidingView>
+    </View>
   )
 }
