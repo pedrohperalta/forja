@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { View, Text, Pressable, ScrollView } from 'react-native'
+import { View, Text, Pressable, ScrollView, KeyboardAvoidingView, Platform } from 'react-native'
 import Svg, { Path } from 'react-native-svg'
 import { useRouter, useFocusEffect } from 'expo-router'
 import { useWorkoutStore } from '@/stores/workoutStore'
@@ -138,12 +138,16 @@ export default function ExerciseScreen(): React.JSX.Element | null {
   const isWeightValid = weight !== '' && !isNaN(parseFloat(weight)) && parseFloat(weight) >= 0
 
   return (
-    <View className="flex-1 bg-background">
+    <KeyboardAvoidingView
+      className="flex-1 bg-background"
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
       {/* Scrollable content area */}
       <ScrollView
         className="flex-1 px-6 pt-14"
         contentContainerStyle={{ paddingBottom: 16 }}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
       >
         {/* Back navigation — chevron integrated with section label */}
         <View className="mb-2 flex-row items-center">
@@ -268,6 +272,6 @@ export default function ExerciseScreen(): React.JSX.Element | null {
           </View>
         )}
       </View>
-    </View>
+    </KeyboardAvoidingView>
   )
 }
