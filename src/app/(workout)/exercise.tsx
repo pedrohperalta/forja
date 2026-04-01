@@ -39,6 +39,11 @@ export default function ExerciseScreen(): React.JSX.Element | null {
   // Weight input state
   const [weight, setWeight] = useState('')
   const isNavigating = useRef(false)
+  const scrollViewRef = useRef<ScrollView>(null)
+
+  const handleWeightFocus = (): void => {
+    scrollViewRef.current?.scrollToEnd({ animated: true })
+  }
 
   // Reset navigation guard when screen regains focus (e.g. returning from rest)
   useFocusEffect(
@@ -144,6 +149,7 @@ export default function ExerciseScreen(): React.JSX.Element | null {
     >
       {/* Scrollable content area */}
       <ScrollView
+        ref={scrollViewRef}
         className="flex-1 px-6 pt-14"
         contentContainerStyle={{ paddingBottom: 16 }}
         showsVerticalScrollIndicator={false}
@@ -222,6 +228,7 @@ export default function ExerciseScreen(): React.JSX.Element | null {
             key={currentExercise.id}
             value={weight}
             onChange={setWeight}
+            onFocus={handleWeightFocus}
             exerciseName={currentExercise.name}
             setNumber={currentSet}
           />

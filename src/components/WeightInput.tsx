@@ -11,6 +11,7 @@ type WeightInputProps = {
   onChange: (value: string) => void
   exerciseName: string
   setNumber: number
+  onFocus?: () => void
 }
 
 /** Format a weight number — whole numbers without decimals. */
@@ -25,6 +26,7 @@ export function WeightInput({
   onChange,
   exerciseName,
   setNumber,
+  onFocus,
 }: WeightInputProps): React.JSX.Element {
   const holdTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
   const repeatTimer = useRef<ReturnType<typeof setInterval>>(undefined)
@@ -91,6 +93,7 @@ export function WeightInput({
         className="h-[72px] flex-1 rounded-lg border border-border-med bg-surface px-4 text-center font-display text-[40px] text-accent"
         value={value}
         onChangeText={handleChangeText}
+        onFocus={onFocus}
         keyboardType="decimal-pad"
         accessibilityLabel={`Peso para ${exerciseName}, série ${setNumber}`}
         placeholder="0"
