@@ -32,7 +32,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   signInWithGoogle: async (): Promise<void> => {
     set({ isLoading: true })
     try {
-      const redirectTo = makeRedirectUri({ scheme: 'forja' })
+      const redirectTo = makeRedirectUri({ scheme: 'forja', path: 'auth/callback' })
 
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -44,8 +44,8 @@ export const useAuthStore = create<AuthState>((set) => ({
       const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo)
 
       // On iOS, ASWebAuthenticationSession intercepts the redirect internally —
-      // Linking events never fire. Exchange the code here as the primary path.
-      // On Android, the Linking listener in _layout.tsx handles it as a fallback.
+      // Linking events never fire, and the /auth/callback route never renders.
+      // Exchange the code here as the iOS-only path.
       if (result.type === 'success') {
         const code = new URL(result.url).searchParams.get('code')
         if (code) {
