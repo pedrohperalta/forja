@@ -202,7 +202,7 @@ export default function HistoryScreen() {
                       strokeLinecap="round"
                     />
                     <Path
-                      d="M8 2.5L10.5 5M8 2.5L10.5 0"
+                      d="M5.5 0.5L8 2.5L5.5 4.5"
                       stroke="#888888"
                       strokeWidth={1.4}
                       strokeLinecap="round"
