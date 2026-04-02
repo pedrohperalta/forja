@@ -74,18 +74,15 @@ export function WorkoutHistoryCard({
                   fill="none"
                   accessibilityLabel="Sincronizado"
                 >
-                  {/* Cloud shape */}
                   <Path
-                    d="M3.5 12A3 3 0 0 1 3.5 6a4.5 4.5 0 0 1 9 .5A2.5 2.5 0 0 1 12 12H3.5Z"
+                    d="M8 1.5a6.5 6.5 0 1 1 0 13 6.5 6.5 0 0 1 0-13Z"
                     stroke="#555555"
-                    strokeWidth={1.2}
-                    strokeLinejoin="round"
+                    strokeWidth={1.25}
                   />
-                  {/* Checkmark */}
                   <Path
-                    d="M5.5 9L7 10.5L10.5 7"
+                    d="M5 8.5l2 2 4-4"
                     stroke="#555555"
-                    strokeWidth={1.2}
+                    strokeWidth={1.25}
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   />
