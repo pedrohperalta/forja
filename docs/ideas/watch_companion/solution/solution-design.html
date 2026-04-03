@@ -1,0 +1,1409 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Solution Design — Watch Companion | Forja</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<style>
+  :root {
+    --accent: #C2F000;
+    --accent-dim: rgba(194, 240, 0, 0.12);
+    --danger: #ef4444;
+    --warning: #f59e0b;
+    --success: #10b981;
+    --p0: #ef4444;
+    --p1: #f59e0b;
+    --p2: #3b82f6;
+    --bg: #0e0e0e;
+    --surface: #1a1a1a;
+    --surface-2: #252525;
+    --border: #2a2a2a;
+    --text: #f5f5f4;
+    --text-med: #a8a29e;
+    --text-dim: #57534e;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    padding: 0;
+  }
+
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 32px 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-inner {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .header h1 {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--accent);
+    letter-spacing: -0.5px;
+  }
+  .header .meta {
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+  .review-toggle {
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    padding: 8px 20px;
+    border-radius: 100px;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .review-toggle:hover { opacity: 0.85; }
+  .review-toggle.active {
+    background: var(--danger);
+    color: white;
+  }
+
+  .content {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 40px 32px 120px;
+  }
+
+  section { margin-bottom: 48px; }
+  .section-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+  h2 {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: var(--text);
+  }
+  h3 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: var(--text);
+  }
+  h4 {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--text);
+  }
+  p, li {
+    font-size: 14px;
+    color: var(--text-med);
+    line-height: 1.7;
+  }
+  ul, ol {
+    padding-left: 20px;
+    margin-bottom: 16px;
+  }
+  li { margin-bottom: 6px; }
+  li strong { color: var(--text); }
+  code {
+    background: var(--surface-2);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 13px;
+    color: var(--accent);
+  }
+  pre {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    overflow-x: auto;
+    margin-bottom: 16px;
+  }
+  pre code {
+    background: none;
+    padding: 0;
+    font-size: 12px;
+    color: var(--text-med);
+    line-height: 1.6;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 16px;
+  }
+  .card h3 { margin-bottom: 8px; }
+  .card h4 { margin-bottom: 6px; }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  .badge-p0 { background: rgba(239,68,68,0.15); color: var(--p0); }
+  .badge-p1 { background: rgba(245,158,11,0.15); color: var(--p1); }
+  .badge-p2 { background: rgba(59,130,246,0.15); color: var(--p2); }
+  .badge-accent { background: var(--accent-dim); color: var(--accent); }
+  .badge-new { background: rgba(16,185,129,0.15); color: #10b981; }
+  .badge-change { background: rgba(245,158,11,0.15); color: var(--warning); }
+  .badge-keep { background: rgba(59,130,246,0.15); color: var(--p2); }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 16px;
+    font-size: 13px;
+  }
+  th {
+    text-align: left;
+    padding: 10px 14px;
+    background: var(--surface-2);
+    color: var(--text-dim);
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-med);
+  }
+
+  .mermaid-container {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 16px;
+    overflow-x: auto;
+  }
+  .mermaid { text-align: center; }
+
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 48px 0;
+  }
+
+  .phase-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 12px;
+  }
+  .phase-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  .phase-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .task-list { list-style: none; padding-left: 0; }
+  .task-list li {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .task-list li:last-child { border-bottom: none; }
+  .task-id {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-dim);
+    min-width: 40px;
+  }
+  .task-desc {
+    font-size: 13px;
+    color: var(--text-med);
+    flex: 1;
+  }
+  .task-file {
+    font-size: 11px;
+    color: var(--text-dim);
+    font-family: monospace;
+  }
+
+  .file-tree {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 12px;
+    color: var(--text-med);
+    line-height: 1.8;
+  }
+  .file-tree .new { color: #10b981; }
+  .file-tree .changed { color: var(--warning); }
+  .file-tree .indent { padding-left: 20px; }
+  .file-tree .indent2 { padding-left: 40px; }
+  .file-tree .indent3 { padding-left: 60px; }
+  .file-tree .indent4 { padding-left: 80px; }
+
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  @media (max-width: 640px) {
+    .grid-2 { grid-template-columns: 1fr; }
+  }
+
+  .metric-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 640px) {
+    .metric-grid { grid-template-columns: 1fr; }
+  }
+  .metric-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+  }
+  .metric-value {
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--accent);
+    line-height: 1;
+  }
+  .metric-label {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-top: 6px;
+  }
+
+  /* Commenting system */
+  [data-c].commentable {
+    cursor: pointer;
+    position: relative;
+    transition: outline 0.15s, background 0.15s;
+    outline: 2px solid transparent;
+    border-radius: 4px;
+  }
+  [data-c].commentable:hover {
+    outline: 2px solid var(--accent);
+    background: rgba(194, 240, 0, 0.04);
+  }
+  [data-c].commentable.has-comment {
+    outline: 2px solid var(--warning);
+    background: rgba(245, 158, 11, 0.06);
+  }
+
+  .comment-panel {
+    display: none;
+    position: fixed;
+    right: 0;
+    top: 0;
+    width: 360px;
+    height: 100vh;
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    z-index: 200;
+    flex-direction: column;
+  }
+  .comment-panel.open { display: flex; }
+  .comment-panel-header {
+    padding: 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .comment-panel-header h3 { font-size: 14px; font-weight: 700; margin: 0; }
+  .comment-panel-body { flex: 1; overflow-y: auto; padding: 20px; }
+  .comment-panel-footer { padding: 16px 20px; border-top: 1px solid var(--border); }
+  .comment-input {
+    width: 100%;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 13px;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    resize: vertical;
+    min-height: 60px;
+  }
+  .comment-input:focus { outline: none; border-color: var(--accent); }
+  .comment-submit {
+    margin-top: 8px;
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    padding: 8px 16px;
+    border-radius: 100px;
+    font-weight: 700;
+    font-size: 12px;
+    cursor: pointer;
+    width: 100%;
+  }
+  .comment-item {
+    background: var(--surface-2);
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 8px;
+  }
+  .comment-item-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 6px;
+  }
+  .comment-item-section { font-size: 11px; font-weight: 700; color: var(--accent); }
+  .comment-item-time { font-size: 11px; color: var(--text-dim); }
+  .comment-item-text { font-size: 13px; color: var(--text-med); }
+  .comment-item-delete {
+    font-size: 11px; color: var(--danger); cursor: pointer;
+    margin-top: 6px; background: none; border: none; padding: 0;
+  }
+  .comment-count {
+    background: var(--warning); color: var(--bg);
+    font-size: 10px; font-weight: 700;
+    padding: 1px 6px; border-radius: 100px; margin-left: 6px;
+  }
+  .export-btn {
+    background: var(--surface-2); color: var(--text-med);
+    border: 1px solid var(--border); padding: 6px 14px;
+    border-radius: 100px; font-size: 12px; font-weight: 600; cursor: pointer;
+  }
+  .export-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .close-btn { background: none; border: none; color: var(--text-dim); font-size: 20px; cursor: pointer; }
+  .no-comments { text-align: center; color: var(--text-dim); font-size: 13px; padding: 40px 0; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-inner">
+    <div>
+      <h1>FORJA — Watch Companion</h1>
+      <div class="meta">Solution Design v1 &middot; 03 Abr 2026 &middot; Feature</div>
+    </div>
+    <div style="display: flex; gap: 8px; align-items: center;">
+      <button class="export-btn" id="exportBtn" style="display:none;" onclick="exportComments()">Exportar Comentários</button>
+      <button class="review-toggle" id="reviewToggle" onclick="toggleReviewMode()">Review Mode</button>
+    </div>
+  </div>
+</div>
+
+<!-- Comment Panel -->
+<div class="comment-panel" id="commentPanel">
+  <div class="comment-panel-header">
+    <h3>Comentários <span class="comment-count" id="commentCount" style="display:none">0</span></h3>
+    <button class="close-btn" onclick="closePanel()">&times;</button>
+  </div>
+  <div class="comment-panel-body" id="commentList">
+    <div class="no-comments">Nenhum comentário ainda. Clique em elementos destacados para comentar.</div>
+  </div>
+  <div class="comment-panel-footer" id="commentForm" style="display:none">
+    <div style="font-size:11px;color:var(--accent);font-weight:700;margin-bottom:6px" id="commentTarget"></div>
+    <textarea class="comment-input" id="commentInput" placeholder="Deixe seu comentário..."></textarea>
+    <button class="comment-submit" onclick="submitComment()">Adicionar Comentário</button>
+  </div>
+</div>
+
+<!-- Content -->
+<div class="content">
+
+  <!-- ==================== 1. PROBLEMA ==================== -->
+  <section>
+    <div class="section-label" data-c="sec-problem">Problema</div>
+    <h2 data-c="title-problem">Interações com o celular durante o treino criam fricção desnecessária</h2>
+    <p data-c="desc-problem">O Forja exige que o usuário interaja com o celular para cada ação do treino — concluir série, ver timer de descanso, pular exercício. Em um treino típico com 6 exercícios × 3 séries + 18 intervalos de descanso, são 36+ interações: tirar do bolso, desbloquear, tocar, guardar. Cada interação leva ~5 segundos e quebra o ritmo do treino.</p>
+
+    <div class="grid-2" style="margin-top: 16px">
+      <div class="card" data-c="problem-timer">
+        <h4>Timer invisível</h4>
+        <p>O timer de descanso roda no celular dentro do bolso. O usuário precisa sacar o aparelho repetidamente para ver quanto falta — ou simplesmente ignora e perde a cadência.</p>
+      </div>
+      <div class="card" data-c="problem-hands">
+        <h4>Mãos ocupadas</h4>
+        <p>Entre séries, as mãos estão suadas e segurando halteres ou barras. Pegar o celular é desajeitado e arriscado (pode cair, escorregar).</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== 2. OBJETIVO ==================== -->
+  <section>
+    <div class="section-label" data-c="sec-objective">Objetivo</div>
+    <h2 data-c="title-objective">Reduzir interações com o celular durante o treino a praticamente zero</h2>
+    <p data-c="desc-objective">Estender o Forja ao Samsung Galaxy Watch como <strong style="color:var(--text)">display remoto + controle</strong>. O relógio espelha o treino ativo e permite as 3 ações mais frequentes — concluir série, ver timer e pular exercício. Toda a lógica de negócio permanece no celular; o relógio é intencionalmente "burro".</p>
+
+    <div class="metric-grid" style="margin-top: 16px">
+      <div class="metric-card" data-c="metric-interactions">
+        <div class="metric-value">2</div>
+        <div class="metric-label">Interações com celular por treino (iniciar + finalizar)</div>
+      </div>
+      <div class="metric-card" data-c="metric-timer">
+        <div class="metric-value">100%</div>
+        <div class="metric-label">Visibilidade do timer de descanso</div>
+      </div>
+      <div class="metric-card" data-c="metric-latency">
+        <div class="metric-value">&lt;200ms</div>
+        <div class="metric-label">Latência celular ↔ relógio</div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ==================== 3. ARQUITETURA ==================== -->
+  <section>
+    <div class="section-label" data-c="sec-arch">Solução Proposta</div>
+    <h2 data-c="title-arch">Arquitetura de alto nível</h2>
+
+    <p data-c="desc-arch">O sistema é composto por dois apps — o Forja existente (React Native / Expo) e um app nativo Wear OS (Kotlin / Jetpack Compose) — conectados via <strong style="color:var(--text)">Wear OS Data Layer API</strong>. A comunicação é bidirecional: o celular publica estado, o relógio envia comandos.</p>
+
+    <div class="mermaid-container" data-c="diagram-arch">
+      <div class="mermaid">
+graph LR
+    subgraph Phone["📱 Forja App (React Native)"]
+      WS["workoutStore\n(Zustand + MMKV)"]
+      BRG["WearBridge\n(Native Module)"]
+    end
+
+    subgraph Watch["⌚ Forja Watch (Kotlin)"]
+      UI["Compose UI\n(4 telas)"]
+      TIM["Timer Local\n(CountDownTimer)"]
+    end
+
+    WS -->|"subscribe\n(state changes)"| BRG
+    BRG -->|"DataClient\n(state sync)"| UI
+    UI -->|"MessageClient\n(commands)"| BRG
+    BRG -->|"dispatch\n(actions)"| WS
+    BRG -.->|"timer start\n(restSeconds)"| TIM
+
+    style WS fill:#1a1a1a,stroke:#C2F000,color:#f5f5f4
+    style BRG fill:#1a1a1a,stroke:#C2F000,color:#f5f5f4
+    style UI fill:#1a1a1a,stroke:#3b82f6,color:#f5f5f4
+    style TIM fill:#1a1a1a,stroke:#f59e0b,color:#f5f5f4
+      </div>
+    </div>
+
+    <h3 data-c="title-decisions">Decisões técnicas</h3>
+
+    <div class="card" data-c="decision-native">
+      <h4>App nativo Kotlin (não React Native)</h4>
+      <p>React Native não tem suporte oficial para Wear OS. O runtime RN depende de APIs Android indisponíveis no ambiente do relógio. Jetpack Compose for Wear OS é o padrão recomendado pelo Google, com componentes otimizados para tela circular e input simplificado.</p>
+    </div>
+
+    <div class="card" data-c="decision-data-layer">
+      <h4>Wear OS Data Layer API</h4>
+      <p>API oficial do Google para comunicação celular ↔ relógio. Opera via Bluetooth (ou Wi-Fi quando disponível). Dois mecanismos:</p>
+      <ul>
+        <li><strong>DataClient:</strong> Sincroniza estado via DataItems. Persiste automaticamente — se o relógio reconectar, recebe o último estado. Ideal para estado do treino.</li>
+        <li><strong>MessageClient:</strong> Fire-and-forget para comandos pontuais. Latência ~50-150ms via Bluetooth. Ideal para ações do usuário (concluir série, pular).</li>
+      </ul>
+    </div>
+
+    <div class="card" data-c="decision-timer-local">
+      <h4>Timer local no relógio</h4>
+      <p>O celular envia <code>restSeconds</code> quando o timer inicia. O relógio roda seu próprio <code>CountDownTimer</code> localmente — sem depender de atualizações a cada segundo via Bluetooth. Isso garante countdown suave mesmo com oscilações na conexão.</p>
+    </div>
+
+    <div class="card" data-c="decision-bridge">
+      <h4>Native Module como bridge</h4>
+      <p>Um módulo Kotlin exposto ao React Native via <code>TurboModule</code> (New Architecture). O módulo escuta mudanças no <code>workoutStore</code> via subscriber JS e publica no DataClient. Recebe comandos do MessageClient e invoca callbacks JS para dispatch de actions no store.</p>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ==================== 4. FLUXO DE COMUNICAÇÃO ==================== -->
+  <section>
+    <div class="section-label" data-c="sec-flow">Fluxo de Comunicação</div>
+    <h2 data-c="title-flow">Ciclo de vida de uma interação</h2>
+
+    <div class="mermaid-container" data-c="diagram-flow">
+      <div class="mermaid">
+sequenceDiagram
+    participant U as 👤 Usuário (relógio)
+    participant W as ⌚ Watch App
+    participant B as 📡 Data Layer
+    participant P as 📱 Forja App
+    participant S as 🗄️ workoutStore
+
+    Note over P,S: Usuário inicia treino no celular
+    S->>P: status: 'active', exercise, set
+    P->>B: DataClient.putDataItem(/workout-state)
+    B->>W: onDataChanged
+    W->>W: Exibe exercício + série
+
+    Note over U,W: Usuário conclui série no relógio
+    U->>W: Toca "CONCLUIR SÉRIE"
+    W->>B: MessageClient.sendMessage(completeSet)
+    B->>P: onMessageReceived
+    P->>S: completeSet(lastWeight)
+    S->>P: → { target: 'rest', restSeconds: 60 }
+    P->>B: DataClient.putDataItem(/workout-state)
+    B->>W: onDataChanged → timer mode
+    W->>W: Inicia CountDownTimer(60s)
+    W->>W: Vibra ao terminar ✓
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ==================== 5. PROTOCOLO DE DADOS ==================== -->
+  <section>
+    <div class="section-label" data-c="sec-protocol">Protocolo de Dados</div>
+    <h2 data-c="title-protocol">Formato das mensagens</h2>
+
+    <div class="card" data-c="protocol-state">
+      <h3>Estado do treino (celular → relógio) <span class="badge badge-accent">DataClient</span></h3>
+      <p style="margin-bottom:12px">Publicado em <code>/workout-state</code> a cada mudança relevante no workoutStore:</p>
+      <pre><code>// Path: /workout-state
+{
+  "status": "active" | "idle" | "completed",
+  "screen": "exercise" | "rest" | "checkpoint" | "complete",
+
+  // Exercise context (when screen = "exercise")
+  "exerciseName": "Supino Reto",
+  "exerciseIndex": 2,        // 0-based
+  "totalExercises": 6,
+  "currentSet": 2,           // 1-based
+  "totalSets": 4,
+  "reps": "10-12",
+  "lastWeight": 32.0,        // kg, from appStore.lastWeights
+
+  // Rest context (when screen = "rest")
+  "restSeconds": 60,
+
+  // Checkpoint context (when screen = "checkpoint")
+  "skippedNames": ["Leg Press", "Extensora"],
+
+  // Progress
+  "setsCompleted": [true, true, false, false],
+
+  "timestamp": 1712150400000
+}</code></pre>
+      <p style="margin-top:12px">O DataClient persiste o último DataItem. Se o relógio reconectar após uma queda de conexão, recebe automaticamente o estado mais recente sem ação do celular.</p>
+    </div>
+
+    <div class="card" data-c="protocol-commands">
+      <h3>Comandos (relógio → celular) <span class="badge badge-accent">MessageClient</span></h3>
+      <p style="margin-bottom:12px">Enviados como mensagens fire-and-forget no path <code>/workout-command</code>:</p>
+      <pre><code>// Path: /workout-command
+{ "action": "completeSet" }
+{ "action": "skip" }
+{ "action": "returnToSkipped", "exerciseId": "abc-123" }
+{ "action": "returnAllSkipped" }</code></pre>
+      <p style="margin-top:12px">O bridge no celular traduz cada comando para a action correspondente do <code>workoutStore</code>. O <code>completeSet</code> usa o último peso registrado (<code>appStore.lastWeights[exerciseName]</code>) — sem input de peso no relógio.</p>
+    </div>
+
+    <div class="card" data-c="protocol-lifecycle">
+      <h3>Eventos de lifecycle (celular → relógio) <span class="badge badge-accent">MessageClient</span></h3>
+      <pre><code>// Path: /workout-lifecycle
+{ "event": "workoutStarted", "planName": "Treino A" }  // → auto-launch watch app
+{ "event": "workoutCompleted" }                         // → show summary, close
+{ "event": "workoutReset" }                             // → return to idle</code></pre>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ==================== 6. APP DO RELÓGIO ==================== -->
+  <section>
+    <div class="section-label" data-c="sec-watch">App do Relógio</div>
+    <h2 data-c="title-watch">Wear OS — Kotlin + Jetpack Compose</h2>
+
+    <div class="card" data-c="watch-stack">
+      <h4>Tech Stack</h4>
+      <table>
+        <tr><th>Componente</th><th>Tecnologia</th><th>Versão</th></tr>
+        <tr><td>Linguagem</td><td>Kotlin</td><td>2.0+</td></tr>
+        <tr><td>UI</td><td>Compose for Wear OS</td><td>Material 3 (Wear)</td></tr>
+        <tr><td>Comunicação</td><td>Wear OS Data Layer</td><td>play-services-wearable</td></tr>
+        <tr><td>Timer</td><td>CountDownTimer (Android)</td><td>Built-in</td></tr>
+        <tr><td>Haptics</td><td>Vibrator (Android)</td><td>Built-in</td></tr>
+        <tr><td>Navigation</td><td>Horologist Navigation</td><td>Latest</td></tr>
+        <tr><td>Build</td><td>Gradle + AGP</td><td>8.x</td></tr>
+        <tr><td>Min SDK</td><td>Android</td><td>API 30 (Wear OS 3+)</td></tr>
+      </table>
+    </div>
+
+    <div class="card" data-c="watch-screens">
+      <h3>Telas</h3>
+      <table>
+        <tr><th>Tela</th><th>Trigger</th><th>Conteúdo</th></tr>
+        <tr>
+          <td><code>IdleScreen</code></td>
+          <td><code>status = "idle"</code></td>
+          <td>Logo Forja + "Inicie um treino no celular" + indicador de conexão</td>
+        </tr>
+        <tr>
+          <td><code>ExerciseScreen</code></td>
+          <td><code>screen = "exercise"</code></td>
+          <td>Nome do exercício, série atual, peso, dots de progresso, botão "Concluir Série"</td>
+        </tr>
+        <tr>
+          <td><code>RestScreen</code></td>
+          <td><code>screen = "rest"</code></td>
+          <td>Countdown circular, nome do próximo exercício, vibração ao fim</td>
+        </tr>
+        <tr>
+          <td><code>CheckpointScreen</code></td>
+          <td><code>screen = "checkpoint"</code></td>
+          <td>Lista de exercícios pulados, botões "Retomar" / "Ignorar"</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="card" data-c="watch-viewmodel">
+      <h3>ViewModel</h3>
+      <pre><code>// WorkoutViewModel.kt
+class WorkoutViewModel : ViewModel() {
+
+    // State from phone (via DataClient)
+    val workoutState = MutableStateFlow(WorkoutUiState.Idle)
+
+    // Timer (local)
+    private var countDownTimer: CountDownTimer? = null
+    val timerSecondsLeft = MutableStateFlow(0)
+    val timerProgress = MutableStateFlow(0f)  // 0.0 → 1.0
+
+    // Connection
+    val isConnected = MutableStateFlow(false)
+
+    fun onDataChanged(dataItem: DataItem) {
+        // Parse /workout-state → update workoutState
+        // If screen == "rest" → startLocalTimer(restSeconds)
+    }
+
+    fun completeSet() {
+        // Send MessageClient → /workout-command { action: "completeSet" }
+    }
+
+    fun skipExercise() {
+        // Send MessageClient → /workout-command { action: "skip" }
+    }
+
+    fun returnToSkipped(exerciseId: String) {
+        // Send MessageClient → /workout-command { action: "returnToSkipped" }
+    }
+
+    private fun startLocalTimer(seconds: Int) {
+        countDownTimer?.cancel()
+        countDownTimer = object : CountDownTimer(seconds * 1000L, 1000) {
+            override fun onTick(millisUntilFinished: Long) {
+                timerSecondsLeft.value = (millisUntilFinished / 1000).toInt()
+                timerProgress.value = 1f - (millisUntilFinished.toFloat() / (seconds * 1000))
+            }
+            override fun onFinish() {
+                timerSecondsLeft.value = 0
+                timerProgress.value = 1f
+                vibratePattern()  // 2 curtos + 1 longo
+            }
+        }.start()
+    }
+}</code></pre>
+    </div>
+
+    <div class="card" data-c="watch-ambient">
+      <h3>Ambient Mode (Always-on Display)</h3>
+      <p>Em ambient mode, a tela simplifica para conservar bateria:</p>
+      <ul>
+        <li><strong>ExerciseScreen:</strong> Nome do exercício + "Série X/Y" em branco sobre preto, sem accent color</li>
+        <li><strong>RestScreen:</strong> Apenas o countdown numérico centralizado, sem anel de progresso</li>
+        <li>Atualização a cada 1 minuto (Wear OS requirement)</li>
+        <li>Anti burn-in: conteúdo levemente deslocado a cada atualização</li>
+      </ul>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ==================== 7. BRIDGE NO CELULAR ==================== -->
+  <section>
+    <div class="section-label" data-c="sec-bridge">Bridge no Celular</div>
+    <h2 data-c="title-bridge">Native Module — WearBridge</h2>
+
+    <div class="card" data-c="bridge-module">
+      <h3>TurboModule (New Architecture) <span class="badge badge-new">Novo</span></h3>
+      <pre><code>// android/app/src/main/java/com/forja/app/wear/WearBridgeModule.kt
+
+@ReactModule(name = "WearBridge")
+class WearBridgeModule(reactContext: ReactApplicationContext) :
+    NativeWearBridgeSpec(reactContext),
+    DataClient.OnDataChangedListener,
+    MessageClient.OnMessageReceivedListener {
+
+    // === JS → Native ===
+
+    /** Publish workout state to watch via DataClient */
+    override fun syncWorkoutState(stateJson: String) {
+        val dataItem = PutDataMapRequest.create("/workout-state").apply {
+            dataMap.putString("state", stateJson)
+            dataMap.putLong("timestamp", System.currentTimeMillis())
+        }.asPutDataRequest().setUrgent()
+
+        Wearable.getDataClient(reactApplicationContext).putDataItem(dataItem)
+    }
+
+    /** Send lifecycle event to watch via MessageClient */
+    override fun sendLifecycleEvent(eventJson: String) {
+        // Find connected watch node, send message to /workout-lifecycle
+    }
+
+    // === Native → JS ===
+
+    /** Called when watch sends a command */
+    override fun onMessageReceived(messageEvent: MessageEvent) {
+        if (messageEvent.path == "/workout-command") {
+            val command = String(messageEvent.data)
+            // Emit event to JS: "onWatchCommand" → { action: "completeSet" }
+            sendEvent("onWatchCommand", command)
+        }
+    }
+}</code></pre>
+    </div>
+
+    <div class="card" data-c="bridge-js">
+      <h3>JavaScript side <span class="badge badge-new">Novo</span></h3>
+      <pre><code>// src/services/wearBridge.ts
+import { NativeModules, NativeEventEmitter } from 'react-native'
+
+const { WearBridge } = NativeModules
+const emitter = new NativeEventEmitter(WearBridge)
+
+/** Subscribe to workoutStore and sync state to watch */
+export function startWatchSync(store: typeof useWorkoutStore) {
+  return store.subscribe((state) => {
+    const watchState = mapToWatchState(state)
+    WearBridge.syncWorkoutState(JSON.stringify(watchState))
+  })
+}
+
+/** Listen for commands from watch and dispatch to store */
+export function listenForWatchCommands(
+  workoutStore: typeof useWorkoutStore,
+  appStore: typeof useAppStore,
+) {
+  return emitter.addListener('onWatchCommand', (commandJson: string) => {
+    const { action, exerciseId } = JSON.parse(commandJson)
+    const state = workoutStore.getState()
+
+    switch (action) {
+      case 'completeSet': {
+        const exerciseName = state.queue[0]?.name
+        const lastWeight = appStore.getState().lastWeights[exerciseName] ?? 0
+        workoutStore.getState().completeSet(lastWeight)
+        break
+      }
+      case 'skip':
+        workoutStore.getState().skipExercise()
+        break
+      case 'returnToSkipped':
+        workoutStore.getState().returnToSkipped(exerciseId as ExerciseId)
+        break
+      case 'returnAllSkipped':
+        state.skippedIds.forEach(id =>
+          workoutStore.getState().returnToSkipped(id)
+        )
+        break
+    }
+  })
+}</code></pre>
+    </div>
+
+    <div class="card" data-c="bridge-integration">
+      <h3>Integração no layout do workout <span class="badge badge-change">Alterado</span></h3>
+      <pre><code>// src/app/(workout)/_layout.tsx — adicionar setup do watch sync
+
+useEffect(() => {
+  if (Platform.OS !== 'android') return
+
+  const unsubSync = startWatchSync(useWorkoutStore)
+  const unsubCommands = listenForWatchCommands(useWorkoutStore, useAppStore)
+
+  // Notify watch that workout started
+  WearBridge.sendLifecycleEvent(JSON.stringify({
+    event: 'workoutStarted',
+    planName: activePlan?.name,
+  }))
+
+  return () => {
+    unsubSync()
+    unsubCommands.remove()
+    WearBridge.sendLifecycleEvent(JSON.stringify({
+      event: 'workoutReset',
+    }))
+  }
+}, [])</code></pre>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ==================== 8. RECONEXÃO ==================== -->
+  <section>
+    <div class="section-label" data-c="sec-reconnect">Resiliência</div>
+    <h2 data-c="title-reconnect">Comportamento offline e reconexão</h2>
+
+    <div class="card" data-c="reconnect-data-layer">
+      <h4>DataClient persiste automaticamente</h4>
+      <p>O DataClient do Wear OS armazena o último DataItem no dispositivo. Se a conexão cai e volta, o relógio recebe o estado mais recente automaticamente via <code>onDataChanged</code> — sem necessidade de lógica de reconexão manual.</p>
+    </div>
+
+    <div class="card" data-c="reconnect-timer">
+      <h4>Timer continua rodando</h4>
+      <p>O <code>CountDownTimer</code> do relógio é local. Uma vez iniciado com <code>restSeconds</code>, continua rodando independente da conexão Bluetooth. A vibração ao final funciona mesmo offline.</p>
+    </div>
+
+    <div class="card" data-c="reconnect-commands">
+      <h4>Comandos perdidos</h4>
+      <p>Se o relógio enviar um comando (<code>completeSet</code>) durante uma queda de conexão, o <code>MessageClient</code> não garante entrega. O relógio deve detectar que o estado não mudou após ~2s e exibir um toast "Sem conexão — tente novamente". O celular continua funcionando normalmente como fallback.</p>
+    </div>
+
+    <div class="card" data-c="reconnect-states">
+      <h4>Estados da conexão no relógio</h4>
+      <table>
+        <tr><th>Estado</th><th>Indicador</th><th>Comportamento</th></tr>
+        <tr><td>Conectado</td><td>🟢 (verde, 6px)</td><td>Operação normal</td></tr>
+        <tr><td>Reconectando</td><td>🟡 (amarelo, pulsante)</td><td>Timer local continua, comandos enfileirados</td></tr>
+        <tr><td>Desconectado (&gt;30s)</td><td>🔴 + mensagem</td><td>"Verifique o celular" — app continua mostrando último estado</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ==================== 9. ARQUIVOS AFETADOS ==================== -->
+  <section>
+    <div class="section-label" data-c="sec-files">Arquivos Afetados</div>
+    <h2 data-c="title-files">O que muda no codebase</h2>
+
+    <div class="card" data-c="files-tree">
+      <div class="file-tree">
+        <div>src/</div>
+        <div class="indent">services/</div>
+        <div class="new indent2">wearBridge.ts                — JS bridge: sync state + listen commands</div>
+        <div class="indent">app/</div>
+        <div class="changed indent2">(workout)/_layout.tsx         — useEffect para watch sync setup</div>
+        <div>&nbsp;</div>
+        <div>android/</div>
+        <div class="indent">app/src/main/java/com/forja/app/</div>
+        <div class="new indent2">wear/</div>
+        <div class="new indent3">WearBridgeModule.kt          — TurboModule: DataClient + MessageClient</div>
+        <div class="new indent3">WearBridgePackage.kt         — Package registration</div>
+        <div>&nbsp;</div>
+        <div class="new">watch/                                  — Standalone Wear OS project</div>
+        <div class="new indent">app/</div>
+        <div class="new indent2">build.gradle.kts</div>
+        <div class="new indent2">src/main/</div>
+        <div class="new indent3">AndroidManifest.xml</div>
+        <div class="new indent3">java/com/forja/watch/</div>
+        <div class="new indent4">MainActivity.kt</div>
+        <div class="new indent4">presentation/</div>
+        <div class="new indent4">&nbsp;&nbsp;WorkoutViewModel.kt       — State + timer + commands</div>
+        <div class="new indent4">&nbsp;&nbsp;theme/</div>
+        <div class="new indent4">&nbsp;&nbsp;&nbsp;&nbsp;ForjaWatchTheme.kt      — Dark theme, #C2F000 accent</div>
+        <div class="new indent4">&nbsp;&nbsp;screens/</div>
+        <div class="new indent4">&nbsp;&nbsp;&nbsp;&nbsp;IdleScreen.kt           — Logo + "Inicie no celular"</div>
+        <div class="new indent4">&nbsp;&nbsp;&nbsp;&nbsp;ExerciseScreen.kt       — Exercise + sets + weight</div>
+        <div class="new indent4">&nbsp;&nbsp;&nbsp;&nbsp;RestScreen.kt           — Circular countdown + haptic</div>
+        <div class="new indent4">&nbsp;&nbsp;&nbsp;&nbsp;CheckpointScreen.kt     — Skipped exercises list</div>
+        <div class="new indent4">service/</div>
+        <div class="new indent4">&nbsp;&nbsp;DataLayerListenerService.kt — Background listener</div>
+        <div class="new indent2">res/</div>
+        <div class="new indent3">values/colors.xml</div>
+        <div class="new indent3">mipmap-*/ic_launcher.webp</div>
+        <div class="new indent">build.gradle.kts</div>
+        <div class="new indent">settings.gradle.kts</div>
+        <div>&nbsp;</div>
+        <div class="changed">package.json                            — (sem novas deps npm)</div>
+      </div>
+    </div>
+
+    <p data-c="desc-deps" style="margin-top:12px"><strong style="color:var(--text)">Zero novas dependências npm.</strong> O bridge usa <code>NativeModules</code> e <code>NativeEventEmitter</code> nativos do React Native. O app do relógio é um projeto Gradle independente com suas próprias dependências (Compose, Horologist, play-services-wearable).</p>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ==================== 10. DEPLOY ==================== -->
+  <section>
+    <div class="section-label" data-c="sec-deploy">Deploy</div>
+    <h2 data-c="title-deploy">Instalação no relógio</h2>
+
+    <div class="card" data-c="deploy-adb">
+      <h3>Via ADB Wi-Fi (recomendado para uso pessoal)</h3>
+      <p style="margin-bottom:12px">O app do relógio é buildado e instalado diretamente, sem Play Store:</p>
+      <pre><code># 1. Build do APK (no diretório watch/)
+cd watch && ./gradlew assembleRelease
+
+# 2. Conectar ao relógio (habilitar ADB Wi-Fi nas configurações)
+adb connect 192.168.1.XX:5555
+
+# 3. Instalar
+adb install app/build/outputs/apk/release/app-release.apk
+
+# 4. Atualizar (substitui sem desinstalar)
+adb install -r app/build/outputs/apk/release/app-release.apk</code></pre>
+    </div>
+
+    <div class="card" data-c="deploy-script">
+      <h3>Script de conveniência</h3>
+      <pre><code># scripts/deploy-watch.sh
+#!/bin/bash
+set -e
+
+WATCH_IP="${1:-192.168.1.42}"
+echo "Building watch APK..."
+cd watch && ./gradlew assembleRelease
+
+echo "Connecting to watch at $WATCH_IP..."
+adb connect "$WATCH_IP:5555"
+
+echo "Installing..."
+adb install -r app/build/outputs/apk/release/app-release.apk
+
+echo "✅ Done! Forja Watch installed."</code></pre>
+      <p style="margin-top:8px">Uso: <code>./scripts/deploy-watch.sh 192.168.1.42</code></p>
+    </div>
+
+    <div class="card" data-c="deploy-phone">
+      <h3>App do celular</h3>
+      <p>O módulo WearBridge é compilado junto com o APK principal pelo EAS Build. Nenhuma mudança no pipeline de deploy do celular — o <code>eas build</code> já compila módulos nativos do <code>android/</code>.</p>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ==================== 11. ESTRATÉGIA DE TESTES ==================== -->
+  <section>
+    <div class="section-label" data-c="sec-tests">Estratégia de Testes</div>
+    <h2 data-c="title-tests">Testes por camada</h2>
+
+    <div class="card" data-c="test-js">
+      <h3>JavaScript (Jest)</h3>
+      <table>
+        <tr><th>Arquivo</th><th>O que testa</th></tr>
+        <tr><td><code>wearBridge.test.ts</code></td><td><code>mapToWatchState</code>: converte workoutStore state → watch state JSON corretamente para cada cenário (exercise, rest, checkpoint, idle)</td></tr>
+        <tr><td><code>wearBridge.test.ts</code></td><td><code>listenForWatchCommands</code>: cada comando do relógio dispara a action correta no store (mock NativeEventEmitter)</td></tr>
+      </table>
+    </div>
+
+    <div class="card" data-c="test-kotlin-bridge">
+      <h3>Kotlin — Bridge (JUnit)</h3>
+      <table>
+        <tr><th>Arquivo</th><th>O que testa</th></tr>
+        <tr><td><code>WearBridgeModuleTest.kt</code></td><td>Serialização do state JSON → DataItem, parsing de comandos recebidos → event emitido ao JS</td></tr>
+      </table>
+    </div>
+
+    <div class="card" data-c="test-kotlin-watch">
+      <h3>Kotlin — Watch App (JUnit + Compose Test)</h3>
+      <table>
+        <tr><th>Arquivo</th><th>O que testa</th></tr>
+        <tr><td><code>WorkoutViewModelTest.kt</code></td><td>State transitions: idle → exercise → rest → checkpoint. Timer countdown. Command dispatch.</td></tr>
+        <tr><td><code>ExerciseScreenTest.kt</code></td><td>Renderiza nome, série, peso, dots. Botão concluir chama ViewModel.</td></tr>
+        <tr><td><code>RestScreenTest.kt</code></td><td>Countdown visual, anel de progresso, transição ao terminar.</td></tr>
+      </table>
+    </div>
+
+    <div class="card" data-c="test-manual">
+      <h3>Teste manual end-to-end</h3>
+      <p>Cenário completo no dispositivo real (Galaxy Watch + celular):</p>
+      <ol>
+        <li>Iniciar treino no celular → watch abre automaticamente</li>
+        <li>Concluir série pelo watch → timer inicia no watch + celular sincronizado</li>
+        <li>Timer termina → vibração + próximo exercício</li>
+        <li>Pular exercício → watch avança</li>
+        <li>Checkpoint → retomar exercício pulado</li>
+        <li>Desconectar Bluetooth → timer continua → reconectar → estado sincroniza</li>
+      </ol>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ==================== 12. DÍVIDA TÉCNICA ==================== -->
+  <section>
+    <div class="section-label" data-c="sec-debt">Dívida Técnica</div>
+    <h2 data-c="title-debt">Trade-offs aceitos</h2>
+
+    <div class="card" data-c="debt-no-weight-input">
+      <h4>Sem input de peso no relógio</h4>
+      <p>Digitar peso em tela circular de 1.4" é impraticável. O <code>completeSet</code> do relógio sempre usa o último peso registrado via <code>appStore.lastWeights</code>. Para ajustar o peso, o usuário precisa usar o celular. Aceitável pois a maioria das séries usa o mesmo peso.</p>
+    </div>
+
+    <div class="card" data-c="debt-no-standalone">
+      <h4>Sem modo standalone</h4>
+      <p>O relógio não funciona sem o celular. Toda lógica de negócio está no <code>workoutStore</code>. Implementar standalone exigiria duplicar stores e MMKV no Kotlin — complexidade desproporcional para app pessoal.</p>
+    </div>
+
+    <div class="card" data-c="debt-separate-project">
+      <h4>Projeto Gradle separado (não multi-module)</h4>
+      <p>O app do relógio vive em <code>watch/</code> como projeto Gradle independente, não como módulo do projeto principal do Expo. Isso simplifica o build (sem interferir no <code>eas build</code>) mas significa dois builds separados. Em v2, poderia integrar como multi-module se for publicar na Play Store.</p>
+    </div>
+
+    <div class="card" data-c="debt-command-lost">
+      <h4>Comandos não são enfileirados</h4>
+      <p>Se a conexão cai no momento exato de um <code>completeSet</code>, o comando é perdido. O relógio detecta via timeout e pede retry. Para app pessoal na academia (Bluetooth range ~10m), a probabilidade é muito baixa.</p>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ==================== 13. TAREFAS ==================== -->
+  <section>
+    <div class="section-label" data-c="sec-tasks">Tarefas de Implementação</div>
+    <h2 data-c="title-tasks">3 fases</h2>
+
+    <!-- Phase 1 -->
+    <div class="phase-card" data-c="phase-1">
+      <div class="phase-header">
+        <div class="phase-title">Fase 1 — Bridge + Timer + Concluir série</div>
+        <span class="badge badge-p0">P0</span>
+      </div>
+      <ul class="task-list">
+        <li data-c="task-1-1">
+          <span class="task-id">1.1</span>
+          <span class="task-desc">Criar projeto Wear OS em <code>watch/</code> com Compose for Wear OS, theme Forja (dark + #C2F000)</span>
+          <span class="task-file">watch/</span>
+        </li>
+        <li data-c="task-1-2">
+          <span class="task-id">1.2</span>
+          <span class="task-desc">Implementar <code>DataLayerListenerService</code> — receber estado do celular via DataClient</span>
+          <span class="task-file">watch/.../DataLayerListenerService.kt</span>
+        </li>
+        <li data-c="task-1-3">
+          <span class="task-id">1.3</span>
+          <span class="task-desc">Implementar <code>WorkoutViewModel</code> — state management, timer local, comando dispatch</span>
+          <span class="task-file">watch/.../WorkoutViewModel.kt</span>
+        </li>
+        <li data-c="task-1-4">
+          <span class="task-id">1.4</span>
+          <span class="task-desc">Criar <code>ExerciseScreen</code> — nome, série, peso, dots, botão concluir</span>
+          <span class="task-file">watch/.../screens/ExerciseScreen.kt</span>
+        </li>
+        <li data-c="task-1-5">
+          <span class="task-id">1.5</span>
+          <span class="task-desc">Criar <code>RestScreen</code> — countdown circular, haptic ao terminar, próximo exercício</span>
+          <span class="task-file">watch/.../screens/RestScreen.kt</span>
+        </li>
+        <li data-c="task-1-6">
+          <span class="task-id">1.6</span>
+          <span class="task-desc">Criar <code>IdleScreen</code> — logo + mensagem + indicador de conexão</span>
+          <span class="task-file">watch/.../screens/IdleScreen.kt</span>
+        </li>
+        <li data-c="task-1-7">
+          <span class="task-id">1.7</span>
+          <span class="task-desc">Criar <code>WearBridgeModule</code> TurboModule — syncWorkoutState + sendLifecycleEvent + onMessageReceived</span>
+          <span class="task-file">android/.../wear/WearBridgeModule.kt</span>
+        </li>
+        <li data-c="task-1-8">
+          <span class="task-id">1.8</span>
+          <span class="task-desc">Criar <code>wearBridge.ts</code> — mapToWatchState, startWatchSync, listenForWatchCommands</span>
+          <span class="task-file">src/services/wearBridge.ts</span>
+        </li>
+        <li data-c="task-1-9">
+          <span class="task-id">1.9</span>
+          <span class="task-desc">Integrar watch sync no workout layout — useEffect com setup/teardown</span>
+          <span class="task-file">src/app/(workout)/_layout.tsx</span>
+        </li>
+        <li data-c="task-1-10">
+          <span class="task-id">1.10</span>
+          <span class="task-desc">Auto-launch: enviar lifecycle event <code>workoutStarted</code> → watch abre automaticamente</span>
+          <span class="task-file">watch/.../DataLayerListenerService.kt</span>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Phase 2 -->
+    <div class="phase-card" data-c="phase-2">
+      <div class="phase-header">
+        <div class="phase-title">Fase 2 — Navegação + Resiliência</div>
+        <span class="badge badge-p1">P1</span>
+      </div>
+      <ul class="task-list">
+        <li data-c="task-2-1">
+          <span class="task-id">2.1</span>
+          <span class="task-desc">Criar <code>CheckpointScreen</code> — lista de exercícios pulados com botões retomar/ignorar</span>
+          <span class="task-file">watch/.../screens/CheckpointScreen.kt</span>
+        </li>
+        <li data-c="task-2-2">
+          <span class="task-id">2.2</span>
+          <span class="task-desc">Implementar pular exercício — swipe left ou botão secundário no <code>ExerciseScreen</code></span>
+          <span class="task-file">watch/.../screens/ExerciseScreen.kt</span>
+        </li>
+        <li data-c="task-2-3">
+          <span class="task-id">2.3</span>
+          <span class="task-desc">Implementar indicador de conexão — 🟢/🟡/🔴 com detecção de node capability</span>
+          <span class="task-file">watch/.../WorkoutViewModel.kt</span>
+        </li>
+        <li data-c="task-2-4">
+          <span class="task-id">2.4</span>
+          <span class="task-desc">Timeout de comando — se estado não muda em 2s após comando, exibir toast "Sem conexão"</span>
+          <span class="task-file">watch/.../WorkoutViewModel.kt</span>
+        </li>
+        <li data-c="task-2-5">
+          <span class="task-id">2.5</span>
+          <span class="task-desc">Ambient mode — always-on display simplificado para ExerciseScreen e RestScreen</span>
+          <span class="task-file">watch/.../screens/</span>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Phase 3 -->
+    <div class="phase-card" data-c="phase-3">
+      <div class="phase-header">
+        <div class="phase-title">Fase 3 — Polish + Deploy</div>
+        <span class="badge badge-p2">P2</span>
+      </div>
+      <ul class="task-list">
+        <li data-c="task-3-1">
+          <span class="task-id">3.1</span>
+          <span class="task-desc">Animações de transição entre telas (Compose for Wear OS transitions)</span>
+          <span class="task-file">watch/.../MainActivity.kt</span>
+        </li>
+        <li data-c="task-3-2">
+          <span class="task-id">3.2</span>
+          <span class="task-desc">Otimização de bateria — reduzir frequência de sync, usar DataClient batch</span>
+          <span class="task-file">android/.../WearBridgeModule.kt</span>
+        </li>
+        <li data-c="task-3-3">
+          <span class="task-id">3.3</span>
+          <span class="task-desc">Script <code>deploy-watch.sh</code> — build + ADB install em um comando</span>
+          <span class="task-file">scripts/deploy-watch.sh</span>
+        </li>
+        <li data-c="task-3-4">
+          <span class="task-id">3.4</span>
+          <span class="task-desc">Teste end-to-end no dispositivo real — treino completo celular + relógio</span>
+          <span class="task-file">Manual test</span>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ==================== 14. AUTORES ==================== -->
+  <section>
+    <div class="section-label" data-c="sec-authors">Autores</div>
+    <h2 data-c="title-authors">Equipe</h2>
+    <div class="card" data-c="authors">
+      <table>
+        <tr><th>Papel</th><th>Nome</th></tr>
+        <tr><td>Product Owner</td><td>Pedro Peralta</td></tr>
+        <tr><td>Solution Design</td><td>Claude (Opus 4.6)</td></tr>
+      </table>
+    </div>
+  </section>
+
+</div>
+
+<!-- Commenting System JS -->
+<script>
+const STORAGE_KEY = 'solution-comments-watch_companion-v1';
+let reviewMode = false;
+let activeTarget = null;
+let comments = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+
+function toggleReviewMode() {
+  reviewMode = !reviewMode;
+  const btn = document.getElementById('reviewToggle');
+  const exportBtn = document.getElementById('exportBtn');
+  const panel = document.getElementById('commentPanel');
+
+  if (reviewMode) {
+    btn.textContent = 'Exit Review';
+    btn.classList.add('active');
+    exportBtn.style.display = 'inline-block';
+    panel.classList.add('open');
+    document.querySelectorAll('[data-c]').forEach(el => {
+      el.classList.add('commentable');
+      el.addEventListener('click', onElementClick);
+    });
+  } else {
+    btn.textContent = 'Review Mode';
+    btn.classList.remove('active');
+    exportBtn.style.display = 'none';
+    panel.classList.remove('open');
+    document.querySelectorAll('[data-c]').forEach(el => {
+      el.classList.remove('commentable');
+      el.removeEventListener('click', onElementClick);
+    });
+  }
+  updateCommentHighlights();
+}
+
+function onElementClick(e) {
+  e.stopPropagation();
+  const target = e.currentTarget.getAttribute('data-c');
+  activeTarget = target;
+  document.getElementById('commentTarget').textContent = '#' + target;
+  document.getElementById('commentForm').style.display = 'block';
+  document.getElementById('commentInput').value = '';
+  document.getElementById('commentInput').focus();
+  renderComments();
+}
+
+function submitComment() {
+  const input = document.getElementById('commentInput');
+  const text = input.value.trim();
+  if (!text || !activeTarget) return;
+
+  comments.push({
+    id: Date.now(),
+    target: activeTarget,
+    text: text,
+    timestamp: new Date().toISOString()
+  });
+
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(comments));
+  input.value = '';
+  renderComments();
+  updateCommentHighlights();
+}
+
+function deleteComment(id) {
+  comments = comments.filter(c => c.id !== id);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(comments));
+  renderComments();
+  updateCommentHighlights();
+}
+
+function renderComments() {
+  const list = document.getElementById('commentList');
+  const countEl = document.getElementById('commentCount');
+
+  if (comments.length === 0) {
+    list.innerHTML = '<div class="no-comments">Nenhum comentário ainda. Clique em elementos destacados para comentar.</div>';
+    countEl.style.display = 'none';
+    return;
+  }
+
+  countEl.style.display = 'inline';
+  countEl.textContent = comments.length;
+
+  const filtered = activeTarget
+    ? [
+        ...comments.filter(c => c.target === activeTarget),
+        ...comments.filter(c => c.target !== activeTarget)
+      ]
+    : comments;
+
+  list.innerHTML = filtered.map(c => `
+    <div class="comment-item" ${c.target === activeTarget ? 'style="border-left:2px solid var(--accent)"' : ''}>
+      <div class="comment-item-header">
+        <span class="comment-item-section">#${c.target}</span>
+        <span class="comment-item-time">${new Date(c.timestamp).toLocaleString('pt-BR')}</span>
+      </div>
+      <div class="comment-item-text">${c.text}</div>
+      <button class="comment-item-delete" onclick="deleteComment(${c.id})">Remover</button>
+    </div>
+  `).join('');
+}
+
+function updateCommentHighlights() {
+  const targets = new Set(comments.map(c => c.target));
+  document.querySelectorAll('[data-c]').forEach(el => {
+    if (targets.has(el.getAttribute('data-c'))) {
+      el.classList.add('has-comment');
+    } else {
+      el.classList.remove('has-comment');
+    }
+  });
+}
+
+function closePanel() {
+  document.getElementById('commentPanel').classList.remove('open');
+  activeTarget = null;
+  document.getElementById('commentForm').style.display = 'none';
+}
+
+function exportComments() {
+  if (comments.length === 0) {
+    alert('Nenhum comentário para exportar.');
+    return;
+  }
+
+  let output = '# Solution Design Review Comments\n\n';
+  comments.forEach((c, i) => {
+    output += `## #${i + 1} — ${c.target}\n`;
+    output += `${c.text}\n\n`;
+  });
+
+  navigator.clipboard.writeText(output).then(() => {
+    alert('Comentários copiados para o clipboard! Cole de volta no Claude para revisões.');
+  }).catch(() => {
+    const textarea = document.createElement('textarea');
+    textarea.value = output;
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textarea);
+    alert('Comentários copiados para o clipboard!');
+  });
+}
+
+updateCommentHighlights();
+
+document.getElementById('commentInput')?.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    submitComment();
+  }
+});
+
+// Initialize Mermaid
+mermaid.initialize({
+  theme: 'dark',
+  themeVariables: {
+    primaryColor: '#1a1a1a',
+    primaryTextColor: '#f5f5f4',
+    primaryBorderColor: '#C2F000',
+    lineColor: '#C2F000',
+    secondaryColor: '#252525',
+    tertiaryColor: '#1a1a1a',
+    edgeLabelBackground: '#1a1a1a',
+    fontFamily: 'Inter, sans-serif',
+    fontSize: '13px',
+  },
+  flowchart: {
+    curve: 'basis',
+    useMaxWidth: true,
+  },
+  sequence: {
+    actorMargin: 30,
+    mirrorActors: false,
+  }
+});
+</script>
+
+</body>
+</html>
