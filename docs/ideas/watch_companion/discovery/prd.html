@@ -1,0 +1,1238 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PRD — Watch Companion | Forja</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --accent: #C2F000;
+    --accent-dim: rgba(194, 240, 0, 0.12);
+    --danger: #ef4444;
+    --warning: #f59e0b;
+    --p0: #ef4444;
+    --p1: #f59e0b;
+    --p2: #3b82f6;
+    --bg: #0e0e0e;
+    --surface: #1a1a1a;
+    --surface-2: #252525;
+    --border: #2a2a2a;
+    --text: #f5f5f4;
+    --text-med: #a8a29e;
+    --text-dim: #57534e;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    padding: 0;
+  }
+
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 32px 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-inner {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .header h1 {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--accent);
+    letter-spacing: -0.5px;
+  }
+  .header .meta {
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+  .review-toggle {
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    padding: 8px 20px;
+    border-radius: 100px;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .review-toggle:hover { opacity: 0.85; }
+  .review-toggle.active {
+    background: var(--danger);
+    color: white;
+  }
+
+  .content {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 32px 120px;
+  }
+
+  section { margin-bottom: 48px; }
+  .section-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+  h2 {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: var(--text);
+  }
+  h3 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: var(--text);
+  }
+  p, li {
+    font-size: 14px;
+    color: var(--text-med);
+    line-height: 1.7;
+  }
+  ul, ol {
+    padding-left: 20px;
+    margin-bottom: 16px;
+  }
+  li { margin-bottom: 6px; }
+  li strong { color: var(--text); }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 16px;
+  }
+  .card h3 { margin-bottom: 8px; }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  .badge-p0 { background: rgba(239,68,68,0.15); color: var(--p0); }
+  .badge-p1 { background: rgba(245,158,11,0.15); color: var(--p1); }
+  .badge-p2 { background: rgba(59,130,246,0.15); color: var(--p2); }
+
+  .feature-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  @media (max-width: 640px) {
+    .feature-grid { grid-template-columns: 1fr; }
+  }
+
+  .metric-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 640px) {
+    .metric-grid { grid-template-columns: 1fr; }
+  }
+  .metric-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+  }
+  .metric-value {
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--accent);
+    line-height: 1;
+  }
+  .metric-label {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-top: 6px;
+  }
+
+  .story {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 12px 12px 0;
+    padding: 20px 24px;
+    margin-bottom: 12px;
+  }
+  .story .role {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+  .story p { color: var(--text); font-size: 14px; }
+  .story .story-badges {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+  .story-id {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .criteria {
+    background: var(--surface-2);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-top: 10px;
+    font-size: 13px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    color: var(--text-med);
+  }
+  .criteria strong { color: var(--accent); font-weight: 600; }
+
+  .flow-diagram {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 24px 0;
+  }
+  .flow-step {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    text-align: center;
+    min-width: 130px;
+  }
+  .flow-step-icon { font-size: 24px; margin-bottom: 4px; }
+  .flow-step-label { font-size: 13px; font-weight: 600; color: var(--text); }
+  .flow-step-desc { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+  .flow-arrow { font-size: 18px; color: var(--text-dim); padding: 0 8px; }
+
+  /* Watch mockup */
+  .watch-frame {
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    background: var(--bg);
+    border: 3px solid var(--border);
+    overflow: hidden;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+  .watch-frame::before {
+    content: '';
+    position: absolute;
+    inset: 4px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    pointer-events: none;
+  }
+  .watch-content {
+    width: 170px;
+    text-align: center;
+    padding: 0 8px;
+  }
+  .watch-pair {
+    display: flex;
+    gap: 32px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 24px 0;
+  }
+  .watch-wrapper { text-align: center; }
+  .watch-label {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 12px;
+    font-style: italic;
+  }
+  .w-exercise { font-size: 11px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 1.5px; }
+  .w-name { font-size: 15px; font-weight: 700; color: var(--text); margin: 4px 0; }
+  .w-meta { font-size: 10px; color: var(--text-dim); }
+  .w-timer { font-size: 42px; font-weight: 800; color: var(--accent); line-height: 1; margin: 6px 0; }
+  .w-timer-label { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; }
+  .w-progress { display: flex; gap: 4px; justify-content: center; margin: 8px 0; }
+  .w-dot { width: 18px; height: 4px; border-radius: 2px; background: var(--surface-2); }
+  .w-dot.done { background: var(--accent); }
+  .w-dot.current { background: var(--accent); opacity: 0.5; }
+  .w-btn {
+    display: block;
+    width: 100%;
+    padding: 8px;
+    border-radius: 100px;
+    font-size: 10px;
+    font-weight: 700;
+    text-align: center;
+    margin-top: 8px;
+    letter-spacing: 0.5px;
+  }
+  .w-btn-primary { background: var(--accent); color: var(--bg); }
+  .w-btn-secondary { background: var(--surface-2); color: var(--text-med); border: 1px solid var(--border); }
+  .w-ring {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    border: 4px solid var(--surface-2);
+    border-top-color: var(--accent);
+    border-right-color: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    margin: 0 auto;
+    transform: rotate(-45deg);
+  }
+  .w-ring-inner { transform: rotate(45deg); text-align: center; }
+
+  .mockup-label {
+    font-size: 11px;
+    color: var(--text-dim);
+    text-align: center;
+    margin-top: 8px;
+    font-style: italic;
+  }
+
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 48px 0;
+  }
+
+  .arch-diagram {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 32px 24px;
+    margin: 16px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .arch-box {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    text-align: center;
+    min-width: 140px;
+  }
+  .arch-box-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: var(--accent); margin-bottom: 4px; }
+  .arch-box-title { font-size: 14px; font-weight: 700; color: var(--text); }
+  .arch-box-desc { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+  .arch-arrow { font-size: 20px; color: var(--text-dim); }
+
+  /* Commenting system */
+  [data-c].commentable {
+    cursor: pointer;
+    position: relative;
+    transition: outline 0.15s, background 0.15s;
+    outline: 2px solid transparent;
+    border-radius: 4px;
+  }
+  [data-c].commentable:hover {
+    outline: 2px solid var(--accent);
+    background: rgba(194, 240, 0, 0.04);
+  }
+  [data-c].commentable.has-comment {
+    outline: 2px solid var(--warning);
+    background: rgba(245, 158, 11, 0.06);
+  }
+
+  .comment-panel {
+    display: none;
+    position: fixed;
+    right: 0;
+    top: 0;
+    width: 360px;
+    height: 100vh;
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    z-index: 200;
+    flex-direction: column;
+  }
+  .comment-panel.open { display: flex; }
+  .comment-panel-header {
+    padding: 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .comment-panel-header h3 { font-size: 14px; font-weight: 700; margin: 0; }
+  .comment-panel-body { flex: 1; overflow-y: auto; padding: 20px; }
+  .comment-panel-footer { padding: 16px 20px; border-top: 1px solid var(--border); }
+  .comment-input {
+    width: 100%;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 13px;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    resize: vertical;
+    min-height: 60px;
+  }
+  .comment-input:focus { outline: none; border-color: var(--accent); }
+  .comment-submit {
+    margin-top: 8px;
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    padding: 8px 16px;
+    border-radius: 100px;
+    font-weight: 700;
+    font-size: 12px;
+    cursor: pointer;
+    width: 100%;
+  }
+  .comment-item {
+    background: var(--surface-2);
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 8px;
+  }
+  .comment-item-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 6px;
+  }
+  .comment-item-section { font-size: 11px; font-weight: 700; color: var(--accent); }
+  .comment-item-time { font-size: 11px; color: var(--text-dim); }
+  .comment-item-text { font-size: 13px; color: var(--text-med); }
+  .comment-item-delete {
+    font-size: 11px; color: var(--danger); cursor: pointer;
+    margin-top: 6px; background: none; border: none; padding: 0;
+  }
+  .comment-count {
+    background: var(--warning); color: var(--bg);
+    font-size: 10px; font-weight: 700;
+    padding: 1px 6px; border-radius: 100px; margin-left: 6px;
+  }
+  .export-btn {
+    background: var(--surface-2); color: var(--text-med);
+    border: 1px solid var(--border); padding: 6px 14px;
+    border-radius: 100px; font-size: 12px; font-weight: 600; cursor: pointer;
+  }
+  .export-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .close-btn { background: none; border: none; color: var(--text-dim); font-size: 20px; cursor: pointer; }
+  .no-comments { text-align: center; color: var(--text-dim); font-size: 13px; padding: 40px 0; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-inner">
+    <div>
+      <h1>FORJA — Watch Companion</h1>
+      <div class="meta">PRD v1 &middot; 03 Abr 2026 &middot; Feature</div>
+    </div>
+    <div style="display: flex; gap: 8px; align-items: center;">
+      <button class="export-btn" id="exportBtn" style="display:none;" onclick="exportComments()">Exportar Comentários</button>
+      <button class="review-toggle" id="reviewToggle" onclick="toggleReviewMode()">Review Mode</button>
+    </div>
+  </div>
+</div>
+
+<!-- Comment Panel -->
+<div class="comment-panel" id="commentPanel">
+  <div class="comment-panel-header">
+    <h3>Comentários <span class="comment-count" id="commentCount" style="display:none">0</span></h3>
+    <button class="close-btn" onclick="closePanel()">&times;</button>
+  </div>
+  <div class="comment-panel-body" id="commentList">
+    <div class="no-comments">Nenhum comentário ainda. Clique em elementos destacados para comentar.</div>
+  </div>
+  <div class="comment-panel-footer" id="commentForm" style="display:none">
+    <div style="font-size:11px;color:var(--accent);font-weight:700;margin-bottom:6px" id="commentTarget"></div>
+    <textarea class="comment-input" id="commentInput" placeholder="Deixe seu comentário..."></textarea>
+    <button class="comment-submit" onclick="submitComment()">Adicionar Comentário</button>
+  </div>
+</div>
+
+<!-- Content -->
+<div class="content">
+
+  <!-- 1. Overview -->
+  <section>
+    <div class="section-label" data-c="sec-overview">Visão Geral</div>
+    <h2 data-c="title-overview">Forja no Pulso</h2>
+    <p data-c="desc-overview">Durante o treino, cada interação com o celular é uma fricção. Para ver o timer de descanso, marcar uma série como concluída ou conferir o próximo exercício, o usuário precisa tirar o celular do bolso, desbloquear, e navegar até a tela certa. Em um treino típico com 18 séries e 18 períodos de descanso, são <strong style="color:var(--text)">36+ interações com o celular</strong> — cada uma interrompendo o ritmo do treino.</p>
+    <p data-c="desc-proposal" style="margin-top:12px">Com o <strong style="color:var(--text)">Watch Companion</strong>, o Forja se estende ao Samsung Galaxy Watch. O relógio espelha o estado do treino ativo e permite as ações mais frequentes — ver o countdown do timer de descanso, concluir uma série e pular exercícios — tudo com um olhar rápido no pulso. O celular continua sendo o dispositivo principal; o relógio é o controle remoto.</p>
+  </section>
+
+  <!-- 2. Metrics -->
+  <section>
+    <div class="section-label" data-c="sec-metrics">Impacto Esperado</div>
+    <h2 data-c="title-metrics">Números</h2>
+    <div class="metric-grid">
+      <div class="metric-card" data-c="metric-interactions-before">
+        <div class="metric-value">36+</div>
+        <div class="metric-label">Vezes tirando o celular do bolso por treino</div>
+      </div>
+      <div class="metric-card" data-c="metric-interactions-after">
+        <div class="metric-value">0</div>
+        <div class="metric-label">Com watch companion</div>
+      </div>
+      <div class="metric-card" data-c="metric-friction">
+        <div class="metric-value">~5s</div>
+        <div class="metric-label">Economia por interação (pegar → desbloquear → navegar)</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. Problem -->
+  <section>
+    <div class="section-label" data-c="sec-problem">Problema</div>
+    <h2 data-c="title-problem">Por que isso importa</h2>
+    <div class="card" data-c="problem-pocket">
+      <h3>Celular no bolso durante exercícios</h3>
+      <p>Com as mãos ocupadas por barras, halteres ou cabos, tirar o celular do bolso entre séries é desajeitado. As mãos suam, o celular escorrega, e o processo de desbloquear e navegar até a tela certa leva vários segundos a cada interação.</p>
+    </div>
+    <div class="card" data-c="problem-timer">
+      <h3>Timer de descanso invisível</h3>
+      <p>O timer de descanso é uma das funcionalidades mais usadas do Forja, mas só é visível na tela do celular. O usuário precisa ficar checando o celular repetidamente para saber quanto tempo falta — ou simplesmente ignora o timer e descansa "no feeling", perdendo o controle da cadência do treino.</p>
+    </div>
+    <div class="card" data-c="problem-flow">
+      <h3>Fluxo do treino é interrompido</h3>
+      <p>Cada vez que o usuário pausa para interagir com o celular, o foco no exercício é quebrado. Em um treino de 45-60 minutos com ~36 interações, são vários minutos perdidos apenas manipulando o dispositivo.</p>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 4. Flow -->
+  <section>
+    <div class="section-label" data-c="sec-flow">Fluxo Principal</div>
+    <h2 data-c="title-flow">Do celular ao pulso</h2>
+    <p data-c="desc-flow" style="margin-bottom:16px">O usuário inicia o treino no celular normalmente. A partir daí, o relógio assume como interface principal de acompanhamento:</p>
+    <div class="flow-diagram" data-c="flow-diagram">
+      <div class="flow-step">
+        <div class="flow-step-icon">📱</div>
+        <div class="flow-step-label">Iniciar</div>
+        <div class="flow-step-desc">Começa treino no celular</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="flow-step-icon">⌚</div>
+        <div class="flow-step-label">Espelhar</div>
+        <div class="flow-step-desc">Watch recebe estado</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="flow-step-icon">💪</div>
+        <div class="flow-step-label">Treinar</div>
+        <div class="flow-step-desc">Controla pelo pulso</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="flow-step-icon">✅</div>
+        <div class="flow-step-label">Finalizar</div>
+        <div class="flow-step-desc">Encerra no celular</div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 5. Arquitetura de Comunicação -->
+  <section>
+    <div class="section-label" data-c="sec-arch">Arquitetura</div>
+    <h2 data-c="title-arch">Comunicação Celular ↔ Relógio</h2>
+    <p data-c="desc-arch" style="margin-bottom:16px">O relógio funciona como um <strong style="color:var(--text)">display remoto + controle</strong> do estado do treino no celular. Toda a lógica de negócio permanece no app principal — o relógio apenas recebe estado e envia comandos.</p>
+
+    <div class="arch-diagram" data-c="arch-diagram">
+      <div class="arch-box">
+        <div class="arch-box-label">Celular</div>
+        <div class="arch-box-title">Forja App</div>
+        <div class="arch-box-desc">Zustand stores<br>Lógica de negócio<br>MMKV storage</div>
+      </div>
+      <div style="text-align:center">
+        <div class="arch-arrow">⇄</div>
+        <div style="font-size:10px;color:var(--text-dim);margin-top:2px">Message API</div>
+      </div>
+      <div class="arch-box">
+        <div class="arch-box-label">Relógio</div>
+        <div class="arch-box-title">Watch App</div>
+        <div class="arch-box-desc">UI circular<br>Timer local<br>Comandos</div>
+      </div>
+    </div>
+
+    <div class="card" data-c="arch-protocol">
+      <h3>Protocolo de comunicação</h3>
+      <ul>
+        <li><strong>Celular → Relógio:</strong> Estado do treino (exercício atual, série, timer, progresso)</li>
+        <li><strong>Relógio → Celular:</strong> Comandos (concluir série, pular exercício, voltar ao exercício pulado)</li>
+        <li><strong>Tecnologia:</strong> Wear OS Message API / Data Layer API via <code style="color:var(--accent);font-size:12px">react-native-watch-connectivity</code> ou módulo nativo Kotlin</li>
+        <li><strong>Fallback:</strong> Se a conexão cair, o relógio exibe "Reconectando..." e o celular continua funcionando normalmente</li>
+      </ul>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 6. Timer de Descanso no Relógio -->
+  <section>
+    <div class="section-label" data-c="sec-timer">Timer de Descanso</div>
+    <h2 data-c="title-timer">Countdown no pulso <span class="badge badge-p0">P0</span></h2>
+
+    <p data-c="desc-timer" style="margin-bottom:16px">A funcionalidade mais importante do watch companion. O timer de descanso circular do Forja é traduzido para o formato do relógio, com feedback háptico na conclusão.</p>
+
+    <div class="story" data-c="story-timer-display">
+      <div class="story-badges">
+        <span class="story-id">US-01</span>
+        <span class="badge badge-p0">P0</span>
+      </div>
+      <div class="role">Como praticante de musculação</div>
+      <p>Quero ver o countdown do timer de descanso no meu relógio, sem precisar tirar o celular do bolso.</p>
+      <div class="criteria">
+        <strong>Dado</strong> que completei uma série no treino ativo<br>
+        <strong>Quando</strong> o timer de descanso inicia no celular<br>
+        <strong>Então</strong> o relógio exibe automaticamente o countdown com um anel de progresso circular, atualizando a cada segundo
+      </div>
+    </div>
+
+    <div class="story" data-c="story-timer-haptic">
+      <div class="story-badges">
+        <span class="story-id">US-02</span>
+        <span class="badge badge-p0">P0</span>
+      </div>
+      <div class="role">Como praticante de musculação</div>
+      <p>Quero receber uma vibração no pulso quando o tempo de descanso acabar, para não precisar ficar olhando o relógio.</p>
+      <div class="criteria">
+        <strong>Dado</strong> que o timer de descanso está rodando no relógio<br>
+        <strong>Quando</strong> o countdown chega a zero<br>
+        <strong>Então</strong> o relógio vibra com um padrão distinto (2 pulsos curtos + 1 longo) e a tela muda para exibir o próximo exercício
+      </div>
+    </div>
+  </section>
+
+  <!-- Mockup: Timer -->
+  <section>
+    <div class="section-label" data-c="sec-mockup-timer">Mockup</div>
+    <h2 data-c="title-mockup-timer">Tela — Timer de Descanso</h2>
+
+    <div class="watch-pair">
+      <div class="watch-wrapper">
+        <div class="watch-frame" data-c="mockup-timer-active">
+          <div class="watch-content">
+            <div class="w-timer-label">Descanso</div>
+            <div class="w-ring">
+              <div class="w-ring-inner">
+                <div class="w-timer" style="font-size:32px">1:12</div>
+              </div>
+            </div>
+            <div class="w-meta" style="margin-top:8px">Próximo: Crucifixo Inclinado</div>
+          </div>
+        </div>
+        <div class="watch-label">Timer ativo — countdown com anel</div>
+      </div>
+
+      <div class="watch-wrapper">
+        <div class="watch-frame" data-c="mockup-timer-done">
+          <div class="watch-content">
+            <div style="font-size:32px;margin-bottom:4px">✅</div>
+            <div style="font-size:13px;font-weight:700;color:var(--accent)">DESCANSO CONCLUÍDO</div>
+            <div class="w-name" style="margin-top:8px">Crucifixo Inclinado</div>
+            <div class="w-meta">3×12-15 · Halter</div>
+            <div class="w-btn w-btn-primary" style="margin-top:10px">INICIAR</div>
+          </div>
+        </div>
+        <div class="watch-label">Timer concluído — próximo exercício</div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 7. Controle de Séries -->
+  <section>
+    <div class="section-label" data-c="sec-sets">Controle de Séries</div>
+    <h2 data-c="title-sets">Marcar série pelo relógio <span class="badge badge-p0">P0</span></h2>
+
+    <div class="story" data-c="story-complete-set">
+      <div class="story-badges">
+        <span class="story-id">US-03</span>
+        <span class="badge badge-p0">P0</span>
+      </div>
+      <div class="role">Como praticante de musculação</div>
+      <p>Quero marcar uma série como concluída direto no relógio, para que o timer de descanso inicie automaticamente.</p>
+      <div class="criteria">
+        <strong>Dado</strong> que estou no exercício atual e vejo a série pendente no relógio<br>
+        <strong>Quando</strong> toco no botão "Concluir" no relógio<br>
+        <strong>Então</strong> a série é registrada no celular com o último peso usado, o indicador de progresso atualiza, e o timer de descanso inicia
+      </div>
+    </div>
+
+    <div class="story" data-c="story-view-progress">
+      <div class="story-badges">
+        <span class="story-id">US-04</span>
+        <span class="badge badge-p0">P0</span>
+      </div>
+      <div class="role">Como praticante de musculação</div>
+      <p>Quero ver no relógio em qual série estou e quantas faltam, para acompanhar meu progresso no exercício.</p>
+      <div class="criteria">
+        <strong>Dado</strong> que estou executando um exercício<br>
+        <strong>Quando</strong> olho para o relógio<br>
+        <strong>Então</strong> vejo o nome do exercício, a série atual (ex: "Série 2 de 4"), o peso do último registro, e dots de progresso indicando séries concluídas vs. pendentes
+      </div>
+    </div>
+
+    <div class="story" data-c="story-weight-display">
+      <div class="story-badges">
+        <span class="story-id">US-05</span>
+        <span class="badge badge-p1">P1</span>
+      </div>
+      <div class="role">Como praticante de musculação</div>
+      <p>Quero ver o peso que usei na última vez neste exercício, para saber quanto colocar na máquina sem abrir o celular.</p>
+      <div class="criteria">
+        <strong>Dado</strong> que estou vendo o exercício atual no relógio<br>
+        <strong>Quando</strong> existe um registro anterior de peso para este exercício<br>
+        <strong>Então</strong> vejo o peso exibido de forma clara (ex: "32 kg") abaixo do nome do exercício
+      </div>
+    </div>
+  </section>
+
+  <!-- Mockup: Exercise -->
+  <section>
+    <div class="section-label" data-c="sec-mockup-exercise">Mockup</div>
+    <h2 data-c="title-mockup-exercise">Tela — Exercício Ativo</h2>
+
+    <div class="watch-pair">
+      <div class="watch-wrapper">
+        <div class="watch-frame" data-c="mockup-exercise">
+          <div class="watch-content">
+            <div class="w-exercise">Exercício 3/6</div>
+            <div class="w-name">Supino Reto</div>
+            <div style="font-size:20px;font-weight:800;color:var(--accent);margin:2px 0">32 kg</div>
+            <div class="w-meta">Série 2 de 4 · 10-12 reps</div>
+            <div class="w-progress">
+              <div class="w-dot done"></div>
+              <div class="w-dot current"></div>
+              <div class="w-dot"></div>
+              <div class="w-dot"></div>
+            </div>
+            <div class="w-btn w-btn-primary">CONCLUIR SÉRIE</div>
+          </div>
+        </div>
+        <div class="watch-label">Exercício ativo — série + peso + progresso</div>
+      </div>
+
+      <div class="watch-wrapper">
+        <div class="watch-frame" data-c="mockup-exercise-done">
+          <div class="watch-content">
+            <div class="w-exercise">Exercício 3/6</div>
+            <div class="w-name">Supino Reto</div>
+            <div style="font-size:12px;color:#22c55e;font-weight:600;margin:4px 0">✓ Completo</div>
+            <div class="w-progress">
+              <div class="w-dot done"></div>
+              <div class="w-dot done"></div>
+              <div class="w-dot done"></div>
+              <div class="w-dot done"></div>
+            </div>
+            <div class="w-meta" style="margin-top:6px">Próximo: Crucifixo Inclinado</div>
+            <div class="w-btn w-btn-primary" style="font-size:9px">PRÓXIMO EXERCÍCIO</div>
+          </div>
+        </div>
+        <div class="watch-label">Exercício concluído — avançar</div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 8. Navegação de Exercícios -->
+  <section>
+    <div class="section-label" data-c="sec-nav">Navegação</div>
+    <h2 data-c="title-nav">Pular e retomar exercícios <span class="badge badge-p1">P1</span></h2>
+
+    <div class="story" data-c="story-skip">
+      <div class="story-badges">
+        <span class="story-id">US-06</span>
+        <span class="badge badge-p1">P1</span>
+      </div>
+      <div class="role">Como praticante de musculação</div>
+      <p>Quero poder pular um exercício pelo relógio quando o equipamento está ocupado, para continuar o treino sem parar.</p>
+      <div class="criteria">
+        <strong>Dado</strong> que estou vendo o exercício atual no relógio<br>
+        <strong>Quando</strong> deslizo para a esquerda (swipe) ou toco em "Pular"<br>
+        <strong>Então</strong> o exercício é marcado como pulado no celular e o relógio avança para o próximo exercício da fila
+      </div>
+    </div>
+
+    <div class="story" data-c="story-return-skipped">
+      <div class="story-badges">
+        <span class="story-id">US-07</span>
+        <span class="badge badge-p1">P1</span>
+      </div>
+      <div class="role">Como praticante de musculação</div>
+      <p>Quero ser lembrado dos exercícios pulados quando terminar a fila principal, para poder voltar a eles.</p>
+      <div class="criteria">
+        <strong>Dado</strong> que pulei exercícios durante o treino<br>
+        <strong>Quando</strong> o último exercício da fila principal é concluído<br>
+        <strong>Então</strong> o relógio exibe os exercícios pulados com a opção de retomar ou ignorar, espelhando o checkpoint do celular
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 9. Sessão e Conexão -->
+  <section>
+    <div class="section-label" data-c="sec-session">Sessão e Conexão</div>
+    <h2 data-c="title-session">Gerenciamento de estado <span class="badge badge-p0">P0</span></h2>
+
+    <div class="story" data-c="story-auto-launch">
+      <div class="story-badges">
+        <span class="story-id">US-08</span>
+        <span class="badge badge-p0">P0</span>
+      </div>
+      <div class="role">Como praticante de musculação</div>
+      <p>Quero que o app do relógio abra automaticamente quando eu iniciar um treino no celular, sem precisar mexer no relógio.</p>
+      <div class="criteria">
+        <strong>Dado</strong> que o app do relógio está instalado e conectado<br>
+        <strong>Quando</strong> inicio um treino no celular<br>
+        <strong>Então</strong> o relógio abre automaticamente na tela do exercício atual, pronto para uso
+      </div>
+    </div>
+
+    <div class="story" data-c="story-reconnect">
+      <div class="story-badges">
+        <span class="story-id">US-09</span>
+        <span class="badge badge-p0">P0</span>
+      </div>
+      <div class="role">Como praticante de musculação</div>
+      <p>Quero que o relógio reconecte automaticamente se a conexão Bluetooth cair durante o treino.</p>
+      <div class="criteria">
+        <strong>Dado</strong> que estou em um treino ativo e a conexão cai<br>
+        <strong>Quando</strong> a conexão é restaurada<br>
+        <strong>Então</strong> o relógio sincroniza o estado atual do treino e retoma a exibição normal, sem que eu precise fazer nada
+      </div>
+    </div>
+
+    <div class="story" data-c="story-no-workout">
+      <div class="story-badges">
+        <span class="story-id">US-10</span>
+        <span class="badge badge-p2">P2</span>
+      </div>
+      <div class="role">Como praticante de musculação</div>
+      <p>Quero ver uma tela informativa no relógio quando não há treino ativo, para saber que está tudo funcionando.</p>
+      <div class="criteria">
+        <strong>Dado</strong> que abro o app no relógio sem treino ativo no celular<br>
+        <strong>Quando</strong> a tela carrega<br>
+        <strong>Então</strong> vejo o logo do Forja e a mensagem "Inicie um treino no celular" com status da conexão
+      </div>
+    </div>
+  </section>
+
+  <!-- Mockup: States -->
+  <section>
+    <div class="section-label" data-c="sec-mockup-states">Mockup</div>
+    <h2 data-c="title-mockup-states">Telas — Estados do App</h2>
+
+    <div class="watch-pair">
+      <div class="watch-wrapper">
+        <div class="watch-frame" data-c="mockup-idle">
+          <div class="watch-content">
+            <div style="font-size:28px;font-weight:800;color:var(--accent);letter-spacing:1px;font-family:'Inter',sans-serif">FORJA</div>
+            <div style="font-size:11px;color:var(--text-dim);margin-top:8px">Inicie um treino<br>no celular</div>
+            <div style="display:flex;align-items:center;justify-content:center;gap:4px;margin-top:12px">
+              <div style="width:6px;height:6px;border-radius:50%;background:#22c55e"></div>
+              <span style="font-size:10px;color:var(--text-dim)">Conectado</span>
+            </div>
+          </div>
+        </div>
+        <div class="watch-label">Estado ocioso — aguardando treino</div>
+      </div>
+
+      <div class="watch-wrapper">
+        <div class="watch-frame" data-c="mockup-disconnected">
+          <div class="watch-content">
+            <div style="font-size:28px;font-weight:800;color:var(--accent);letter-spacing:1px;font-family:'Inter',sans-serif">FORJA</div>
+            <div style="font-size:11px;color:var(--warning);margin-top:8px;font-weight:600">Reconectando...</div>
+            <div style="display:flex;align-items:center;justify-content:center;gap:4px;margin-top:12px">
+              <div style="width:6px;height:6px;border-radius:50%;background:var(--warning)"></div>
+              <span style="font-size:10px;color:var(--text-dim)">Bluetooth</span>
+            </div>
+          </div>
+        </div>
+        <div class="watch-label">Conexão perdida — reconectando</div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 10. Métricas de Sucesso -->
+  <section>
+    <div class="section-label" data-c="sec-success">Métricas de Sucesso</div>
+    <h2 data-c="title-success">Como sabemos que funcionou</h2>
+
+    <div class="feature-grid">
+      <div class="card" data-c="success-phone-pickups">
+        <h3>Interações com celular</h3>
+        <p><strong style="color:var(--danger)">Antes:</strong> 36+ vezes tirando o celular do bolso por treino</p>
+        <p><strong style="color:var(--accent)">Depois:</strong> Apenas para iniciar e finalizar o treino (2 interações)</p>
+      </div>
+      <div class="card" data-c="success-timer-compliance">
+        <h3>Adesão ao timer</h3>
+        <p><strong style="color:var(--danger)">Antes:</strong> Timer ignorado por inconveniência de checar o celular</p>
+        <p><strong style="color:var(--accent)">Depois:</strong> Countdown sempre visível no pulso + vibração ao fim</p>
+      </div>
+      <div class="card" data-c="success-workout-time">
+        <h3>Tempo de treino</h3>
+        <p><strong>Meta:</strong> Redução de ~3-5 min por treino eliminando manipulação desnecessária do celular</p>
+      </div>
+      <div class="card" data-c="success-adoption">
+        <h3>Adoção</h3>
+        <p><strong>Meta:</strong> Watch companion se torna o método principal de acompanhamento — usado em &gt;90% dos treinos</p>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 11. Riscos -->
+  <section>
+    <div class="section-label" data-c="sec-risks">Riscos</div>
+    <h2 data-c="title-risks">O que pode dar errado</h2>
+
+    <div class="card" data-c="risk-bluetooth">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <h3 style="margin:0">Estabilidade do Bluetooth</h3>
+        <span class="badge badge-p0">Alto</span>
+      </div>
+      <p>A conexão Bluetooth entre celular e relógio pode cair durante o treino, especialmente com interferência de outros dispositivos na academia.</p>
+      <p style="margin-top:8px"><strong style="color:var(--text)">Mitigação:</strong> Timer local no relógio que continua rodando independente da conexão. Reconexão automática com sync de estado. O celular continua funcionando normalmente como fallback.</p>
+    </div>
+
+    <div class="card" data-c="risk-battery">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <h3 style="margin:0">Consumo de bateria do relógio</h3>
+        <span class="badge badge-p1">Médio</span>
+      </div>
+      <p>Manter a tela ativa e comunicação Bluetooth constante pode drenar a bateria do relógio rapidamente.</p>
+      <p style="margin-top:8px"><strong style="color:var(--text)">Mitigação:</strong> Usar ambient mode (always-on display simplificado) em vez de tela ativa constante. Enviar apenas deltas de estado, não o estado completo. Aproveitar o timer local para reduzir frequência de comunicação.</p>
+    </div>
+
+    <div class="card" data-c="risk-wear-os">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <h3 style="margin:0">Complexidade do Wear OS</h3>
+        <span class="badge badge-p1">Médio</span>
+      </div>
+      <p>Desenvolver para Wear OS requer um app nativo (Kotlin + Jetpack Compose for Wear OS), que é um stack separado do React Native usado no Forja.</p>
+      <p style="margin-top:8px"><strong style="color:var(--text)">Mitigação:</strong> App do relógio é propositalmente simples — apenas display + 3 ações. Escopo mínimo reduz superfície de desenvolvimento. Módulo nativo no lado do celular para bridge com Wear OS Message API.</p>
+    </div>
+
+    <div class="card" data-c="risk-screen-size">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <h3 style="margin:0">Tela circular e pequena</h3>
+        <span class="badge badge-p2">Baixo</span>
+      </div>
+      <p>A tela circular de ~1.4" do Galaxy Watch limita a quantidade de informação visível. Nomes longos de exercícios podem não caber.</p>
+      <p style="margin-top:8px"><strong style="color:var(--text)">Mitigação:</strong> Design focado em informação essencial — uma tela, uma ação. Truncar nomes longos com "..." e priorizar números (peso, série, timer) sobre texto.</p>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 12. Considerações Técnicas -->
+  <section>
+    <div class="section-label" data-c="sec-tech">Considerações Técnicas</div>
+    <h2 data-c="title-tech">Stack e implementação</h2>
+
+    <div class="card" data-c="tech-watch-app">
+      <h3>App do relógio (Wear OS)</h3>
+      <ul>
+        <li><strong>Linguagem:</strong> Kotlin</li>
+        <li><strong>UI:</strong> Jetpack Compose for Wear OS (Compose Material 3 for Wear)</li>
+        <li><strong>Comunicação:</strong> Wear OS Data Layer API (MessageClient para comandos, DataClient para estado)</li>
+        <li><strong>Timer:</strong> CountDownTimer local — inicia com valor recebido do celular e roda independente</li>
+        <li><strong>Haptics:</strong> Vibrator API do Android para feedback tátil</li>
+        <li><strong>Ambient mode:</strong> Always-on display simplificado (apenas timer + nome do exercício)</li>
+      </ul>
+    </div>
+
+    <div class="card" data-c="tech-phone-bridge">
+      <h3>Bridge no celular (React Native)</h3>
+      <ul>
+        <li><strong>Módulo nativo:</strong> Kotlin module que expõe Wear OS MessageClient ao JS</li>
+        <li><strong>Listener no workoutStore:</strong> Subscriber que envia estado ao relógio a cada mudança relevante</li>
+        <li><strong>Comandos recebidos:</strong> Traduzidos para actions do workoutStore (completeSet, skipExercise, returnToSkipped)</li>
+        <li><strong>Publicação:</strong> Wear OS app distribuído junto com o APK principal via Google Play (multi-module)</li>
+      </ul>
+    </div>
+
+    <div class="card" data-c="tech-data-format">
+      <h3>Formato dos dados trocados</h3>
+      <p style="margin-bottom:8px">Mensagens JSON mínimas para economizar banda Bluetooth:</p>
+      <ul>
+        <li><strong>Estado (celular → relógio):</strong> <code style="color:var(--accent);font-size:12px">{ exercise, setNum, totalSets, reps, weight, timerSec, totalExercises, currentIndex, status }</code></li>
+        <li><strong>Comando (relógio → celular):</strong> <code style="color:var(--accent);font-size:12px">{ action: "completeSet" | "skip" | "returnToSkipped" }</code></li>
+      </ul>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 13. Fora do Escopo -->
+  <section>
+    <div class="section-label" data-c="sec-oos">Fora do Escopo (v1)</div>
+    <h2 data-c="title-oos">O que NÃO está incluído</h2>
+
+    <div class="card" data-c="oos-items">
+      <ul>
+        <li><strong>Iniciar treino pelo relógio</strong> — seleção de plano e início continuam exclusivos do celular</li>
+        <li><strong>Editar peso pelo relógio</strong> — input numérico em tela circular é impraticável; peso é registrado usando o último valor do celular</li>
+        <li><strong>Histórico de treinos no relógio</strong> — consulta de histórico fica no celular</li>
+        <li><strong>Standalone mode</strong> — o relógio não funciona sem o celular conectado; sem lógica de negócio local</li>
+        <li><strong>Complicações / Tiles</strong> — sem widgets no watch face na v1; apenas o app completo</li>
+        <li><strong>Apple Watch / outros wearables</strong> — v1 exclusiva para Samsung Galaxy Watch (Wear OS)</li>
+        <li><strong>Notificações push no relógio</strong> — comunicação é apenas durante treino ativo via Data Layer</li>
+      </ul>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 14. Fases de Lançamento -->
+  <section>
+    <div class="section-label" data-c="sec-phases">Fases</div>
+    <h2 data-c="title-phases">Plano de implementação</h2>
+
+    <div class="card" data-c="phase-1">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <h3 style="margin:0">Fase 1 — Timer + Concluir série</h3>
+        <span class="badge badge-p0">P0</span>
+      </div>
+      <p>O mínimo viável para eliminar a maior fricção: ver o timer e concluir séries pelo relógio.</p>
+      <ul style="margin-top:8px">
+        <li>Bridge celular ↔ relógio (Message API)</li>
+        <li>Tela de exercício ativo (nome, série, peso, dots de progresso)</li>
+        <li>Tela de timer de descanso (countdown circular + haptic)</li>
+        <li>Botão "Concluir Série"</li>
+        <li>Auto-launch quando treino inicia</li>
+        <li>Tela idle quando sem treino ativo</li>
+      </ul>
+    </div>
+
+    <div class="card" data-c="phase-2">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <h3 style="margin:0">Fase 2 — Navegação + Resiliência</h3>
+        <span class="badge badge-p1">P1</span>
+      </div>
+      <p>Funcionalidades complementares que completam a experiência.</p>
+      <ul style="margin-top:8px">
+        <li>Pular exercício (swipe ou botão)</li>
+        <li>Retomar exercícios pulados (checkpoint)</li>
+        <li>Reconexão automática com sync de estado</li>
+        <li>Ambient mode (always-on display simplificado)</li>
+      </ul>
+    </div>
+
+    <div class="card" data-c="phase-3">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <h3 style="margin:0">Fase 3 — Polish</h3>
+        <span class="badge badge-p2">P2</span>
+      </div>
+      <p>Refinamentos de experiência para uso diário.</p>
+      <ul style="margin-top:8px">
+        <li>Animações e transições entre telas</li>
+        <li>Otimização de bateria</li>
+        <li>Tela de resumo ao fim do treino</li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<!-- Commenting System JS -->
+<script>
+const STORAGE_KEY = 'prd-comments-watch_companion-v1';
+let reviewMode = false;
+let activeTarget = null;
+let comments = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+
+function toggleReviewMode() {
+  reviewMode = !reviewMode;
+  const btn = document.getElementById('reviewToggle');
+  const exportBtn = document.getElementById('exportBtn');
+  const panel = document.getElementById('commentPanel');
+
+  if (reviewMode) {
+    btn.textContent = 'Exit Review';
+    btn.classList.add('active');
+    exportBtn.style.display = 'inline-block';
+    panel.classList.add('open');
+    document.querySelectorAll('[data-c]').forEach(el => {
+      el.classList.add('commentable');
+      el.addEventListener('click', onElementClick);
+    });
+  } else {
+    btn.textContent = 'Review Mode';
+    btn.classList.remove('active');
+    exportBtn.style.display = 'none';
+    panel.classList.remove('open');
+    document.querySelectorAll('[data-c]').forEach(el => {
+      el.classList.remove('commentable');
+      el.removeEventListener('click', onElementClick);
+    });
+  }
+  updateCommentHighlights();
+}
+
+function onElementClick(e) {
+  e.stopPropagation();
+  const target = e.currentTarget.getAttribute('data-c');
+  activeTarget = target;
+  document.getElementById('commentTarget').textContent = '#' + target;
+  document.getElementById('commentForm').style.display = 'block';
+  document.getElementById('commentInput').value = '';
+  document.getElementById('commentInput').focus();
+  renderComments();
+}
+
+function submitComment() {
+  const input = document.getElementById('commentInput');
+  const text = input.value.trim();
+  if (!text || !activeTarget) return;
+
+  comments.push({
+    id: Date.now(),
+    target: activeTarget,
+    text: text,
+    timestamp: new Date().toISOString()
+  });
+
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(comments));
+  input.value = '';
+  renderComments();
+  updateCommentHighlights();
+}
+
+function deleteComment(id) {
+  comments = comments.filter(c => c.id !== id);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(comments));
+  renderComments();
+  updateCommentHighlights();
+}
+
+function renderComments() {
+  const list = document.getElementById('commentList');
+  const countEl = document.getElementById('commentCount');
+
+  if (comments.length === 0) {
+    list.innerHTML = '<div class="no-comments">Nenhum comentário ainda. Clique em elementos destacados para comentar.</div>';
+    countEl.style.display = 'none';
+    return;
+  }
+
+  countEl.style.display = 'inline';
+  countEl.textContent = comments.length;
+
+  const filtered = activeTarget
+    ? [
+        ...comments.filter(c => c.target === activeTarget),
+        ...comments.filter(c => c.target !== activeTarget)
+      ]
+    : comments;
+
+  list.innerHTML = filtered.map(c => `
+    <div class="comment-item" ${c.target === activeTarget ? 'style="border-left:2px solid var(--accent)"' : ''}>
+      <div class="comment-item-header">
+        <span class="comment-item-section">#${c.target}</span>
+        <span class="comment-item-time">${new Date(c.timestamp).toLocaleString('pt-BR')}</span>
+      </div>
+      <div class="comment-item-text">${c.text}</div>
+      <button class="comment-item-delete" onclick="deleteComment(${c.id})">Remover</button>
+    </div>
+  `).join('');
+}
+
+function updateCommentHighlights() {
+  const targets = new Set(comments.map(c => c.target));
+  document.querySelectorAll('[data-c]').forEach(el => {
+    if (targets.has(el.getAttribute('data-c'))) {
+      el.classList.add('has-comment');
+    } else {
+      el.classList.remove('has-comment');
+    }
+  });
+}
+
+function closePanel() {
+  document.getElementById('commentPanel').classList.remove('open');
+  activeTarget = null;
+  document.getElementById('commentForm').style.display = 'none';
+}
+
+function exportComments() {
+  if (comments.length === 0) {
+    alert('Nenhum comentário para exportar.');
+    return;
+  }
+
+  let output = '# PRD Review Comments\n\n';
+  comments.forEach((c, i) => {
+    output += `## #${i + 1} — ${c.target}\n`;
+    output += `${c.text}\n\n`;
+  });
+
+  navigator.clipboard.writeText(output).then(() => {
+    alert('Comentários copiados para o clipboard! Cole de volta no Claude para revisões.');
+  }).catch(() => {
+    const textarea = document.createElement('textarea');
+    textarea.value = output;
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textarea);
+    alert('Comentários copiados para o clipboard!');
+  });
+}
+
+updateCommentHighlights();
+
+document.getElementById('commentInput')?.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    submitComment();
+  }
+});
+</script>
+
+</body>
+</html>

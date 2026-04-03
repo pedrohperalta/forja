@@ -75,6 +75,24 @@ Before writing any code, read and follow these files:
 - Expanded: exercise list with name/sets on left, weight on right; delete action at bottom
 - Two-step delete: APAGAR → CONFIRMAR/CANCELAR
 
+## Criação de PRDs
+
+Quando o usuário pedir para criar um PRD, seguir este processo:
+
+1. **Explorar o projeto** — ler os PRDs existentes em `docs/ideas/` para entender o estilo e formato
+2. **Criar a pasta** — `docs/ideas/<feature_slug>/discovery/`
+3. **Escrever o PRD** — arquivo `prd.html` seguindo o estilo dos PRDs existentes (Inter font, dark theme, review mode com sistema de comentários, mockups inline, user stories com critérios de aceitação)
+4. **Atualizar o index** — adicionar card novo em `docs/index.html` com número sequencial e badge "Nova"
+5. **Fazer o commit e push na `main`**:
+   ```
+   git add docs/
+   git commit -m "docs: add PRD for <feature>"
+   git push origin main
+   ```
+6. **Colar o link da GitHub Page** para o usuário:
+   - Index: `https://pedrohperalta.github.io/forja/`
+   - PRD direto: `https://pedrohperalta.github.io/forja/ideas/<feature_slug>/discovery/prd.html`
+
 ## Conductor
 
 This project uses Conductor for track-based development. See `conductor/index.md` for navigation.
