@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { View, Text, Pressable } from 'react-native'
 import { useRouter, useLocalSearchParams } from 'expo-router'
+import { useKeepAwake } from 'expo-keep-awake'
 import { useWorkoutStore } from '@/stores/workoutStore'
 import { useRestTimer } from '@/hooks/useRestTimer'
 import { useHaptics } from '@/hooks/useHaptics'
@@ -8,6 +9,8 @@ import { RestTimer } from '@/components/RestTimer'
 import { getCurrentExercise } from '@/utils/getCurrentExercise'
 
 export default function RestScreen(): React.JSX.Element {
+  useKeepAwake()
+
   const router = useRouter()
   const { restSeconds: restSecondsParam } = useLocalSearchParams<{ restSeconds?: string }>()
 
