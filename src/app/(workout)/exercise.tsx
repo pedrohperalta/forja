@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { View, Text, Pressable } from 'react-native'
-import { KeyboardAwareScrollView } from 'react-native-keyboard-controller'
+import { View, Text, Pressable, ScrollView } from 'react-native'
 import Svg, { Path } from 'react-native-svg'
 import { useRouter, useFocusEffect } from 'expo-router'
 import { useWorkoutStore } from '@/stores/workoutStore'
@@ -141,12 +140,11 @@ export default function ExerciseScreen(): React.JSX.Element | null {
   return (
     <View className="flex-1 bg-background">
       {/* Scrollable content area */}
-      <KeyboardAwareScrollView
+      <ScrollView
         className="flex-1 px-6 pt-14"
         contentContainerStyle={{ paddingBottom: 16 }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
-        bottomOffset={16}
       >
         {/* Back navigation — chevron integrated with section label */}
         <View className="mb-2 flex-row items-center">
@@ -225,7 +223,7 @@ export default function ExerciseScreen(): React.JSX.Element | null {
             setNumber={currentSet}
           />
         </View>
-      </KeyboardAwareScrollView>
+      </ScrollView>
 
       {/* Sticky bottom actions — thumb zone */}
       <View className="border-t border-border bg-background px-6 pb-8 pt-4">

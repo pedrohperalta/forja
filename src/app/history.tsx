@@ -1,6 +1,5 @@
-import { View, Text, Pressable, ActivityIndicator } from 'react-native'
+import { View, Text, Pressable, ActivityIndicator, ScrollView } from 'react-native'
 import { useRouter } from 'expo-router'
-import { FlashList } from '@shopify/flash-list'
 import Svg, { Path, Circle } from 'react-native-svg'
 
 import { useAppStore } from '@/stores/appStore'
@@ -91,36 +90,6 @@ export default function HistoryScreen() {
 
   const handleSync = (): void => {
     sync().catch(() => {})
-  }
-
-  const renderItem = ({ item }: { item: HistoryListItem }): React.JSX.Element => {
-    if (item.type === 'header') {
-      return (
-        <View className="mb-2 mt-4">
-          <Text className="font-ui text-[11px] uppercase tracking-[2px] text-dim">
-            {item.label}
-          </Text>
-        </View>
-      )
-    }
-
-    const { session } = item
-    return (
-      <View className="mb-2">
-        <WorkoutHistoryCard
-          id={session.id}
-          planId={session.planId}
-          planName={session.planName}
-          {...(session.planLabel != null ? { planLabel: session.planLabel } : {})}
-          focus={session.focus}
-          date={session.date}
-          durationMinutes={session.durationMinutes}
-          exercises={session.exercises}
-          syncStatus={session.syncStatus}
-          onDelete={() => handleDelete(session.id)}
-        />
-      </View>
-    )
   }
 
   return (
@@ -284,14 +253,39 @@ export default function HistoryScreen() {
             </Text>
           </View>
 
-          <FlashList
-            data={sectionedData}
-            renderItem={renderItem}
-            keyExtractor={(item: HistoryListItem) => item.key}
+          <ScrollView
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{ paddingBottom: 32 }}
-            getItemType={(item: HistoryListItem) => item.type}
-          />
+          >
+            {sectionedData.map((item) => {
+              if (item.type === 'header') {
+                return (
+                  <View key={item.key} className="mb-2 mt-4">
+                    <Text className="font-ui text-[11px] uppercase tracking-[2px] text-dim">
+                      {item.label}
+                    </Text>
+                  </View>
+                )
+              }
+              const { session } = item
+              return (
+                <View key={item.key} className="mb-2">
+                  <WorkoutHistoryCard
+                    id={session.id}
+                    planId={session.planId}
+                    planName={session.planName}
+                    {...(session.planLabel != null ? { planLabel: session.planLabel } : {})}
+                    focus={session.focus}
+                    date={session.date}
+                    durationMinutes={session.durationMinutes}
+                    exercises={session.exercises}
+                    syncStatus={session.syncStatus}
+                    onDelete={() => handleDelete(session.id)}
+                  />
+                </View>
+              )
+            })}
+          </ScrollView>
         </>
       )}
     </View>
