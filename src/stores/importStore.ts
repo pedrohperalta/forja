@@ -16,7 +16,11 @@ export interface ImportState {
   addPhoto: (uri: string) => void
   removePhoto: (uri: string) => void
   setMode: (mode: 'replace' | 'add') => void
-  updatePhotoStatus: (uri: string, status: ImportPhotoStatus['status']) => void
+  updatePhotoStatus: (
+    uri: string,
+    status: ImportPhotoStatus['status'],
+    errorMessage?: string,
+  ) => void
   setWorkouts: (workouts: ExtractedWorkout[]) => void
   updateExtractedExercise: (
     workoutIndex: number,
@@ -53,9 +57,17 @@ export const useImportStore = create<ImportState>()(
       set({ mode })
     },
 
-    updatePhotoStatus: (uri: string, status: ImportPhotoStatus['status']): void => {
+    updatePhotoStatus: (
+      uri: string,
+      status: ImportPhotoStatus['status'],
+      errorMessage?: string,
+    ): void => {
       set({
-        photos: get().photos.map((p) => (p.uri === uri ? { ...p, status } : p)),
+        photos: get().photos.map((p) =>
+          p.uri === uri
+            ? { ...p, status, ...(errorMessage !== undefined ? { errorMessage } : {}) }
+            : p,
+        ),
       })
     },
 

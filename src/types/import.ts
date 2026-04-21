@@ -19,4 +19,5 @@ export type ExtractedWorkout = {
 export type ImportPhotoStatus = {
   uri: string
   status: 'pending' | 'uploading' | 'done' | 'error'
+  errorMessage?: string
 }

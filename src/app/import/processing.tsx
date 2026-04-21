@@ -73,16 +73,20 @@ export default function ImportProcessingScreen(): React.JSX.Element {
         {/* Photo status list */}
         <View className="mt-8 gap-3">
           {photos.map((photo, index) => (
-            <View
-              key={photo.uri}
-              className="flex-row items-center justify-between rounded-lg border border-border bg-surface px-4 py-3"
-            >
-              <Text className="font-ui text-[14px] text-text">Foto {index + 1}</Text>
-              <Text
-                className={`font-ui text-[11px] uppercase tracking-[1px] ${STATUS_TEXT_COLORS[photo.status] ?? 'text-dim'}`}
-              >
-                {STATUS_LABELS[photo.status] ?? photo.status}
-              </Text>
+            <View key={photo.uri} className="rounded-lg border border-border bg-surface px-4 py-3">
+              <View className="flex-row items-center justify-between">
+                <Text className="font-ui text-[14px] text-text">Foto {index + 1}</Text>
+                <Text
+                  className={`font-ui text-[11px] uppercase tracking-[1px] ${STATUS_TEXT_COLORS[photo.status] ?? 'text-dim'}`}
+                >
+                  {STATUS_LABELS[photo.status] ?? photo.status}
+                </Text>
+              </View>
+              {photo.status === 'error' && photo.errorMessage ? (
+                <Text className="mt-1 font-ui text-[11px] text-danger" numberOfLines={3}>
+                  {photo.errorMessage}
+                </Text>
+              ) : null}
             </View>
           ))}
         </View>
