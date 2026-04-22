@@ -27,17 +27,20 @@ export default function RootLayout() {
     }
   }, [loaded, error])
 
-  // Initialize auth session and trigger background sync on startup
+  const userId = useAuthStore((s) => s.user?.id)
+
+  // Initialize auth session once
   useEffect(() => {
-    useAuthStore
-      .getState()
-      .initialize()
-      .then(() => {
-        if (useAuthStore.getState().user) {
-          sync().catch(() => {}) // silent — user sees last synced state
-        }
-      })
+    useAuthStore.getState().initialize()
   }, [])
+
+  // Sync whenever a user is present — covers startup with cached session
+  // and fresh login via OAuth
+  useEffect(() => {
+    if (userId) {
+      sync().catch(() => {})
+    }
+  }, [userId])
 
   // Wait for fonts before rendering
   if (!loaded && !error) return null

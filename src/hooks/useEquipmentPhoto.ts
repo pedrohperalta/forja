@@ -141,18 +141,25 @@ export async function restoreEquipmentPhotosFromCloud(): Promise<void> {
     if (!match || !match[1]) continue
     const exerciseId = match[1] as ExerciseId
 
-    // Skip if the store already tracks this photo (survived local storage)
     if (equipmentPhotos[exerciseId]) continue
 
     const destFile = getPhotoFile(exerciseId)
 
-    const { data: blob, error: dlErr } = await supabase.storage
+    // supabase-js storage.download() returns a Blob without arrayBuffer() in
+    // React Native, so use a short-lived signed URL + fetch() instead.
+    const { data: urlData, error: urlErr } = await supabase.storage
       .from(PHOTOS_BUCKET)
-      .download(`${userId}/${entry.name}`)
-    if (dlErr || !blob) continue
+      .createSignedUrl(`${userId}/${entry.name}`, 60)
+    if (urlErr || !urlData?.signedUrl) continue
 
-    const bytes = new Uint8Array(await blob.arrayBuffer())
-    destFile.write(bytes)
-    saveEquipmentPhoto(exerciseId, destFile.uri)
+    try {
+      const response = await fetch(urlData.signedUrl)
+      const buffer = await response.arrayBuffer()
+      const bytes = new Uint8Array(buffer)
+      destFile.write(bytes)
+      saveEquipmentPhoto(exerciseId, destFile.uri)
+    } catch {
+      // Skip this photo; next sync will retry
+    }
   }
 }

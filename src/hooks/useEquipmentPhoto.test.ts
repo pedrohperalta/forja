@@ -31,7 +31,9 @@ jest.mock('@/stores/authStore', () => ({
 const mockStorageUpload = jest.fn().mockResolvedValue({ data: {}, error: null })
 const mockStorageRemove = jest.fn().mockResolvedValue({ data: {}, error: null })
 const mockStorageList = jest.fn().mockResolvedValue({ data: [], error: null })
-const mockStorageDownload = jest.fn().mockResolvedValue({ data: null, error: null })
+const mockStorageCreateSignedUrl = jest
+  .fn()
+  .mockResolvedValue({ data: { signedUrl: 'https://example.com/signed' }, error: null })
 
 jest.mock('@/lib/supabase', () => ({
   supabase: {
@@ -40,11 +42,14 @@ jest.mock('@/lib/supabase', () => ({
         upload: (...args: unknown[]) => mockStorageUpload(...args),
         remove: (...args: unknown[]) => mockStorageRemove(...args),
         list: (...args: unknown[]) => mockStorageList(...args),
-        download: (...args: unknown[]) => mockStorageDownload(...args),
+        createSignedUrl: (...args: unknown[]) => mockStorageCreateSignedUrl(...args),
       }),
     },
   },
 }))
+
+const mockFetch = jest.fn()
+global.fetch = mockFetch as unknown as typeof fetch
 
 // Mock v2 class-based API
 const mockCopy = jest.fn()
@@ -294,20 +299,25 @@ describe('useEquipmentPhoto', () => {
       expect(mockStorageList).not.toHaveBeenCalled()
     })
 
-    it('lists the user prefix, downloads missing photos, and saves them locally', async () => {
+    it('lists the user prefix, downloads missing photos via signed URL, and saves them locally', async () => {
       mockAuthUser = { id: 'user-abc' }
       mockStorageList.mockResolvedValueOnce({
         data: [{ name: 'supino-reto-vertical.jpg' }, { name: 'agachamento.jpg' }],
         error: null,
       })
-      const blob = { arrayBuffer: jest.fn().mockResolvedValue(new ArrayBuffer(4)) }
-      mockStorageDownload.mockResolvedValue({ data: blob, error: null })
+      mockFetch.mockResolvedValue({
+        arrayBuffer: jest.fn().mockResolvedValue(new ArrayBuffer(4)),
+      })
 
       await restoreEquipmentPhotosFromCloud()
 
       expect(mockStorageList).toHaveBeenCalledWith('user-abc')
-      expect(mockStorageDownload).toHaveBeenCalledWith('user-abc/supino-reto-vertical.jpg')
-      expect(mockStorageDownload).toHaveBeenCalledWith('user-abc/agachamento.jpg')
+      expect(mockStorageCreateSignedUrl).toHaveBeenCalledWith(
+        'user-abc/supino-reto-vertical.jpg',
+        60,
+      )
+      expect(mockStorageCreateSignedUrl).toHaveBeenCalledWith('user-abc/agachamento.jpg', 60)
+      expect(mockFetch).toHaveBeenCalledTimes(2)
       expect(mockWrite).toHaveBeenCalledTimes(2)
 
       const stored = useAppStore.getState().equipmentPhotos
@@ -329,7 +339,8 @@ describe('useEquipmentPhoto', () => {
 
       await restoreEquipmentPhotosFromCloud()
 
-      expect(mockStorageDownload).not.toHaveBeenCalled()
+      expect(mockStorageCreateSignedUrl).not.toHaveBeenCalled()
+      expect(mockFetch).not.toHaveBeenCalled()
     })
   })
 })
