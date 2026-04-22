@@ -124,13 +124,25 @@ describe('planStore', () => {
   })
 
   describe('removePlan', () => {
-    it('removes the plan from the array', () => {
+    it('archives the plan instead of hard-deleting so the deletion can sync', () => {
       const id = usePlanStore.getState().addPlan('To Remove', 'Focus')
       expect(usePlanStore.getState().plans).toHaveLength(1)
 
       usePlanStore.getState().removePlan(id)
 
-      expect(usePlanStore.getState().plans).toHaveLength(0)
+      const plans = usePlanStore.getState().plans
+      expect(plans).toHaveLength(1)
+      expect(plans[0]?.archived).toBe(true)
+    })
+
+    it('marks synced plans back to local so the tombstone pushes on next sync', () => {
+      const id = usePlanStore.getState().addPlan('To Remove', 'Focus')
+      usePlanStore.getState().markPlansSynced([id])
+      expect(usePlanStore.getState().plans[0]?.syncStatus).toBe('synced')
+
+      usePlanStore.getState().removePlan(id)
+
+      expect(usePlanStore.getState().plans[0]?.syncStatus).toBe('local')
     })
 
     it('returns early if the plan is active in workoutStore', () => {
@@ -141,11 +153,12 @@ describe('planStore', () => {
 
       usePlanStore.getState().removePlan(id)
 
-      // Plan should NOT be removed
-      expect(usePlanStore.getState().plans).toHaveLength(1)
+      const plans = usePlanStore.getState().plans
+      expect(plans).toHaveLength(1)
+      expect(plans[0]?.archived).not.toBe(true)
     })
 
-    it('allows removal when workoutStore status is not active', () => {
+    it('archives the plan when workoutStore status is not active', () => {
       const id = usePlanStore.getState().addPlan('Plan', 'Focus')
 
       mockWorkoutStoreState.status = 'completed'
@@ -153,7 +166,7 @@ describe('planStore', () => {
 
       usePlanStore.getState().removePlan(id)
 
-      expect(usePlanStore.getState().plans).toHaveLength(0)
+      expect(usePlanStore.getState().plans[0]?.archived).toBe(true)
     })
   })
 

@@ -108,7 +108,9 @@ export const usePlanStore = create<PlanState>()(
         }
 
         set({
-          plans: get().plans.filter((plan) => plan.id !== id),
+          plans: get().plans.map((plan) =>
+            plan.id === id ? markModified({ ...plan, archived: true }) : plan,
+          ),
         })
       },
 
