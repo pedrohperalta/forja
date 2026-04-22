@@ -3,6 +3,7 @@ import { usePlanStore } from '@/stores/planStore'
 import { useAppStore } from '@/stores/appStore'
 import { useAuthStore } from '@/stores/authStore'
 import { restoreEquipmentPhotosFromCloud } from '@/hooks/useEquipmentPhoto'
+import { rebuildLastWeights } from '@/utils/rebuildLastWeights'
 import type { Plan, WorkoutSession } from '@/types'
 
 /** In-memory lock to prevent concurrent syncs. */
@@ -92,6 +93,18 @@ export async function sync(): Promise<void> {
     await pullData(userId)
     // Best-effort photo restore — never fail sync over photos
     await restoreEquipmentPhotosFromCloud().catch(() => {})
+    // Recover lastWeights that never left the device — derive from synced history
+    const plans = usePlanStore.getState().plans
+    const history = useAppStore.getState().history
+    const current = useAppStore.getState().lastWeights
+    const derived = rebuildLastWeights(plans, history)
+    const missing: Record<string, number> = {}
+    for (const [id, w] of Object.entries(derived)) {
+      if (current[id] === undefined) missing[id] = w
+    }
+    if (Object.keys(missing).length > 0) {
+      useAppStore.getState().updateLastWeights(missing)
+    }
     useAppStore.getState().setLastSyncedAt(new Date().toISOString())
     useAppStore.getState().setSyncState(false, null)
   } catch (err) {
