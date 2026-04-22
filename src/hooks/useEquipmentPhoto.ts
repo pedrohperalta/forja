@@ -1,10 +1,18 @@
 import * as ImagePicker from 'expo-image-picker'
 import { Paths, Directory, File } from 'expo-file-system'
 
+import { supabase } from '@/lib/supabase'
 import { useAppStore } from '@/stores/appStore'
+import { useAuthStore } from '@/stores/authStore'
 import type { ExerciseId } from '@/types'
 
 const PHOTOS_DIR_NAME = 'equipment-photos'
+const PHOTOS_BUCKET = 'equipment-photos'
+
+/** Builds the Storage path for a photo: `{userId}/{exerciseId}.jpg`. */
+function getRemotePath(userId: string, exerciseId: ExerciseId): string {
+  return `${userId}/${exerciseId}.jpg`
+}
 
 /** Returns the photos directory instance. */
 function getPhotosDir(): Directory {
@@ -72,6 +80,22 @@ export function useEquipmentPhoto(exerciseId: ExerciseId): UseEquipmentPhotoRetu
     sourceFile.copy(destFile)
 
     saveEquipmentPhoto(exerciseId, destFile.uri)
+
+    // Cloud backup — best effort, local save always wins
+    const userId = useAuthStore.getState().user?.id
+    if (userId) {
+      try {
+        const bytes = await destFile.bytes()
+        await supabase.storage
+          .from(PHOTOS_BUCKET)
+          .upload(getRemotePath(userId, exerciseId), bytes, {
+            contentType: 'image/jpeg',
+            upsert: true,
+          })
+      } catch {
+        // Swallow — photo stays local, re-sync handled elsewhere
+      }
+    }
   }
 
   const removePhoto = (): void => {
@@ -83,7 +107,52 @@ export function useEquipmentPhoto(exerciseId: ExerciseId): UseEquipmentPhotoRetu
       }
     }
     deleteEquipmentPhoto(exerciseId)
+
+    const userId = useAuthStore.getState().user?.id
+    if (userId) {
+      void supabase.storage.from(PHOTOS_BUCKET).remove([getRemotePath(userId, exerciseId)])
+    }
   }
 
   return { photoUri, pickPhoto, removePhoto }
+}
+
+/**
+ * Pulls cloud-backed equipment photos to the local filesystem so they survive
+ * reinstalls. Called from sync() after plan/session data is pulled. Skips files
+ * already present locally.
+ */
+export async function restoreEquipmentPhotosFromCloud(): Promise<void> {
+  const userId = useAuthStore.getState().user?.id
+  if (!userId) return
+
+  const { data: entries, error } = await supabase.storage.from(PHOTOS_BUCKET).list(userId)
+  if (error || !entries) return
+
+  const dir = getPhotosDir()
+  if (!dir.exists) {
+    dir.create({ intermediates: true })
+  }
+
+  const { saveEquipmentPhoto, equipmentPhotos } = useAppStore.getState()
+
+  for (const entry of entries) {
+    const match = entry.name.match(/^(.+)\.jpg$/)
+    if (!match || !match[1]) continue
+    const exerciseId = match[1] as ExerciseId
+
+    // Skip if the store already tracks this photo (survived local storage)
+    if (equipmentPhotos[exerciseId]) continue
+
+    const destFile = getPhotoFile(exerciseId)
+
+    const { data: blob, error: dlErr } = await supabase.storage
+      .from(PHOTOS_BUCKET)
+      .download(`${userId}/${entry.name}`)
+    if (dlErr || !blob) continue
+
+    const bytes = new Uint8Array(await blob.arrayBuffer())
+    destFile.write(bytes)
+    saveEquipmentPhoto(exerciseId, destFile.uri)
+  }
 }

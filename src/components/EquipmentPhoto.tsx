@@ -1,9 +1,19 @@
 import { useState } from 'react'
-import { Image, Modal, Pressable, Text, View } from 'react-native'
+import { Alert, Image, Modal, Pressable, Text, View } from 'react-native'
 import Svg, { Path } from 'react-native-svg'
 
 import { useEquipmentPhoto } from '@/hooks/useEquipmentPhoto'
 import type { ExerciseId } from '@/types'
+
+type PickSource = 'camera' | 'gallery'
+
+function promptPhotoSource(onSelect: (source: PickSource) => void): void {
+  Alert.alert('Foto do aparelho', undefined, [
+    { text: 'Câmera', onPress: () => onSelect('camera') },
+    { text: 'Galeria', onPress: () => onSelect('gallery') },
+    { text: 'Cancelar', style: 'cancel' },
+  ])
+}
 
 type EquipmentPhotoProps = {
   exerciseId: ExerciseId
@@ -15,7 +25,7 @@ export function EquipmentPhoto({ exerciseId }: EquipmentPhotoProps): React.JSX.E
   const [overlayVisible, setOverlayVisible] = useState(false)
 
   const handleEmptyPress = (): void => {
-    pickPhoto('gallery')
+    promptPhotoSource(pickPhoto)
   }
 
   const handleFilledPress = (): void => {
@@ -24,7 +34,7 @@ export function EquipmentPhoto({ exerciseId }: EquipmentPhotoProps): React.JSX.E
 
   const handleReplace = (): void => {
     setOverlayVisible(false)
-    pickPhoto('gallery')
+    promptPhotoSource(pickPhoto)
   }
 
   const handleRemove = (): void => {

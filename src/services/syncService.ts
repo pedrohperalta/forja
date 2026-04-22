@@ -2,6 +2,7 @@ import { supabase } from '@/lib/supabase'
 import { usePlanStore } from '@/stores/planStore'
 import { useAppStore } from '@/stores/appStore'
 import { useAuthStore } from '@/stores/authStore'
+import { restoreEquipmentPhotosFromCloud } from '@/hooks/useEquipmentPhoto'
 import type { Plan, WorkoutSession } from '@/types'
 
 /** In-memory lock to prevent concurrent syncs. */
@@ -89,6 +90,8 @@ export async function sync(): Promise<void> {
   try {
     await pushData(userId)
     await pullData(userId)
+    // Best-effort photo restore — never fail sync over photos
+    await restoreEquipmentPhotosFromCloud().catch(() => {})
     useAppStore.getState().setLastSyncedAt(new Date().toISOString())
     useAppStore.getState().setSyncState(false, null)
   } catch (err) {

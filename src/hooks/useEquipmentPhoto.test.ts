@@ -9,7 +9,7 @@ import { renderHook, act } from '@testing-library/react-native'
 import * as ImagePicker from 'expo-image-picker'
 
 import { useAppStore } from '@/stores/appStore'
-import { useEquipmentPhoto } from '@/hooks/useEquipmentPhoto'
+import { useEquipmentPhoto, restoreEquipmentPhotosFromCloud } from '@/hooks/useEquipmentPhoto'
 import { clearMockStorage } from '@/storage/__mocks__/mmkv'
 import type { ExerciseId } from '@/types'
 
@@ -22,10 +22,35 @@ jest.mock('expo-image-picker', () => ({
   MediaType: { Images: 'images' },
 }))
 
+let mockAuthUser: { id: string } | null = null
+
+jest.mock('@/stores/authStore', () => ({
+  useAuthStore: { getState: () => ({ user: mockAuthUser }) },
+}))
+
+const mockStorageUpload = jest.fn().mockResolvedValue({ data: {}, error: null })
+const mockStorageRemove = jest.fn().mockResolvedValue({ data: {}, error: null })
+const mockStorageList = jest.fn().mockResolvedValue({ data: [], error: null })
+const mockStorageDownload = jest.fn().mockResolvedValue({ data: null, error: null })
+
+jest.mock('@/lib/supabase', () => ({
+  supabase: {
+    storage: {
+      from: () => ({
+        upload: (...args: unknown[]) => mockStorageUpload(...args),
+        remove: (...args: unknown[]) => mockStorageRemove(...args),
+        list: (...args: unknown[]) => mockStorageList(...args),
+        download: (...args: unknown[]) => mockStorageDownload(...args),
+      }),
+    },
+  },
+}))
+
 // Mock v2 class-based API
 const mockCopy = jest.fn()
 const mockDelete = jest.fn()
 const mockDirCreate = jest.fn()
+const mockWrite = jest.fn()
 
 jest.mock('expo-file-system', () => ({
   Paths: { document: { uri: 'file:///mock-docs/' } },
@@ -54,6 +79,8 @@ jest.mock('expo-file-system', () => ({
       exists: false,
       copy: mockCopy,
       delete: mockDelete,
+      bytes: jest.fn().mockResolvedValue(new Uint8Array([0xff, 0xd8, 0xff])),
+      write: mockWrite,
     }
   }),
 }))
@@ -65,6 +92,7 @@ describe('useEquipmentPhoto', () => {
     jest.clearAllMocks()
     useAppStore.setState({ equipmentPhotos: {} })
     clearMockStorage()
+    mockAuthUser = null
   })
 
   it('returns undefined when no photo exists', () => {
@@ -172,5 +200,136 @@ describe('useEquipmentPhoto', () => {
     })
 
     expect(useAppStore.getState().equipmentPhotos[EXERCISE_ID]).toBeUndefined()
+  })
+
+  describe('cloud backup', () => {
+    it('uploads to Supabase Storage at {userId}/{exerciseId}.jpg when authenticated', async () => {
+      mockAuthUser = { id: 'user-abc' }
+      ;(ImagePicker.launchImageLibraryAsync as jest.Mock).mockResolvedValue({
+        canceled: false,
+        assets: [{ uri: 'file:///tmp/picked.jpg' }],
+      })
+
+      const { result } = renderHook(() => useEquipmentPhoto(EXERCISE_ID))
+      await act(async () => {
+        await result.current.pickPhoto('gallery')
+      })
+
+      expect(mockStorageUpload).toHaveBeenCalled()
+      const [path] = mockStorageUpload.mock.calls[0] ?? []
+      expect(path).toBe(`user-abc/${EXERCISE_ID}.jpg`)
+    })
+
+    it('skips upload when user is not authenticated', async () => {
+      mockAuthUser = null
+      ;(ImagePicker.launchImageLibraryAsync as jest.Mock).mockResolvedValue({
+        canceled: false,
+        assets: [{ uri: 'file:///tmp/picked.jpg' }],
+      })
+
+      const { result } = renderHook(() => useEquipmentPhoto(EXERCISE_ID))
+      await act(async () => {
+        await result.current.pickPhoto('gallery')
+      })
+
+      expect(mockStorageUpload).not.toHaveBeenCalled()
+      expect(useAppStore.getState().equipmentPhotos[EXERCISE_ID]).toBeDefined()
+    })
+
+    it('preserves the local save even if the upload fails', async () => {
+      mockAuthUser = { id: 'user-abc' }
+      mockStorageUpload.mockRejectedValueOnce(new Error('network'))
+      ;(ImagePicker.launchImageLibraryAsync as jest.Mock).mockResolvedValue({
+        canceled: false,
+        assets: [{ uri: 'file:///tmp/picked.jpg' }],
+      })
+
+      const { result } = renderHook(() => useEquipmentPhoto(EXERCISE_ID))
+      await act(async () => {
+        await result.current.pickPhoto('gallery')
+      })
+
+      expect(useAppStore.getState().equipmentPhotos[EXERCISE_ID]).toBeDefined()
+    })
+
+    it('removes from Supabase Storage when removePhoto runs authenticated', () => {
+      mockAuthUser = { id: 'user-abc' }
+      useAppStore.setState({
+        equipmentPhotos: {
+          [EXERCISE_ID]: 'file:///mock-docs/equipment-photos/supino-reto-vertical.jpg',
+        },
+      })
+
+      const { result } = renderHook(() => useEquipmentPhoto(EXERCISE_ID))
+      act(() => {
+        result.current.removePhoto()
+      })
+
+      expect(mockStorageRemove).toHaveBeenCalledWith([`user-abc/${EXERCISE_ID}.jpg`])
+    })
+
+    it('skips remote removal when unauthenticated', () => {
+      mockAuthUser = null
+      useAppStore.setState({
+        equipmentPhotos: {
+          [EXERCISE_ID]: 'file:///mock-docs/equipment-photos/supino-reto-vertical.jpg',
+        },
+      })
+
+      const { result } = renderHook(() => useEquipmentPhoto(EXERCISE_ID))
+      act(() => {
+        result.current.removePhoto()
+      })
+
+      expect(mockStorageRemove).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('restoreEquipmentPhotosFromCloud', () => {
+    it('does nothing when unauthenticated', async () => {
+      mockAuthUser = null
+
+      await restoreEquipmentPhotosFromCloud()
+
+      expect(mockStorageList).not.toHaveBeenCalled()
+    })
+
+    it('lists the user prefix, downloads missing photos, and saves them locally', async () => {
+      mockAuthUser = { id: 'user-abc' }
+      mockStorageList.mockResolvedValueOnce({
+        data: [{ name: 'supino-reto-vertical.jpg' }, { name: 'agachamento.jpg' }],
+        error: null,
+      })
+      const blob = { arrayBuffer: jest.fn().mockResolvedValue(new ArrayBuffer(4)) }
+      mockStorageDownload.mockResolvedValue({ data: blob, error: null })
+
+      await restoreEquipmentPhotosFromCloud()
+
+      expect(mockStorageList).toHaveBeenCalledWith('user-abc')
+      expect(mockStorageDownload).toHaveBeenCalledWith('user-abc/supino-reto-vertical.jpg')
+      expect(mockStorageDownload).toHaveBeenCalledWith('user-abc/agachamento.jpg')
+      expect(mockWrite).toHaveBeenCalledTimes(2)
+
+      const stored = useAppStore.getState().equipmentPhotos
+      expect(stored[EXERCISE_ID]).toBeDefined()
+      expect(stored['agachamento' as ExerciseId]).toBeDefined()
+    })
+
+    it('skips photos already present locally', async () => {
+      mockAuthUser = { id: 'user-abc' }
+      useAppStore.setState({
+        equipmentPhotos: {
+          [EXERCISE_ID]: 'file:///mock-docs/equipment-photos/supino-reto-vertical.jpg',
+        },
+      })
+      mockStorageList.mockResolvedValueOnce({
+        data: [{ name: 'supino-reto-vertical.jpg' }],
+        error: null,
+      })
+
+      await restoreEquipmentPhotosFromCloud()
+
+      expect(mockStorageDownload).not.toHaveBeenCalled()
+    })
   })
 })
