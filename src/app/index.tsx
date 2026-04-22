@@ -5,9 +5,11 @@ import { useRouter } from 'expo-router'
 import { useWorkoutStore } from '@/stores/workoutStore'
 import { useAppStore } from '@/stores/appStore'
 import { usePlanStore } from '@/stores/planStore'
+import { useAuthStore } from '@/stores/authStore'
 import { getNextPlanId } from '@/utils/getNextPlanId'
 import { WorkoutCard } from '@/components/WorkoutCard'
 import { HistoryChip } from '@/components/HistoryChip'
+import { AccountChip } from '@/components/AccountChip'
 import { EmptyPlans } from '@/components/EmptyPlans'
 import type { Plan } from '@/types'
 
@@ -20,6 +22,8 @@ export default function HomeScreen() {
   const reset = useWorkoutStore((s) => s.reset)
   const lastDates = useAppStore((s) => s.lastDates)
   const historyLength = useAppStore((s) => s.history.length)
+
+  const user = useAuthStore((s) => s.user)
 
   // All plans from store, filtered to active below
   const allPlans = usePlanStore((s) => s.plans)
@@ -60,8 +64,9 @@ export default function HomeScreen() {
   if (plans.length === 0 && historyLength === 0) {
     return (
       <View className="flex-1 bg-background">
-        <View className="mt-14 px-6">
+        <View className="mt-14 flex-row items-center justify-between px-6">
           <Text className="font-ui text-[12px] uppercase tracking-[6px] text-muted">FORJA</Text>
+          <AccountChip authenticated={user !== null} onPress={handleHistoryPress} />
         </View>
         <EmptyPlans />
       </View>
@@ -78,9 +83,12 @@ export default function HomeScreen() {
         {/* Compact header — brand as subtle wordmark */}
         <View className="mt-14 flex-row items-center justify-between px-6">
           <Text className="font-ui text-[12px] uppercase tracking-[6px] text-muted">FORJA</Text>
-          {historyLength > 0 ? (
-            <HistoryChip count={historyLength} onPress={handleHistoryPress} />
-          ) : null}
+          <View className="flex-row items-center gap-2">
+            {historyLength > 0 ? (
+              <HistoryChip count={historyLength} onPress={handleHistoryPress} />
+            ) : null}
+            <AccountChip authenticated={user !== null} onPress={handleHistoryPress} />
+          </View>
         </View>
 
         {/* Hero greeting — the content is the star, not the brand */}

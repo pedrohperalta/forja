@@ -12,6 +12,7 @@ import { render, screen, fireEvent } from '@testing-library/react-native'
 import { useWorkoutStore } from '@/stores/workoutStore'
 import { useAppStore } from '@/stores/appStore'
 import { usePlanStore } from '@/stores/planStore'
+import { useAuthStore } from '@/stores/authStore'
 
 import HomeScreen from '@/app/index'
 
@@ -42,6 +43,10 @@ jest.mock('@/stores/planStore', () => ({
   }),
 }))
 
+jest.mock('@/stores/authStore', () => ({
+  useAuthStore: jest.fn(),
+}))
+
 // -- Helpers --
 
 const planA = makePlan({
@@ -70,6 +75,7 @@ function setupMocks({
   startWorkout = jest.fn(),
   reset = jest.fn(),
   plans = [planA, planB, planC] as Plan[],
+  authenticated = false,
 } = {}) {
   const workoutState = { status, startWorkout, reset }
   ;(useWorkoutStore as unknown as jest.Mock).mockImplementation(
@@ -88,6 +94,11 @@ function setupMocks({
   ;(usePlanStore as unknown as jest.Mock & { getState: jest.Mock }).getState.mockReturnValue({
     plans,
   })
+
+  const authState = { user: authenticated ? { id: 'u1', email: 'x@y.z' } : null }
+  ;(useAuthStore as unknown as jest.Mock).mockImplementation(
+    (selector: (s: typeof authState) => unknown) => selector(authState),
+  )
 
   return { startWorkout, reset }
 }
@@ -195,6 +206,44 @@ describe('HomeScreen', () => {
 
       expect(screen.getByText('Historico')).toBeTruthy()
       expect(screen.getByText('5')).toBeTruthy()
+    })
+  })
+
+  describe('AccountChip', () => {
+    it('shows ENTRAR label in header when logged out and history is empty', () => {
+      setupMocks({ historyLength: 0, authenticated: false })
+
+      render(<HomeScreen />)
+
+      expect(screen.getByText('ENTRAR')).toBeTruthy()
+    })
+
+    it('shows ENTRAR in the empty-plans state so fresh installs reach login', () => {
+      setupMocks({ plans: [], historyLength: 0, authenticated: false })
+
+      render(<HomeScreen />)
+
+      expect(screen.getByText('Sem Treinos')).toBeTruthy()
+      expect(screen.getByText('ENTRAR')).toBeTruthy()
+    })
+
+    it('hides ENTRAR and exposes the account avatar when logged in', () => {
+      setupMocks({ historyLength: 0, authenticated: true })
+
+      render(<HomeScreen />)
+
+      expect(screen.queryByText('ENTRAR')).toBeNull()
+      expect(screen.getByLabelText('Conta')).toBeTruthy()
+    })
+
+    it('navigates to /history when ENTRAR is pressed', () => {
+      setupMocks({ historyLength: 0, authenticated: false })
+
+      render(<HomeScreen />)
+
+      fireEvent.press(screen.getByText('ENTRAR'))
+
+      expect(mockPush).toHaveBeenCalledWith('/history')
     })
   })
 
