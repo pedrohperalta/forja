@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PRD — Visão do Treino | Forja</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --accent: #C2F000;
+    --accent-dim: rgba(194, 240, 0, 0.12);
+    --danger: #ef4444;
+    --warning: #f59e0b;
+    --p0: #ef4444;
+    --p1: #f59e0b;
+    --p2: #3b82f6;
+    --bg: #0e0e0e;
+    --surface: #1a1a1a;
+    --surface-2: #252525;
+    --border: #2a2a2a;
+    --text: #f5f5f4;
+    --text-med: #a8a29e;
+    --text-dim: #57534e;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    padding: 0;
+  }
+
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 32px 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-inner {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+  }
+  .header h1 {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--accent);
+    letter-spacing: -0.5px;
+  }
+  .header .meta {
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+  .review-toggle {
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    padding: 8px 20px;
+    border-radius: 100px;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .review-toggle:hover { opacity: 0.85; }
+  .review-toggle.active {
+    background: var(--danger);
+    color: white;
+  }
+
+  .content {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 32px 120px;
+  }
+
+  section { margin-bottom: 48px; }
+  .section-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+  h2 {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: var(--text);
+  }
+  h3 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: var(--text);
+  }
+  p, li {
+    font-size: 14px;
+    color: var(--text-med);
+    line-height: 1.7;
+  }
+  ul, ol {
+    padding-left: 20px;
+    margin-bottom: 16px;
+  }
+  li { margin-bottom: 6px; }
+  li strong { color: var(--text); }
+
+  .hero {
+    background: linear-gradient(180deg, rgba(194,240,0,0.08), rgba(26,26,26,0));
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    margin-bottom: 48px;
+  }
+  .hero h2 {
+    font-size: 34px;
+    line-height: 1.05;
+    letter-spacing: -1px;
+    margin-bottom: 12px;
+  }
+  .hero p {
+    max-width: 680px;
+    font-size: 15px;
+  }
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 20px;
+  }
+  .hero-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    border-radius: 100px;
+    padding: 0 18px;
+    border: 1px solid rgba(194,240,0,0.22);
+    background: var(--accent-dim);
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 16px;
+  }
+  .card h3 { margin-bottom: 8px; }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  .badge-p0 { background: rgba(239,68,68,0.15); color: var(--p0); }
+  .badge-p1 { background: rgba(245,158,11,0.15); color: var(--p1); }
+  .badge-p2 { background: rgba(59,130,246,0.15); color: var(--p2); }
+  .badge-accent { background: var(--accent-dim); color: var(--accent); }
+
+  .feature-grid,
+  .metric-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  .feature-grid { grid-template-columns: 1fr 1fr; }
+  @media (max-width: 760px) {
+    .metric-grid,
+    .feature-grid { grid-template-columns: 1fr; }
+  }
+  .metric-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+  }
+  .metric-value {
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--accent);
+    line-height: 1;
+  }
+  .metric-label {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-top: 6px;
+  }
+
+  .story {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 12px 12px 0;
+    padding: 20px 24px;
+    margin-bottom: 12px;
+  }
+  .story .story-badges {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+  .story-id {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+  .story .role {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+  .story p { color: var(--text); font-size: 14px; }
+
+  .criteria {
+    background: var(--surface-2);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-top: 10px;
+    font-size: 13px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    color: var(--text-med);
+  }
+  .criteria strong { color: var(--accent); font-weight: 600; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 16px;
+    font-size: 13px;
+  }
+  th {
+    text-align: left;
+    padding: 10px 14px;
+    background: var(--surface-2);
+    color: var(--text-dim);
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-med);
+    vertical-align: top;
+  }
+
+  .flow-diagram {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 24px 0;
+  }
+  .flow-step {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    text-align: center;
+    min-width: 140px;
+  }
+  .flow-step-label { font-size: 13px; font-weight: 700; color: var(--text); }
+  .flow-step-desc { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+  .flow-arrow { font-size: 18px; color: var(--text-dim); padding: 0 8px; }
+
+  .mockup-pair {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .mockup-frame {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    margin: 24px 0;
+    max-width: 375px;
+    width: 100%;
+  }
+  .mockup-status-bar {
+    background: var(--bg);
+    padding: 8px 24px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .mockup-content {
+    padding: 0 24px 28px;
+    min-height: 620px;
+  }
+  .mockup-label {
+    font-size: 11px;
+    color: var(--text-dim);
+    text-align: center;
+    margin-top: -12px;
+    margin-bottom: 24px;
+    font-style: italic;
+  }
+  .m-back {
+    height: 44px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--accent);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-top: 14px;
+  }
+  .m-hero {
+    font-size: 36px;
+    font-weight: 800;
+    line-height: 0.95;
+    color: var(--text);
+    letter-spacing: -1px;
+    margin: 8px 0 8px;
+  }
+  .m-sub { font-size: 12px; color: var(--text-dim); margin-bottom: 18px; }
+  .m-summary {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 18px;
+  }
+  .m-stat {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 8px;
+    text-align: center;
+  }
+  .m-stat strong {
+    display: block;
+    color: var(--accent);
+    font-size: 24px;
+    line-height: 1;
+  }
+  .m-stat span { font-size: 9px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; }
+  .m-section {
+    color: var(--accent);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 2.6px;
+    text-transform: uppercase;
+    margin: 18px 0 10px;
+  }
+  .m-exercise {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 10px;
+    display: grid;
+    grid-template-columns: 28px 1fr;
+    gap: 12px;
+  }
+  .m-order {
+    width: 28px;
+    height: 28px;
+    border-radius: 100px;
+    background: var(--accent-dim);
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 800;
+  }
+  .m-ex-name { font-size: 14px; font-weight: 800; color: var(--text); }
+  .m-ex-meta { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+  .m-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+  .m-tag {
+    background: var(--surface-2);
+    border-radius: 100px;
+    padding: 4px 8px;
+    font-size: 9px;
+    color: var(--text-med);
+  }
+  .m-tag.accent { background: var(--accent-dim); color: var(--accent); }
+  .m-cta {
+    height: 56px;
+    border-radius: 100px;
+    background: var(--accent);
+    color: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-top: 18px;
+  }
+  .m-secondary {
+    height: 46px;
+    border-radius: 100px;
+    border: 1px solid var(--border);
+    color: var(--text-med);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    margin-top: 10px;
+  }
+  .m-current {
+    border-color: rgba(194,240,0,0.55);
+    box-shadow: inset 3px 0 0 var(--accent);
+  }
+
+  [data-c].commentable {
+    cursor: crosshair;
+    outline: 1px dashed rgba(194,240,0,0.45);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+  [data-c].commentable:hover {
+    background: rgba(194,240,0,0.08);
+    outline-color: var(--accent);
+  }
+  [data-c].commentable.has-comment {
+    outline: 2px solid var(--accent);
+  }
+
+  .comment-panel {
+    position: fixed;
+    right: 24px;
+    top: 112px;
+    width: 340px;
+    max-height: calc(100vh - 136px);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    display: none;
+    flex-direction: column;
+    z-index: 200;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.45);
+  }
+  .comment-panel.open { display: flex; }
+  .comment-panel-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .comment-panel-header h3 { font-size: 14px; font-weight: 700; margin: 0; }
+  .comment-panel-body { flex: 1; overflow-y: auto; padding: 20px; }
+  .comment-panel-footer { padding: 16px 20px; border-top: 1px solid var(--border); }
+  .comment-input {
+    width: 100%;
+    min-height: 80px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 13px;
+    resize: vertical;
+  }
+  .comment-input:focus { outline: none; border-color: var(--accent); }
+  .comment-submit {
+    width: 100%;
+    margin-top: 10px;
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    border-radius: 100px;
+    padding: 10px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .comment-item {
+    background: var(--surface-2);
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 10px;
+  }
+  .comment-item-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 6px;
+  }
+  .comment-item-section { font-size: 11px; font-weight: 700; color: var(--accent); }
+  .comment-item-time { font-size: 11px; color: var(--text-dim); }
+  .comment-item-text { font-size: 13px; color: var(--text-med); }
+  .comment-item-delete {
+    margin-top: 8px;
+    background: none;
+    border: none;
+    color: var(--danger);
+    font-size: 11px;
+    cursor: pointer;
+  }
+  .comment-count {
+    background: var(--accent);
+    color: var(--bg);
+    border-radius: 100px;
+    padding: 2px 7px;
+    font-size: 11px;
+    margin-left: 6px;
+  }
+  .no-comments {
+    text-align: center;
+    color: var(--text-dim);
+    font-size: 13px;
+    padding: 40px 0;
+  }
+
+  @media (max-width: 760px) {
+    .header-inner { align-items: flex-start; flex-direction: column; }
+    .content { padding: 32px 20px 96px; }
+    .hero { padding: 24px; }
+    .comment-panel {
+      left: 16px;
+      right: 16px;
+      width: auto;
+      top: 120px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <div>
+      <h1>PRD — Visão do Treino</h1>
+      <div class="meta">Forja • Discovery • Maio 2026</div>
+    </div>
+    <button class="review-toggle" id="reviewToggle" onclick="toggleReviewMode()">Review Mode</button>
+  </div>
+</header>
+
+<div class="comment-panel" id="commentPanel">
+  <div class="comment-panel-header">
+    <h3>Comentários <span class="comment-count" id="commentCount" style="display:none">0</span></h3>
+    <button onclick="closeCommentPanel()" style="background:none;border:none;color:var(--text-dim);font-size:20px;cursor:pointer">&times;</button>
+  </div>
+  <div class="comment-panel-body" id="commentList">
+    <div class="no-comments">Nenhum comentário ainda. Clique em elementos destacados para comentar.</div>
+  </div>
+  <div class="comment-panel-footer" id="commentForm" style="display:none">
+    <div style="font-size:11px;color:var(--accent);font-weight:700;margin-bottom:6px" id="commentTarget"></div>
+    <textarea class="comment-input" id="commentInput" placeholder="Deixe seu comentário..."></textarea>
+    <button class="comment-submit" onclick="submitComment()">Adicionar Comentário</button>
+  </div>
+</div>
+
+<main class="content">
+  <div class="hero" data-c="hero">
+    <div class="section-label">Feature</div>
+    <h2>Ver o treino inteiro antes de começar</h2>
+    <p>
+      Antes de entrar direto no primeiro exercício, o Forja deve mostrar uma visão compacta de todos os exercícios do dia para que o usuário organize mentalmente a sequência, identifique aparelhos repetidos e entre no treino com um plano prático.
+    </p>
+    <div class="hero-actions" data-c="hero-actions">
+      <a class="hero-link" href="mockup.html">Abrir mockup interativo</a>
+    </div>
+  </div>
+
+  <section>
+    <div class="section-label" data-c="sec-context">Contexto</div>
+    <h2 data-c="title-context">Situação atual</h2>
+    <div class="card" data-c="current-behavior">
+      <h3>Fluxo existente</h3>
+      <p>
+        Ao tocar em um treino na Home, o app inicia a sessão e leva o usuário diretamente para a tela do primeiro exercício. Esse comportamento é rápido, mas assume que a ordem planejada é sempre a melhor ordem prática dentro da academia.
+      </p>
+    </div>
+    <div class="card" data-c="user-need">
+      <h3>Necessidade observada</h3>
+      <p>
+        Ao chegar na academia, o usuário às vezes quer olhar todos os exercícios do dia para decidir como se organizar. Alguns exercícios usam o mesmo aparelho ou ficam próximos, então fazê-los em sequência evita deslocamento, espera e troca desnecessária de máquina.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-label" data-c="sec-problem">Problema</div>
+    <h2 data-c="title-problem">O app começa antes do usuário montar o mapa mental</h2>
+    <p data-c="problem-description">
+      A tela de exercício ativo é ótima para execução, mas ruim para planejamento rápido. Nela, o usuário vê o exercício atual em destaque e precisa avançar mentalmente ou sair do fluxo para lembrar o restante do treino. Isso cria atrito justamente no momento em que ele está avaliando aparelhos disponíveis, ordem mais eficiente e possíveis substituições.
+    </p>
+  </section>
+
+  <section>
+    <div class="section-label" data-c="sec-goals">Objetivos</div>
+    <h2 data-c="title-goals">Resultados esperados</h2>
+    <div class="metric-grid">
+      <div class="metric-card" data-c="metric-context">
+        <div class="metric-value">1</div>
+        <div class="metric-label">Tela de contexto antes do exercício</div>
+      </div>
+      <div class="metric-card" data-c="metric-scan">
+        <div class="metric-value">&lt;10s</div>
+        <div class="metric-label">Para entender o treino do dia</div>
+      </div>
+      <div class="metric-card" data-c="metric-friction">
+        <div class="metric-value">0</div>
+        <div class="metric-label">Toques extras obrigatórios depois de começar</div>
+      </div>
+    </div>
+    <div class="feature-grid">
+      <div class="card" data-c="goal-scan">
+        <h3>Dar visão geral</h3>
+        <p>Mostrar todos os exercícios, séries, repetições, categoria e aparelho antes da execução.</p>
+      </div>
+      <div class="card" data-c="goal-machines">
+        <h3>Apoiar organização por aparelho</h3>
+        <p>Destacar equipamento de forma escaneável para o usuário perceber agrupamentos naturais.</p>
+      </div>
+      <div class="card" data-c="goal-fast-start">
+        <h3>Preservar velocidade</h3>
+        <p>Manter CTA claro para iniciar o primeiro exercício sem transformar a etapa em configuração pesada.</p>
+      </div>
+      <div class="card" data-c="goal-resume">
+        <h3>Servir como retorno seguro</h3>
+        <p>Quando houver treino ativo, permitir continuar vendo a visão do treino sem perder progresso.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-label" data-c="sec-flow">Fluxo Proposto</div>
+    <h2 data-c="title-flow">Home → Visão do treino → Exercício</h2>
+    <div class="flow-diagram" data-c="flow-diagram">
+      <div class="flow-step">
+        <div class="flow-step-label">Home</div>
+        <div class="flow-step-desc">Escolhe treino</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="flow-step-label">Visão do treino</div>
+        <div class="flow-step-desc">Lista e aparelhos</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="flow-step-label">Exercício ativo</div>
+        <div class="flow-step-desc">Executa séries</div>
+      </div>
+    </div>
+    <p data-c="flow-note">
+      O treino já pode ser considerado ativo ao abrir a visão geral, mas a primeira tela do fluxo ativo deixa de ser o exercício. O usuário ganha uma etapa de orientação, com CTA fixo para seguir imediatamente.
+    </p>
+  </section>
+
+  <section>
+    <div class="section-label" data-c="sec-stories">User Stories</div>
+    <h2 data-c="title-stories">Histórias de usuário</h2>
+
+    <div class="story" data-c="story-overview-before-start">
+      <div class="story-badges">
+        <span class="story-id">US-01</span>
+        <span class="badge badge-p0">P0</span>
+      </div>
+      <div class="role">Como pessoa que vai iniciar o treino</div>
+      <p>Quero ver todos os exercícios do dia antes do primeiro exercício para organizar mentalmente a sequência.</p>
+      <div class="criteria">
+        <strong>Critérios:</strong><br>
+        Dado que estou na Home, quando toco em um treino disponível, então vejo uma tela com todos os exercícios desse treino antes da tela de execução.<br>
+        Dado que a visão geral abriu, então o treino, foco e quantidade total de exercícios ficam visíveis sem depender de navegação extra.
+      </div>
+    </div>
+
+    <div class="story" data-c="story-equipment-scan">
+      <div class="story-badges">
+        <span class="story-id">US-02</span>
+        <span class="badge badge-p0">P0</span>
+      </div>
+      <div class="role">Como pessoa treinando em uma academia movimentada</div>
+      <p>Quero identificar rapidamente quais exercícios usam o mesmo aparelho para aproveitá-lo enquanto está livre.</p>
+      <div class="criteria">
+        <strong>Critérios:</strong><br>
+        Dado que a lista de exercícios aparece, então cada item mostra equipamento em um badge legível.<br>
+        Dado que dois ou mais exercícios usam o mesmo equipamento, então a informação visual permite reconhecer essa repetição ao escanear a lista.
+      </div>
+    </div>
+
+    <div class="story" data-c="story-start-first-exercise">
+      <div class="story-badges">
+        <span class="story-id">US-03</span>
+        <span class="badge badge-p0">P0</span>
+      </div>
+      <div class="role">Como pessoa pronta para começar</div>
+      <p>Quero seguir para o primeiro exercício com um toque claro, sem precisar configurar nada.</p>
+      <div class="criteria">
+        <strong>Critérios:</strong><br>
+        Dado que estou na visão do treino, quando toco em "Começar exercício", então vou para a tela do exercício atual.<br>
+        Dado que não alterei nada na visão geral, então o exercício atual continua sendo o primeiro exercício não concluído nem pulado.
+      </div>
+    </div>
+
+    <div class="story" data-c="story-current-session-overview">
+      <div class="story-badges">
+        <span class="story-id">US-04</span>
+        <span class="badge badge-p1">P1</span>
+      </div>
+      <div class="role">Como pessoa no meio do treino</div>
+      <p>Quero voltar para a visão do treino para revisar o que falta sem abandonar o exercício atual.</p>
+      <div class="criteria">
+        <strong>Critérios:</strong><br>
+        Dado que tenho um treino ativo, quando acesso a visão geral, então vejo exercícios concluídos, atual e pendentes com estados distintos.<br>
+        Dado que retorno para a execução, então séries já registradas e exercício atual são preservados.
+      </div>
+    </div>
+
+    <div class="story" data-c="story-no-reorder-mvp">
+      <div class="story-badges">
+        <span class="story-id">US-05</span>
+        <span class="badge badge-p2">P2</span>
+      </div>
+      <div class="role">Como pessoa que adapta o treino no momento</div>
+      <p>Quero futuramente escolher por qual exercício começar ou reorganizar a ordem do dia.</p>
+      <div class="criteria">
+        <strong>Critérios:</strong><br>
+        Esta história fica fora do MVP da visão geral. O MVP deve primeiro validar a etapa de leitura e orientação antes de introduzir reordenação de fila.
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-label" data-c="sec-scope">Escopo</div>
+    <h2 data-c="title-scope">Escopo da feature</h2>
+    <table data-c="scope-table">
+      <thead>
+        <tr>
+          <th>Item</th>
+          <th>Prioridade</th>
+          <th>Descrição</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Tela de visão do treino</td>
+          <td><span class="badge badge-p0">P0</span></td>
+          <td>Nova tela no fluxo ativo mostrando nome do treino, foco, resumo e lista de exercícios.</td>
+        </tr>
+        <tr>
+          <td>Lista escaneável</td>
+          <td><span class="badge badge-p0">P0</span></td>
+          <td>Cada exercício mostra ordem, nome, séries, reps, categoria e equipamento.</td>
+        </tr>
+        <tr>
+          <td>CTA fixo</td>
+          <td><span class="badge badge-p0">P0</span></td>
+          <td>Botão inferior para entrar no exercício atual sem rolagem até o fim da lista.</td>
+        </tr>
+        <tr>
+          <td>Estados de progresso</td>
+          <td><span class="badge badge-p1">P1</span></td>
+          <td>Quando acessada durante um treino ativo, indicar exercício atual, concluídos e pendentes.</td>
+        </tr>
+        <tr>
+          <td>Reordenação do dia</td>
+          <td><span class="badge badge-p2">P2</span></td>
+          <td>Arrastar ou escolher outro exercício para começar fica para uma iteração futura.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <div class="section-label" data-c="sec-mockup-start">Mockup</div>
+    <h2 data-c="title-mockup-start">Tela — Visão antes do primeiro exercício</h2>
+    <div class="mockup-frame" data-c="mockup-overview-start" style="margin-left:auto;margin-right:auto">
+      <div class="mockup-status-bar">
+        <span>9:41</span>
+        <span>100%</span>
+      </div>
+      <div class="mockup-content">
+        <div class="m-back">‹ TREINOS</div>
+        <div class="m-hero">TREINO A</div>
+        <div class="m-sub">Peito / Ombros / Triceps</div>
+
+        <div class="m-summary">
+          <div class="m-stat"><strong>6</strong><span>exerc.</span></div>
+          <div class="m-stat"><strong>18</strong><span>séries</span></div>
+          <div class="m-stat"><strong>3</strong><span>aparelhos</span></div>
+        </div>
+
+        <div class="m-section">Organize seu treino</div>
+
+        <div class="m-exercise">
+          <div class="m-order">1</div>
+          <div>
+            <div class="m-ex-name">Supino reto</div>
+            <div class="m-ex-meta">3 x 10-12 • 90s</div>
+            <div class="m-tags">
+              <span class="m-tag">Peito</span>
+              <span class="m-tag accent">Banco + barra</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="m-exercise">
+          <div class="m-order">2</div>
+          <div>
+            <div class="m-ex-name">Crucifixo máquina</div>
+            <div class="m-ex-meta">3 x 12-15 • 60s</div>
+            <div class="m-tags">
+              <span class="m-tag">Peito</span>
+              <span class="m-tag accent">Peck deck</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="m-exercise">
+          <div class="m-order">3</div>
+          <div>
+            <div class="m-ex-name">Desenvolvimento</div>
+            <div class="m-ex-meta">3 x 8-10 • 90s</div>
+            <div class="m-tags">
+              <span class="m-tag">Ombros</span>
+              <span class="m-tag accent">Máquina</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="m-exercise">
+          <div class="m-order">4</div>
+          <div>
+            <div class="m-ex-name">Tríceps corda</div>
+            <div class="m-ex-meta">3 x 12 • 60s</div>
+            <div class="m-tags">
+              <span class="m-tag">Tríceps</span>
+              <span class="m-tag accent">Polia</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="m-cta">Começar exercício</div>
+      </div>
+    </div>
+    <div class="mockup-label">A visão geral aparece antes do primeiro exercício</div>
+  </section>
+
+  <section>
+    <div class="section-label" data-c="sec-mockup-active">Mockup</div>
+    <h2 data-c="title-mockup-active">Tela — Revisão durante treino ativo</h2>
+    <div class="mockup-frame" data-c="mockup-overview-active" style="margin-left:auto;margin-right:auto">
+      <div class="mockup-status-bar">
+        <span>10:18</span>
+        <span>84%</span>
+      </div>
+      <div class="mockup-content">
+        <div class="m-back">‹ EXERCÍCIO</div>
+        <div class="m-hero">TREINO A</div>
+        <div class="m-sub">2 de 6 exercícios concluídos</div>
+
+        <div class="m-summary">
+          <div class="m-stat"><strong>2</strong><span>feitos</span></div>
+          <div class="m-stat"><strong>1</strong><span>atual</span></div>
+          <div class="m-stat"><strong>3</strong><span>faltam</span></div>
+        </div>
+
+        <div class="m-section">Mapa do treino</div>
+
+        <div class="m-exercise">
+          <div class="m-order">✓</div>
+          <div>
+            <div class="m-ex-name">Supino reto</div>
+            <div class="m-ex-meta">Concluído • 3 séries</div>
+            <div class="m-tags">
+              <span class="m-tag">Peito</span>
+              <span class="m-tag accent">Banco + barra</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="m-exercise">
+          <div class="m-order">✓</div>
+          <div>
+            <div class="m-ex-name">Crucifixo máquina</div>
+            <div class="m-ex-meta">Concluído • 3 séries</div>
+            <div class="m-tags">
+              <span class="m-tag">Peito</span>
+              <span class="m-tag accent">Peck deck</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="m-exercise m-current">
+          <div class="m-order">3</div>
+          <div>
+            <div class="m-ex-name">Desenvolvimento</div>
+            <div class="m-ex-meta">Atual • série 2 de 3</div>
+            <div class="m-tags">
+              <span class="m-tag">Ombros</span>
+              <span class="m-tag accent">Máquina</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="m-exercise">
+          <div class="m-order">4</div>
+          <div>
+            <div class="m-ex-name">Tríceps corda</div>
+            <div class="m-ex-meta">Pendente • 3 x 12</div>
+            <div class="m-tags">
+              <span class="m-tag">Tríceps</span>
+              <span class="m-tag accent">Polia</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="m-cta">Continuar exercício</div>
+        <div class="m-secondary">Voltar ao início</div>
+      </div>
+    </div>
+    <div class="mockup-label">Durante o treino, a tela funciona como mapa do que já foi feito e do que falta</div>
+  </section>
+
+  <section>
+    <div class="section-label" data-c="sec-ac">Critérios de Aceitação</div>
+    <h2 data-c="title-ac">Comportamento esperado</h2>
+    <div class="criteria" data-c="ac-01">
+      <strong>AC-01:</strong> Ao iniciar um treino pela Home, o app navega para a visão do treino, não diretamente para o primeiro exercício.
+    </div>
+    <div class="criteria" data-c="ac-02">
+      <strong>AC-02:</strong> A visão do treino lista todos os exercícios do plano ativo na ordem configurada.
+    </div>
+    <div class="criteria" data-c="ac-03">
+      <strong>AC-03:</strong> Cada exercício mostra nome, séries, repetições, descanso, categoria e equipamento.
+    </div>
+    <div class="criteria" data-c="ac-04">
+      <strong>AC-04:</strong> O CTA principal leva para a tela do exercício atual e preserva o estado do treino ativo.
+    </div>
+    <div class="criteria" data-c="ac-05">
+      <strong>AC-05:</strong> Se a visão do treino for aberta durante uma sessão ativa, exercícios concluídos, exercício atual e exercícios pendentes têm tratamento visual distinto.
+    </div>
+    <div class="criteria" data-c="ac-06">
+      <strong>AC-06:</strong> Se não houver treino ativo, deep links para essa tela seguem o mesmo guard do fluxo de workout e retornam para a Home.
+    </div>
+  </section>
+
+  <section>
+    <div class="section-label" data-c="sec-oos">Fora do Escopo</div>
+    <h2 data-c="title-oos">Não fazer nesta etapa</h2>
+    <ul data-c="oos-list">
+      <li>Reordenar exercícios por drag-and-drop dentro da sessão ativa.</li>
+      <li>Agrupar automaticamente por aparelho ou sugerir uma ordem otimizada.</li>
+      <li>Substituir exercícios por alternativas.</li>
+      <li>Editar o plano a partir da visão do treino.</li>
+      <li>Alterar regras de pular exercício, checkpoint ou conclusão do treino.</li>
+    </ul>
+  </section>
+
+  <section>
+    <div class="section-label" data-c="sec-tech">Notas Técnicas</div>
+    <h2 data-c="title-tech">Orientação de implementação futura</h2>
+    <div class="card" data-c="tech-routing">
+      <h3>Rota sugerida</h3>
+      <p>Adicionar uma rota dentro do grupo de workout, por exemplo <strong>/(workout)/overview</strong>. A Home passa a chamar <strong>startWorkout(plan)</strong> e navegar para essa rota.</p>
+    </div>
+    <div class="card" data-c="tech-state">
+      <h3>Estado</h3>
+      <p>Não é necessário novo estado global para o MVP. A tela pode derivar lista, concluídos e exercício atual a partir de <strong>activePlan</strong>, <strong>queue</strong>, <strong>log</strong>, <strong>skippedIds</strong>, <strong>currentSet</strong> e <strong>getCurrentExercise</strong>.</p>
+    </div>
+    <div class="card" data-c="tech-tdd">
+      <h3>Testes esperados</h3>
+      <p>Cobrir navegação da Home para a nova tela, renderização da lista, CTA para exercício, estados de sessão ativa e guard sem treino ativo.</p>
+    </div>
+  </section>
+</main>
+
+<script>
+const STORAGE_KEY = 'prd-comments-workout-overview-v1';
+let reviewMode = false;
+let activeTarget = null;
+let comments = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+
+function toggleReviewMode() {
+  reviewMode = !reviewMode;
+  const btn = document.getElementById('reviewToggle');
+  const panel = document.getElementById('commentPanel');
+  btn.classList.toggle('active', reviewMode);
+  btn.textContent = reviewMode ? 'Sair do Review' : 'Review Mode';
+  if (reviewMode) {
+    panel.classList.add('open');
+    document.querySelectorAll('[data-c]').forEach(el => {
+      el.classList.add('commentable');
+      el.addEventListener('click', handleCommentClick);
+    });
+  } else {
+    panel.classList.remove('open');
+    document.getElementById('commentForm').style.display = 'none';
+    document.querySelectorAll('[data-c]').forEach(el => {
+      el.classList.remove('commentable');
+      el.removeEventListener('click', handleCommentClick);
+    });
+    activeTarget = null;
+  }
+  renderComments();
+}
+
+function handleCommentClick(event) {
+  if (!reviewMode) return;
+  event.preventDefault();
+  event.stopPropagation();
+  const target = event.currentTarget.dataset.c;
+  activeTarget = target;
+  document.getElementById('commentTarget').textContent = '#' + target;
+  document.getElementById('commentForm').style.display = 'block';
+  document.getElementById('commentInput').value = '';
+  document.getElementById('commentInput').focus();
+  renderComments();
+}
+
+function submitComment() {
+  const input = document.getElementById('commentInput');
+  const text = input.value.trim();
+  if (!text || !activeTarget) return;
+  comments.push({
+    id: Date.now(),
+    target: activeTarget,
+    text,
+    timestamp: new Date().toISOString()
+  });
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(comments));
+  input.value = '';
+  renderComments();
+  updateCommentMarkers();
+}
+
+function deleteComment(id) {
+  comments = comments.filter(c => c.id !== id);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(comments));
+  renderComments();
+  updateCommentMarkers();
+}
+
+function renderComments() {
+  const list = document.getElementById('commentList');
+  const countEl = document.getElementById('commentCount');
+  countEl.style.display = comments.length > 0 ? 'inline' : 'none';
+  countEl.textContent = comments.length;
+  if (comments.length === 0) {
+    list.innerHTML = '<div class="no-comments">Nenhum comentário ainda. Clique em elementos destacados para comentar.</div>';
+    return;
+  }
+  const sorted = activeTarget
+    ? [
+        ...comments.filter(c => c.target === activeTarget),
+        ...comments.filter(c => c.target !== activeTarget)
+      ]
+    : comments;
+  list.innerHTML = sorted.map(c => `
+    <div class="comment-item" ${c.target === activeTarget ? 'style="border-left:2px solid var(--accent)"' : ''}>
+      <div class="comment-item-header">
+        <span class="comment-item-section">#${c.target}</span>
+        <span class="comment-item-time">${new Date(c.timestamp).toLocaleString('pt-BR')}</span>
+      </div>
+      <div class="comment-item-text">${escapeHtml(c.text)}</div>
+      <button class="comment-item-delete" onclick="deleteComment(${c.id})">Remover</button>
+    </div>
+  `).join('');
+}
+
+function updateCommentMarkers() {
+  const targets = new Set(comments.map(c => c.target));
+  document.querySelectorAll('[data-c]').forEach(el => {
+    if (targets.has(el.dataset.c)) {
+      el.classList.add('has-comment');
+    } else {
+      el.classList.remove('has-comment');
+    }
+  });
+}
+
+function closeCommentPanel() {
+  document.getElementById('commentPanel').classList.remove('open');
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+document.getElementById('commentInput')?.addEventListener('keydown', event => {
+  if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
+    submitComment();
+  }
+});
+
+renderComments();
+updateCommentMarkers();
+</script>
+
+</body>
+</html>

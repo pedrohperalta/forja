@@ -1,0 +1,1426 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Mockup Interativo — Visão do Treino | Forja</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #080808;
+      --surface: #111111;
+      --surface-2: #1c1c1c;
+      --border: #222222;
+      --border-med: #333333;
+      --accent: #c2f000;
+      --accent-dim: rgba(194, 240, 0, 0.1);
+      --accent-glow: rgba(194, 240, 0, 0.26);
+      --text: #ffffff;
+      --text-med: #aaaaaa;
+      --muted: #888888;
+      --dim: #444444;
+      --danger: #ff453a;
+      --danger-dim: rgba(255, 69, 58, 0.12);
+      --warning: #f59e0b;
+      --font-display: 'Bebas Neue', sans-serif;
+      --font-ui: 'Syne', sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      background: #030303;
+      color: var(--text);
+      font-family: var(--font-ui);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button { font-family: inherit; }
+
+    .page {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 44px 28px 64px;
+    }
+
+    .top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+
+    .eyebrow {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 8px;
+    }
+
+    h1 {
+      font-family: var(--font-display);
+      font-size: clamp(44px, 7vw, 76px);
+      line-height: 0.92;
+      letter-spacing: 1px;
+    }
+
+    .subtitle {
+      max-width: 650px;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.7;
+      margin-top: 10px;
+    }
+
+    .doc-link {
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 42px;
+      padding: 0 18px;
+      border-radius: 100px;
+      border: 1px solid rgba(194, 240, 0, 0.24);
+      background: var(--accent-dim);
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 1.6px;
+      text-decoration: none;
+      text-transform: uppercase;
+    }
+
+    .stage {
+      display: grid;
+      grid-template-columns: minmax(320px, 390px) minmax(320px, 1fr);
+      gap: 44px;
+      align-items: start;
+      padding-top: 18px;
+      border-top: 1px solid var(--border);
+    }
+
+    .phone-shell {
+      position: sticky;
+      top: 24px;
+      width: 100%;
+      max-width: 390px;
+    }
+
+    .phone {
+      position: relative;
+      aspect-ratio: 390 / 844;
+      width: 100%;
+      overflow: hidden;
+      border-radius: 40px;
+      border: 1px solid #1a1a1a;
+      background: var(--bg);
+      box-shadow: 0 0 0 1px #0d0d0d, 0 40px 110px rgba(0, 0, 0, 0.72), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    }
+
+    .notch {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      z-index: 20;
+      width: 118px;
+      height: 28px;
+      transform: translateX(-50%);
+      border-radius: 0 0 20px 20px;
+      background: #000000;
+    }
+
+    .screen {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg);
+      opacity: 0;
+      pointer-events: none;
+      transform: translateX(18px);
+      transition: opacity 0.24s ease, transform 0.24s ease;
+    }
+
+    .screen.active {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateX(0);
+    }
+
+    .scroll {
+      flex: 1;
+      overflow-y: auto;
+      scrollbar-width: none;
+    }
+
+    .scroll::-webkit-scrollbar { display: none; }
+
+    .home-header {
+      padding: 54px 24px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .brand {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 6px;
+      color: var(--muted);
+    }
+
+    .account {
+      min-width: 66px;
+      height: 32px;
+      border-radius: 100px;
+      border: 1px solid var(--border-med);
+      background: var(--surface);
+      color: var(--text-med);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 1.6px;
+    }
+
+    .home-title {
+      padding: 30px 24px 0;
+      font-family: var(--font-display);
+      font-size: 48px;
+      line-height: 0.9;
+      letter-spacing: 1px;
+    }
+
+    .section-label {
+      padding: 0 24px;
+      margin-top: 34px;
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+    }
+
+    .plans {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 14px 24px 28px;
+    }
+
+    .plan-card {
+      position: relative;
+      min-height: 132px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+      padding: 18px;
+      text-align: left;
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    .plan-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--accent);
+      opacity: var(--bar-opacity, 0);
+    }
+
+    .plan-card:active { transform: scale(0.985); }
+
+    .plan-num {
+      position: absolute;
+      right: -4px;
+      bottom: -20px;
+      font-family: var(--font-display);
+      font-size: 130px;
+      line-height: 1;
+      color: var(--accent);
+      opacity: 0.06;
+    }
+
+    .next-chip {
+      display: inline-flex;
+      align-items: center;
+      margin-bottom: 12px;
+      border-radius: 100px;
+      background: var(--accent);
+      color: var(--bg);
+      padding: 4px 10px;
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    .plan-name {
+      font-family: var(--font-display);
+      font-size: 32px;
+      line-height: 0.92;
+      letter-spacing: 0.8px;
+    }
+
+    .plan-focus {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .plan-meta {
+      margin-top: 14px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .meta-pill {
+      border-radius: 100px;
+      background: var(--surface-2);
+      color: var(--text-med);
+      padding: 5px 9px;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .chevron-bar {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      height: 44px;
+      margin: 46px 24px 0;
+      color: var(--accent);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+
+    .chevron-icon {
+      width: 28px;
+      height: 28px;
+      display: grid;
+      place-items: center;
+      color: var(--muted);
+      font-size: 26px;
+      line-height: 1;
+    }
+
+    .overview-title {
+      padding: 6px 24px 0;
+      font-family: var(--font-display);
+      font-size: 48px;
+      line-height: 0.9;
+      letter-spacing: 1px;
+    }
+
+    .overview-subtitle {
+      padding: 8px 24px 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      padding: 18px 24px 0;
+    }
+
+    .stat {
+      min-height: 76px;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+    }
+
+    .stat-value {
+      display: block;
+      font-family: var(--font-display);
+      font-size: 32px;
+      line-height: 0.9;
+      color: var(--accent);
+    }
+
+    .stat-label {
+      margin-top: 4px;
+      color: var(--dim);
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: 1.6px;
+      text-transform: uppercase;
+    }
+
+    .machine-strip {
+      padding: 18px 24px 0;
+    }
+
+    .machine-row {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      padding-bottom: 2px;
+    }
+
+    .machine-row::-webkit-scrollbar { display: none; }
+
+    .machine-chip {
+      flex-shrink: 0;
+      min-height: 34px;
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      background: var(--surface);
+      color: var(--text-med);
+      padding: 0 13px;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+    }
+
+    .machine-chip.active {
+      border-color: rgba(194, 240, 0, 0.45);
+      background: var(--accent-dim);
+      color: var(--accent);
+    }
+
+    .exercise-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 14px 24px 22px;
+    }
+
+    .exercise-card {
+      display: grid;
+      grid-template-columns: 34px 1fr;
+      gap: 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+      padding: 14px;
+      transition: border-color 0.2s ease, background 0.2s ease, opacity 0.2s ease;
+    }
+
+    .exercise-card.dimmed {
+      opacity: 0.38;
+    }
+
+    .exercise-card.highlight {
+      border-color: rgba(194, 240, 0, 0.55);
+      background: rgba(194, 240, 0, 0.04);
+    }
+
+    .exercise-card.current {
+      border-color: rgba(194, 240, 0, 0.55);
+      box-shadow: inset 3px 0 0 var(--accent);
+    }
+
+    .exercise-card.done {
+      opacity: 0.62;
+    }
+
+    .order {
+      width: 34px;
+      height: 34px;
+      border-radius: 100px;
+      display: grid;
+      place-items: center;
+      background: var(--accent-dim);
+      color: var(--accent);
+      font-family: var(--font-display);
+      font-size: 18px;
+    }
+
+    .exercise-name {
+      font-family: var(--font-display);
+      font-size: 23px;
+      line-height: 0.95;
+      letter-spacing: 0.6px;
+    }
+
+    .exercise-meta {
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .tag-row {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 9px;
+    }
+
+    .tag {
+      border-radius: 100px;
+      background: var(--surface-2);
+      color: var(--text-med);
+      padding: 4px 8px;
+      font-size: 9px;
+      font-weight: 700;
+    }
+
+    .tag.accent {
+      background: var(--accent-dim);
+      color: var(--accent);
+    }
+
+    .tag.done-tag {
+      background: rgba(255,255,255,0.06);
+      color: var(--muted);
+    }
+
+    .bottom-actions {
+      flex-shrink: 0;
+      border-top: 1px solid var(--border);
+      background: var(--bg);
+      padding: 14px 24px 34px;
+    }
+
+    .primary {
+      width: 100%;
+      height: 56px;
+      border: 0;
+      border-radius: 100px;
+      background: var(--accent);
+      color: var(--bg);
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+
+    .primary:active { transform: scale(0.985); }
+
+    .secondary {
+      width: 100%;
+      height: 44px;
+      margin-top: 10px;
+      border: 1px solid var(--border-med);
+      border-radius: 100px;
+      background: transparent;
+      color: var(--text-med);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+
+    .danger-button {
+      color: var(--danger);
+      border-color: rgba(255, 69, 58, 0.28);
+    }
+
+    .progress {
+      margin: 12px 24px 0;
+      height: 3px;
+      border-radius: 99px;
+      background: var(--surface-2);
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      border-radius: inherit;
+      background: var(--accent);
+      transition: width 0.28s ease;
+    }
+
+    .progress-text {
+      margin-top: 10px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+    }
+
+    .active-exercise-name {
+      padding: 4px 24px 0;
+      text-align: center;
+      font-family: var(--font-display);
+      font-size: 42px;
+      line-height: 0.92;
+      letter-spacing: 1px;
+    }
+
+    .badge-row {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 24px 0;
+      flex-wrap: wrap;
+    }
+
+    .exercise-photo {
+      margin: 16px 34px 0;
+      height: 142px;
+      border: 1px dashed var(--border-med);
+      border-radius: 10px;
+      background:
+        linear-gradient(135deg, rgba(194,240,0,0.06), transparent 45%),
+        var(--surface);
+      display: grid;
+      place-items: center;
+      color: var(--dim);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    .reps {
+      margin-top: 16px;
+      text-align: center;
+      color: var(--text-med);
+      font-size: 15px;
+    }
+
+    .series-dots {
+      display: flex;
+      justify-content: center;
+      gap: 7px;
+      margin-top: 16px;
+    }
+
+    .dot {
+      width: 26px;
+      height: 5px;
+      border-radius: 100px;
+      background: var(--surface-2);
+    }
+
+    .dot.done,
+    .dot.current { background: var(--accent); }
+
+    .weight-label {
+      margin-top: 24px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+    }
+
+    .weight-input {
+      margin: 10px 44px 0;
+      height: 70px;
+      border: 1px solid rgba(194, 240, 0, 0.42);
+      border-radius: 12px;
+      background: var(--surface);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .weight-value {
+      font-family: var(--font-display);
+      font-size: 42px;
+      color: var(--text);
+      line-height: 1;
+    }
+
+    .weight-unit {
+      font-family: var(--font-display);
+      color: var(--dim);
+      font-size: 20px;
+    }
+
+    .split-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .small-action {
+      height: 44px;
+      border: 1px solid var(--border-med);
+      border-radius: 100px;
+      background: transparent;
+      color: var(--text-med);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .rest-wrap {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 52px 24px 24px;
+      background: radial-gradient(circle at 50% 42%, rgba(194,240,0,0.08), transparent 58%);
+    }
+
+    .rest-label {
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      margin-bottom: 26px;
+    }
+
+    .timer {
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      border: 3px solid var(--accent);
+      box-shadow: 0 0 32px rgba(194,240,0,0.18);
+      font-family: var(--font-display);
+      font-size: 78px;
+      line-height: 1;
+    }
+
+    .next-label {
+      margin-top: 28px;
+      color: var(--dim);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+    }
+
+    .next-name {
+      margin-top: 6px;
+      font-family: var(--font-display);
+      font-size: 26px;
+      letter-spacing: 0.8px;
+      color: var(--text-med);
+      text-align: center;
+    }
+
+    .complete-wrap {
+      padding: 54px 24px 34px;
+    }
+
+    .complete-title {
+      margin-top: 22px;
+      font-family: var(--font-display);
+      font-size: 58px;
+      line-height: 0.9;
+      letter-spacing: 1px;
+    }
+
+    .complete-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-top: 24px;
+    }
+
+    .complete-card {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+      padding: 18px 12px;
+      text-align: center;
+    }
+
+    .side {
+      min-width: 0;
+    }
+
+    .side-card {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--surface);
+      padding: 22px;
+      margin-bottom: 16px;
+    }
+
+    .side-card h2 {
+      font-family: var(--font-display);
+      font-size: 32px;
+      line-height: 1;
+      letter-spacing: 0.6px;
+      margin-bottom: 10px;
+    }
+
+    .side-card p,
+    .side-card li {
+      color: var(--text-med);
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .side-card ul {
+      padding-left: 18px;
+      margin-top: 10px;
+    }
+
+    .flow-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .flow-item {
+      display: grid;
+      grid-template-columns: 32px 1fr;
+      gap: 12px;
+      align-items: center;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #0d0d0d;
+      padding: 12px;
+      color: var(--text-med);
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .flow-item.active {
+      border-color: rgba(194,240,0,0.5);
+      background: rgba(194,240,0,0.04);
+      color: var(--text);
+    }
+
+    .flow-num {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: var(--surface-2);
+      color: var(--accent);
+      font-family: var(--font-display);
+      font-size: 18px;
+    }
+
+    .flow-title {
+      display: block;
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .flow-desc {
+      display: block;
+      margin-top: 2px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .control-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .control {
+      height: 42px;
+      border: 1px solid var(--border-med);
+      border-radius: 100px;
+      background: transparent;
+      color: var(--text-med);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+
+    .control.primary-control {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--bg);
+    }
+
+    .insight {
+      margin-top: 12px;
+      border-left: 3px solid var(--accent);
+      padding-left: 14px;
+      color: var(--text-med);
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    @media (max-width: 900px) {
+      .top {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .stage {
+        grid-template-columns: 1fr;
+      }
+
+      .phone-shell {
+        position: relative;
+        top: 0;
+        margin: 0 auto;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .page { padding: 28px 14px 40px; }
+      .phone { border-radius: 30px; }
+      .stage { gap: 26px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <div class="top">
+      <div>
+        <div class="eyebrow">Mockup interativo</div>
+        <h1>VISÃO DO TREINO</h1>
+        <p class="subtitle">
+          Clique pelo fluxo para sentir a mudança: o treino deixa de cair direto no primeiro exercício e passa antes por um mapa rápido do dia, com aparelhos destacados para ajudar a decidir a ordem mental.
+        </p>
+      </div>
+      <a class="doc-link" href="prd.html">Abrir PRD</a>
+    </div>
+
+    <section class="stage">
+      <div class="phone-shell">
+        <div class="phone" aria-label="Mockup do aplicativo Forja">
+          <div class="notch"></div>
+
+          <section class="screen active" data-screen="home">
+            <div class="scroll">
+              <div class="home-header">
+                <div class="brand">FORJA</div>
+                <button class="account" type="button">CONTA</button>
+              </div>
+              <div class="home-title">Vamos<br>treinar.</div>
+              <div class="section-label">Seus treinos</div>
+              <div class="plans">
+                <button class="plan-card" type="button" style="--bar-opacity:1" data-action="open-overview">
+                  <span class="plan-num">A</span>
+                  <span class="next-chip">Próximo</span>
+                  <div class="plan-name">Treino A</div>
+                  <div class="plan-focus">Peito / Ombros / Triceps</div>
+                  <div class="plan-meta">
+                    <span class="meta-pill">6 exercícios</span>
+                    <span class="meta-pill">18 séries</span>
+                  </div>
+                </button>
+                <button class="plan-card" type="button">
+                  <span class="plan-num">B</span>
+                  <div class="plan-name">Treino B</div>
+                  <div class="plan-focus">Costas / Biceps</div>
+                  <div class="plan-meta">
+                    <span class="meta-pill">5 exercícios</span>
+                    <span class="meta-pill">15 séries</span>
+                  </div>
+                </button>
+                <button class="plan-card" type="button">
+                  <span class="plan-num">C</span>
+                  <div class="plan-name">Treino C</div>
+                  <div class="plan-focus">Pernas</div>
+                  <div class="plan-meta">
+                    <span class="meta-pill">6 exercícios</span>
+                    <span class="meta-pill">20 séries</span>
+                  </div>
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <section class="screen" data-screen="overview">
+            <div class="scroll">
+              <button class="chevron-bar" type="button" data-action="go-home">
+                <span class="chevron-icon">‹</span>
+                <span>Treinos</span>
+              </button>
+              <div class="overview-title">TREINO A</div>
+              <div class="overview-subtitle" data-overview-subtitle>Antes de começar, revise a sequência e os aparelhos do dia.</div>
+
+              <div class="stats">
+                <div class="stat">
+                  <div>
+                    <span class="stat-value">6</span>
+                    <span class="stat-label">Exerc.</span>
+                  </div>
+                </div>
+                <div class="stat">
+                  <div>
+                    <span class="stat-value">18</span>
+                    <span class="stat-label">Séries</span>
+                  </div>
+                </div>
+                <div class="stat">
+                  <div>
+                    <span class="stat-value">4</span>
+                    <span class="stat-label">Aparelhos</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="machine-strip">
+                <div class="section-label" style="padding:0;margin-top:0;margin-bottom:10px">Aparelhos do dia</div>
+                <div class="machine-row" data-machine-row></div>
+              </div>
+
+              <div class="exercise-list" data-exercise-list></div>
+            </div>
+            <div class="bottom-actions">
+              <button class="primary" type="button" data-action="start-current" data-overview-cta>Começar exercício</button>
+              <button class="secondary danger-button" type="button" data-action="go-home">Abandonar</button>
+            </div>
+          </section>
+
+          <section class="screen" data-screen="exercise">
+            <div class="scroll">
+              <button class="chevron-bar" type="button" data-action="open-overview-from-exercise">
+                <span class="chevron-icon">‹</span>
+                <span>Mapa do treino</span>
+              </button>
+              <div class="progress">
+                <div class="progress-fill" data-progress-fill></div>
+              </div>
+              <div class="progress-text" data-progress-text>1 de 6</div>
+              <div class="active-exercise-name" data-active-name>Supino reto</div>
+              <div class="badge-row" data-active-tags></div>
+              <div class="exercise-photo">Foto do aparelho</div>
+              <div class="reps" data-active-reps>10-12 reps</div>
+              <div class="series-dots" data-series-dots></div>
+              <div class="weight-label">Peso (kg)</div>
+              <div class="weight-input">
+                <span class="weight-value" data-weight-value>60</span>
+                <span class="weight-unit">kg</span>
+              </div>
+            </div>
+            <div class="bottom-actions">
+              <button class="primary" type="button" data-action="complete-set">Completei a série</button>
+              <div class="split-actions">
+                <button class="small-action" type="button" data-action="skip-exercise">Pular</button>
+                <button class="small-action danger-button" type="button" data-action="remove-exercise">Não vou fazer</button>
+              </div>
+            </div>
+          </section>
+
+          <section class="screen" data-screen="rest">
+            <div class="rest-wrap">
+              <div class="rest-label">Descanso</div>
+              <div class="timer">60</div>
+              <div class="next-label">Próximo</div>
+              <div class="next-name" data-next-name>Crucifixo máquina</div>
+            </div>
+            <div class="bottom-actions">
+              <button class="primary" type="button" data-action="next-exercise">Ir para o próximo</button>
+              <button class="secondary" type="button" data-action="open-overview-from-rest">Ver mapa do treino</button>
+            </div>
+          </section>
+
+          <section class="screen" data-screen="complete">
+            <div class="complete-wrap">
+              <div class="brand">FORJA</div>
+              <div class="complete-title">TREINO<br>CONCLUÍDO.</div>
+              <div class="complete-grid">
+                <div class="complete-card">
+                  <span class="stat-value">6</span>
+                  <span class="stat-label">Exercícios</span>
+                </div>
+                <div class="complete-card">
+                  <span class="stat-value">18</span>
+                  <span class="stat-label">Séries</span>
+                </div>
+              </div>
+            </div>
+            <div class="bottom-actions">
+              <button class="primary" type="button" data-action="reset-demo">Voltar ao início</button>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      <aside class="side">
+        <div class="side-card">
+          <h2>Como testar</h2>
+          <p>
+            Comece tocando no card "Treino A". A diferença principal aparece logo depois: em vez de abrir o exercício, o app mostra uma visão geral para você se orientar.
+          </p>
+          <div class="flow-list">
+            <button class="flow-item active" type="button" data-jump="home">
+              <span class="flow-num">1</span>
+              <span>
+                <span class="flow-title">Home</span>
+                <span class="flow-desc">Escolha o treino do dia.</span>
+              </span>
+            </button>
+            <button class="flow-item" type="button" data-jump="overview">
+              <span class="flow-num">2</span>
+              <span>
+                <span class="flow-title">Visão do treino</span>
+                <span class="flow-desc">Revise exercícios e aparelhos.</span>
+              </span>
+            </button>
+            <button class="flow-item" type="button" data-jump="exercise">
+              <span class="flow-num">3</span>
+              <span>
+                <span class="flow-title">Exercício ativo</span>
+                <span class="flow-desc">Execute séries sem perder o mapa.</span>
+              </span>
+            </button>
+            <button class="flow-item" type="button" data-jump="rest">
+              <span class="flow-num">4</span>
+              <span>
+                <span class="flow-title">Descanso</span>
+                <span class="flow-desc">Volte ao mapa entre exercícios.</span>
+              </span>
+            </button>
+          </div>
+        </div>
+
+        <div class="side-card">
+          <h2>Experimente</h2>
+          <p>
+            Use estes controles para simular situações comuns na academia.
+          </p>
+          <div class="control-grid">
+            <button class="control primary-control" type="button" data-action="open-overview">Abrir mapa</button>
+            <button class="control" type="button" data-action="highlight-machine">Destacar polia</button>
+            <button class="control" type="button" data-action="complete-set">Completar série</button>
+            <button class="control" type="button" data-action="skip-exercise">Pular atual</button>
+            <button class="control" type="button" data-action="reset-demo">Resetar</button>
+          </div>
+          <div class="insight" data-insight>
+            O mapa mostra que dois exercícios usam polia. Isso ajuda a decidir se vale fazer os dois em sequência quando a máquina está livre.
+          </div>
+        </div>
+
+        <div class="side-card">
+          <h2>Decisão de produto</h2>
+          <ul>
+            <li>A primeira versão não reorganiza a fila automaticamente.</li>
+            <li>O foco é dar leitura rápida antes da execução.</li>
+            <li>O usuário ainda pode pular exercícios no fluxo atual.</li>
+            <li>A visão geral vira também um mapa durante o treino.</li>
+          </ul>
+        </div>
+      </aside>
+    </section>
+  </main>
+
+  <script>
+    const exercises = [
+      { id: 'supino', name: 'Supino reto', category: 'Peito', equipment: 'Banco + barra', sets: 3, reps: '10-12', rest: 90, weight: 60 },
+      { id: 'crucifixo', name: 'Crucifixo máquina', category: 'Peito', equipment: 'Peck deck', sets: 3, reps: '12-15', rest: 60, weight: 42 },
+      { id: 'desenvolvimento', name: 'Desenvolvimento', category: 'Ombros', equipment: 'Máquina', sets: 3, reps: '8-10', rest: 90, weight: 35 },
+      { id: 'elevacao', name: 'Elevação lateral', category: 'Ombros', equipment: 'Halteres', sets: 3, reps: '12-15', rest: 60, weight: 10 },
+      { id: 'triceps-corda', name: 'Tríceps corda', category: 'Tríceps', equipment: 'Polia', sets: 3, reps: '12', rest: 60, weight: 38 },
+      { id: 'triceps-barra', name: 'Tríceps barra', category: 'Tríceps', equipment: 'Polia', sets: 3, reps: '10-12', rest: 60, weight: 44 }
+    ];
+
+    const state = {
+      screen: 'home',
+      currentIndex: 0,
+      currentSet: 1,
+      completedIds: [],
+      skippedIds: [],
+      highlightedEquipment: null
+    };
+
+    const screens = document.querySelectorAll('[data-screen]');
+    const flowItems = document.querySelectorAll('[data-jump]');
+    const exerciseList = document.querySelector('[data-exercise-list]');
+    const machineRow = document.querySelector('[data-machine-row]');
+    const insight = document.querySelector('[data-insight]');
+
+    function setScreen(screen) {
+      state.screen = screen;
+      screens.forEach((el) => el.classList.toggle('active', el.dataset.screen === screen));
+      flowItems.forEach((el) => el.classList.toggle('active', el.dataset.jump === screen));
+      render();
+    }
+
+    function currentExercise() {
+      return exercises[state.currentIndex] || null;
+    }
+
+    function nextPendingIndex(fromIndex = state.currentIndex + 1) {
+      return exercises.findIndex((exercise, index) => (
+        index >= fromIndex &&
+        !state.completedIds.includes(exercise.id) &&
+        !state.skippedIds.includes(exercise.id)
+      ));
+    }
+
+    function setFirstPendingAsCurrent() {
+      const firstPending = exercises.findIndex((exercise) => (
+        !state.completedIds.includes(exercise.id) &&
+        !state.skippedIds.includes(exercise.id)
+      ));
+      state.currentIndex = firstPending >= 0 ? firstPending : exercises.length;
+    }
+
+    function renderMachines() {
+      const equipments = [...new Set(exercises.map((exercise) => exercise.equipment))];
+      machineRow.innerHTML = '';
+
+      const all = document.createElement('button');
+      all.type = 'button';
+      all.className = `machine-chip ${state.highlightedEquipment === null ? 'active' : ''}`;
+      all.textContent = 'Todos';
+      all.addEventListener('click', () => {
+        state.highlightedEquipment = null;
+        render();
+      });
+      machineRow.appendChild(all);
+
+      equipments.forEach((equipment) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = `machine-chip ${state.highlightedEquipment === equipment ? 'active' : ''}`;
+        button.textContent = equipment;
+        button.addEventListener('click', () => {
+          state.highlightedEquipment = equipment;
+          render();
+        });
+        machineRow.appendChild(button);
+      });
+    }
+
+    function exerciseStatus(exercise, index) {
+      if (state.completedIds.includes(exercise.id)) return 'done';
+      if (state.skippedIds.includes(exercise.id)) return 'skipped';
+      if (index === state.currentIndex && state.screen !== 'home') return 'current';
+      return 'pending';
+    }
+
+    function renderOverview() {
+      exerciseList.innerHTML = '';
+      exercises.forEach((exercise, index) => {
+        const status = exerciseStatus(exercise, index);
+        const matchesHighlight = state.highlightedEquipment === null || state.highlightedEquipment === exercise.equipment;
+        const card = document.createElement('div');
+        card.className = [
+          'exercise-card',
+          status === 'current' ? 'current' : '',
+          status === 'done' ? 'done' : '',
+          state.highlightedEquipment && matchesHighlight ? 'highlight' : '',
+          state.highlightedEquipment && !matchesHighlight ? 'dimmed' : ''
+        ].filter(Boolean).join(' ');
+
+        const order = status === 'done' ? '✓' : status === 'skipped' ? '!' : String(index + 1);
+        const statusText = status === 'done'
+          ? 'Concluído'
+          : status === 'skipped'
+            ? 'Pulou por enquanto'
+            : status === 'current'
+              ? `Atual • série ${state.currentSet} de ${exercise.sets}`
+              : 'Pendente';
+
+        card.innerHTML = `
+          <div class="order">${order}</div>
+          <div>
+            <div class="exercise-name">${exercise.name}</div>
+            <div class="exercise-meta">${exercise.sets} x ${exercise.reps} • ${exercise.rest}s</div>
+            <div class="tag-row">
+              <span class="tag">${exercise.category}</span>
+              <span class="tag accent">${exercise.equipment}</span>
+              <span class="tag done-tag">${statusText}</span>
+            </div>
+          </div>
+        `;
+        exerciseList.appendChild(card);
+      });
+
+      const doneCount = state.completedIds.length;
+      const subtitle = document.querySelector('[data-overview-subtitle]');
+      const cta = document.querySelector('[data-overview-cta]');
+      if (doneCount === 0 && state.skippedIds.length === 0 && state.currentSet === 1) {
+        subtitle.textContent = 'Antes de começar, revise a sequência e os aparelhos do dia.';
+        cta.textContent = 'Começar exercício';
+      } else {
+        subtitle.textContent = `${doneCount} de ${exercises.length} exercícios concluídos. Revise o que falta antes de continuar.`;
+        cta.textContent = 'Continuar exercício';
+      }
+    }
+
+    function renderExercise() {
+      const exercise = currentExercise();
+      if (!exercise) return;
+      document.querySelector('[data-active-name]').textContent = exercise.name;
+      document.querySelector('[data-progress-text]').textContent = `${state.completedIds.length + 1} de ${exercises.length}`;
+      document.querySelector('[data-progress-fill]').style.width = `${(state.completedIds.length / exercises.length) * 100}%`;
+      document.querySelector('[data-active-reps]').textContent = `${exercise.reps} reps`;
+      document.querySelector('[data-weight-value]').textContent = exercise.weight;
+
+      const tags = document.querySelector('[data-active-tags]');
+      tags.innerHTML = `
+        <span class="tag">${exercise.category}</span>
+        <span class="tag accent">${exercise.equipment}</span>
+      `;
+
+      const dots = document.querySelector('[data-series-dots]');
+      dots.innerHTML = '';
+      for (let i = 1; i <= exercise.sets; i += 1) {
+        const dot = document.createElement('span');
+        dot.className = `dot ${i < state.currentSet ? 'done' : ''} ${i === state.currentSet ? 'current' : ''}`;
+        dots.appendChild(dot);
+      }
+    }
+
+    function renderRest() {
+      const nextIndex = nextPendingIndex();
+      const nextExercise = nextIndex >= 0 ? exercises[nextIndex] : null;
+      document.querySelector('[data-next-name]').textContent = nextExercise ? nextExercise.name : 'Finalizar treino';
+    }
+
+    function renderInsight() {
+      if (state.highlightedEquipment) {
+        const count = exercises.filter((exercise) => exercise.equipment === state.highlightedEquipment).length;
+        insight.textContent = `${state.highlightedEquipment} aparece em ${count} exercício(s). Esse destaque ajuda a aproveitar a estação quando ela está livre.`;
+      } else {
+        insight.textContent = 'O mapa mostra que dois exercícios usam polia. Isso ajuda a decidir se vale fazer os dois em sequência quando a máquina está livre.';
+      }
+    }
+
+    function render() {
+      renderMachines();
+      renderOverview();
+      renderExercise();
+      renderRest();
+      renderInsight();
+    }
+
+    function openOverview() {
+      if (state.currentIndex >= exercises.length) setFirstPendingAsCurrent();
+      setScreen('overview');
+    }
+
+    function startCurrent() {
+      if (state.currentIndex >= exercises.length) {
+        setScreen('complete');
+        return;
+      }
+      setScreen('exercise');
+    }
+
+    function completeSet() {
+      const exercise = currentExercise();
+      if (!exercise) {
+        setScreen('complete');
+        return;
+      }
+
+      if (state.screen !== 'exercise') setScreen('exercise');
+
+      if (state.currentSet < exercise.sets) {
+        state.currentSet += 1;
+        render();
+        return;
+      }
+
+      state.completedIds.push(exercise.id);
+      state.currentSet = 1;
+      const nextIndex = nextPendingIndex();
+      if (nextIndex < 0) {
+        state.currentIndex = exercises.length;
+        setScreen('complete');
+        return;
+      }
+      state.currentIndex = nextIndex;
+      setScreen('rest');
+    }
+
+    function nextExercise() {
+      if (state.currentIndex >= exercises.length) {
+        setScreen('complete');
+        return;
+      }
+      setScreen('exercise');
+    }
+
+    function skipExercise() {
+      const exercise = currentExercise();
+      if (!exercise) return;
+      if (!state.skippedIds.includes(exercise.id)) state.skippedIds.push(exercise.id);
+      const nextIndex = nextPendingIndex();
+      state.currentSet = 1;
+      state.currentIndex = nextIndex >= 0 ? nextIndex : exercises.length;
+      setScreen(state.currentIndex >= exercises.length ? 'overview' : 'exercise');
+    }
+
+    function removeExercise() {
+      skipExercise();
+    }
+
+    function resetDemo() {
+      state.screen = 'home';
+      state.currentIndex = 0;
+      state.currentSet = 1;
+      state.completedIds = [];
+      state.skippedIds = [];
+      state.highlightedEquipment = null;
+      setScreen('home');
+    }
+
+    function handleAction(action) {
+      switch (action) {
+        case 'open-overview':
+        case 'open-overview-from-exercise':
+        case 'open-overview-from-rest':
+          openOverview();
+          break;
+        case 'go-home':
+          setScreen('home');
+          break;
+        case 'start-current':
+          startCurrent();
+          break;
+        case 'complete-set':
+          completeSet();
+          break;
+        case 'next-exercise':
+          nextExercise();
+          break;
+        case 'skip-exercise':
+        case 'remove-exercise':
+          skipExercise();
+          break;
+        case 'highlight-machine':
+          state.highlightedEquipment = 'Polia';
+          setScreen('overview');
+          break;
+        case 'reset-demo':
+          resetDemo();
+          break;
+      }
+    }
+
+    document.querySelectorAll('[data-action]').forEach((button) => {
+      button.addEventListener('click', () => handleAction(button.dataset.action));
+    });
+
+    flowItems.forEach((item) => {
+      item.addEventListener('click', () => {
+        const target = item.dataset.jump;
+        if (target === 'overview') openOverview();
+        else if (target === 'exercise') startCurrent();
+        else if (target === 'rest') setScreen('rest');
+        else setScreen(target);
+      });
+    });
+
+    render();
+  </script>
+</body>
+</html>
