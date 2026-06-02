@@ -7,9 +7,26 @@
 
 import { extractWorkout } from '@/services/importApi'
 
+jest.mock('expo-image-manipulator', () => ({
+  ImageManipulator: {
+    manipulate: jest.fn(() => ({
+      resize: jest.fn(() => ({
+        renderAsync: jest.fn(async () => ({
+          saveAsync: jest.fn(async () => ({ uri: 'file:///compressed.jpg' })),
+        })),
+      })),
+    })),
+  },
+  SaveFormat: {
+    JPEG: 'jpeg',
+  },
+}))
+
 // Mock expo-file-system
 jest.mock('expo-file-system', () => ({
-  readAsStringAsync: jest.fn().mockResolvedValue('base64-image-data'),
+  File: jest.fn().mockImplementation(() => ({
+    base64: jest.fn(async () => 'base64-image-data'),
+  })),
 }))
 
 // Mock environment variables

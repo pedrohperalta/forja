@@ -8,6 +8,10 @@ node_modules/
 dist/
 web-build/
 expo-env.d.ts
+mobile/.expo/
+mobile/dist/
+mobile/web-build/
+mobile/expo-env.d.ts
 
 # Native
 .kotlin/
@@ -33,10 +37,15 @@ yarn-error.*
 # local env files
 .env*.local
 
+# local migration exports
+.migration/
+
 # typescript
 *.tsbuildinfo
 
 # generated native folders
 /ios
 /android
+mobile/ios
+mobile/android
 coverage/
