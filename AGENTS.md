@@ -93,6 +93,13 @@ Quando o usuário pedir para criar um PRD, seguir este processo:
    - Index: `https://pedrohperalta.github.io/forja/`
    - PRD direto: `https://pedrohperalta.github.io/forja/ideas/<feature_slug>/discovery/prd.html`
 
+## Collaboration Preferences
+
+- **Never leave the user without a concrete next step**: every status update or final response should include a clear actionable recommendation, unless the user explicitly asks to pause.
+- **Always offer the next action**: when a slice, task, or investigation ends, say what should happen next (for example: commit, run checks, start the next slice, open a new session, or ask for a decision).
+- **Prefer continuity in the current thread**: continue in this session when there is enough context and no tool/session boundary requires a new one. Recommend a new session only when it materially reduces risk or context noise.
+- **Be explicit about ownership**: if something is blocked, name the exact blocker and the smallest action that unblocks progress.
+
 ## Conductor
 
 This project uses Conductor for track-based development. See `conductor/index.md` for navigation.
