@@ -14,6 +14,7 @@
 | pending | `import-data-layer_20260324` | Import Data Layer & Backend | — | 2026-03-24 |
 | pending | `import-ui-capture_20260324` | Import UI & Capture Flow | import-data-layer | 2026-03-24 |
 | pending | `import-review-integration_20260324` | Review Screen & Integration | import-ui-capture | 2026-03-24 |
+| pending | `self-hosted-next-backend_20260518` | Self-Hosted Next.js Admin & Backend | — | 2026-05-18 |
 
 ## Dependency Graph
 
@@ -32,6 +33,8 @@ plan-store-foundation
 import-data-layer
   └─► import-ui-capture
         └─► import-review-integration
+
+self-hosted-next-backend
 ```
 
 ## Task Summary
@@ -50,4 +53,5 @@ import-data-layer
 | Import Data Layer & Backend | 7 | 28 |
 | Import UI & Capture Flow | 6 | 16 |
 | Review Screen & Integration | 3 | 10 |
-| **Total** | **72** | **254** |
+| Self-Hosted Next.js Admin & Backend | 10 | 63 |
+| **Total** | **82** | **317** |

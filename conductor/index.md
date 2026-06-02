@@ -19,5 +19,6 @@ Navigation hub for project context.
 4. **[Workout Flow Screens](./tracks/workout-flow-screens_20260321/spec.md)** — Exercise, rest, checkpoint, complete screens (30 tasks)
 5. **[Polish & Accessibility](./tracks/polish-accessibility_20260321/spec.md)** — Fonts, haptics, touch targets, ARIA (16 tasks)
 6. **[E2E Tests & Deployment](./tracks/e2e-deploy_20260321/spec.md)** — Maestro E2E, app icon, EAS Build (14 tasks)
+7. **[Self-Hosted Next.js Admin & Backend](./tracks/self-hosted-next-backend_20260518/spec.md)** — Next.js admin web + mobile API replacing Supabase (63 tasks)
 
 See [Tracks Registry](./tracks.md) for dependency graph and full summary.
