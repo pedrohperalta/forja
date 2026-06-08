@@ -9,6 +9,7 @@
     "start": "next start",
     "test": "vitest run --exclude \"src/server/**/*.integration.test.ts\"",
     "test:db": "find src/server -name '*.integration.test.ts' -print0 | xargs -0 vitest run --maxWorkers 1",
+    "db:seed:personal": "node src/server/db/seeds/personal-seed.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
