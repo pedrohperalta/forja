@@ -1,78 +1,73 @@
-import { supabase } from '@/lib/supabase'
+import * as Crypto from 'expo-crypto'
 import { usePlanStore } from '@/stores/planStore'
 import { useAppStore } from '@/stores/appStore'
 import { useAuthStore } from '@/stores/authStore'
 import { restoreEquipmentPhotosFromCloud } from '@/hooks/useEquipmentPhoto'
 import { rebuildLastWeights } from '@/utils/rebuildLastWeights'
-import type { Plan, WorkoutSession } from '@/types'
+import type { Plan, WorkoutId, WorkoutSession } from '@/types'
+import { createMobileApiClient, type MobileApiClient } from './mobileApiClient'
 
 /** In-memory lock to prevent concurrent syncs. */
 let isSyncing = false
 
-async function pushData(userId: string): Promise<void> {
-  const { plans } = usePlanStore.getState()
-  const { history } = useAppStore.getState()
+const MAX_PULL_PAGES = 20
 
-  // Push plans not yet confirmed on server
-  const unsyncedPlans = plans.filter((p) => p.syncStatus !== 'synced')
-  if (unsyncedPlans.length > 0) {
-    const rows = unsyncedPlans.map((p) => ({
-      id: p.id,
-      user_id: userId,
-      data: p,
-      updated_at: p.updatedAt,
-      deleted_at: p.archived === true ? new Date().toISOString() : null,
-    }))
-    const { error } = await supabase.from('plans').upsert(rows)
-    if (!error) {
-      usePlanStore.getState().markPlansSynced(unsyncedPlans.map((p) => p.id))
-    }
-  }
-
-  // Push sessions not yet confirmed on server
-  const unsyncedSessions = history.filter((s) => s.syncStatus !== 'synced')
-  if (unsyncedSessions.length > 0) {
-    const rows = unsyncedSessions.map((s) => ({
-      id: s.id,
-      user_id: userId,
-      data: s,
-      updated_at: s.updatedAt,
-    }))
-    const { error } = await supabase.from('workout_sessions').upsert(rows)
-    if (!error) {
-      useAppStore.getState().markSessionsSynced(unsyncedSessions.map((s) => s.id))
-    }
-  }
+function createSyncApiClient(): MobileApiClient {
+  return createMobileApiClient({
+    getTokens: () => useAuthStore.getState().remoteTokens,
+    setTokens: (tokens) => useAuthStore.getState().setRemoteTokens(tokens),
+    clearTokens: () => useAuthStore.getState().clearRemoteTokens(),
+  })
 }
 
-async function pullData(userId: string): Promise<void> {
-  // Pull plans from server
-  const { data: planRows, error: planError } = await supabase
-    .from('plans')
-    .select('data')
-    .eq('user_id', userId)
+async function pushData(client: MobileApiClient): Promise<void> {
+  const { history } = useAppStore.getState()
 
-  if (!planError && planRows) {
-    const serverPlans: Plan[] = planRows.map((row) => ({
-      ...(row.data as Plan),
-      syncStatus: 'synced' as const,
-    }))
-    usePlanStore.getState().mergeFromServer(serverPlans)
+  const unsyncedSessions = history.filter((s) => s.syncStatus !== 'synced')
+  if (unsyncedSessions.length === 0) {
+    return
   }
 
-  // Pull sessions from server
-  const { data: sessionRows, error: sessionError } = await supabase
-    .from('workout_sessions')
-    .select('data')
-    .eq('user_id', userId)
+  const response = await client.pushSync({
+    workoutSessions: unsyncedSessions.map((session) => ({
+      id: session.id,
+      data: toRemoteWorkoutSession(session),
+      updatedAt: session.updatedAt,
+      deletedAt: null,
+    })),
+    clientMutationId: Crypto.randomUUID(),
+  })
 
-  if (!sessionError && sessionRows) {
-    const serverSessions: WorkoutSession[] = sessionRows.map((row) => ({
-      ...(row.data as WorkoutSession),
-      syncStatus: 'synced' as const,
-    }))
-    useAppStore.getState().mergeSessionsFromServer(serverSessions)
+  useAppStore
+    .getState()
+    .markSessionsSynced(response.acceptedWorkoutSessionIds as WorkoutId[])
+  mergePulledWorkoutSessions(response.currentWorkoutSessions.map((change) => change.data))
+}
+
+async function pullData(client: MobileApiClient): Promise<void> {
+  let cursor: string | null = null
+  const seenCursors = new Set<string>()
+
+  for (let page = 0; page < MAX_PULL_PAGES; page++) {
+    const response = await client.pullSync(cursor)
+
+    mergePulledPlans(response.plans.map((change) => change.data))
+    archiveDeletedPlans(response.deletedPlanIds)
+    mergePulledWorkoutSessions(response.workoutSessions.map((change) => change.data))
+
+    if (!response.hasMore) {
+      return
+    }
+
+    if (seenCursors.has(response.cursor)) {
+      throw new Error('Paginação de sincronização inválida')
+    }
+
+    seenCursors.add(response.cursor)
+    cursor = response.cursor
   }
+
+  throw new Error('Limite de páginas de sincronização excedido')
 }
 
 /**
@@ -82,15 +77,16 @@ async function pullData(userId: string): Promise<void> {
  */
 export async function sync(): Promise<void> {
   if (isSyncing) return
-  const userId = useAuthStore.getState().user?.id
-  if (!userId) return
+  const authState = useAuthStore.getState()
+  if (!authState.user || !authState.remoteTokens) return
 
   isSyncing = true
   useAppStore.getState().setSyncState(true, null)
 
   try {
-    await pushData(userId)
-    await pullData(userId)
+    const client = createSyncApiClient()
+    await pushData(client)
+    await pullData(client)
     // Best-effort photo restore — never fail sync over photos
     await restoreEquipmentPhotosFromCloud().catch(() => {})
     // Recover lastWeights that never left the device — derive from synced history
@@ -120,7 +116,64 @@ export async function sync(): Promise<void> {
  * Errors are silently ignored — local deletion always succeeds.
  */
 export async function deleteSessionFromServer(sessionId: string): Promise<void> {
-  const userId = useAuthStore.getState().user?.id
-  if (!userId) return
-  await supabase.from('workout_sessions').delete().eq('id', sessionId).eq('user_id', userId)
+  const authState = useAuthStore.getState()
+  if (!authState.user || !authState.remoteTokens) return
+
+  await createSyncApiClient().deleteWorkoutSession(sessionId)
+}
+
+function mergePulledPlans(plans: Plan[]): void {
+  usePlanStore.getState().mergeFromServer(
+    plans.map((plan) => ({
+      ...plan,
+      syncStatus: 'synced' as const,
+    })),
+  )
+}
+
+function archiveDeletedPlans(planIds: string[]): void {
+  if (planIds.length === 0) {
+    return
+  }
+
+  const idSet = new Set(planIds)
+  const now = new Date().toISOString()
+
+  usePlanStore.setState((state) => ({
+    plans: state.plans.map((plan) =>
+      idSet.has(plan.id)
+        ? {
+            ...plan,
+            archived: true,
+            syncStatus: 'synced' as const,
+            updatedAt: now,
+          }
+        : plan,
+    ),
+  }))
+}
+
+function mergePulledWorkoutSessions(sessions: WorkoutSession[]): void {
+  if (sessions.length === 0) {
+    return
+  }
+
+  useAppStore
+    .getState()
+    .mergeSessionsFromServer(sessions.map((session) => ({ ...session, syncStatus: 'synced' })))
+}
+
+function toRemoteWorkoutSession(session: WorkoutSession): WorkoutSession {
+  return {
+    ...session,
+    date: normalizeDateTime(session.date),
+  }
+}
+
+function normalizeDateTime(value: string): string {
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return `${value}T00:00:00.000Z`
+  }
+
+  return value
 }

@@ -7,15 +7,25 @@ import { supabase } from '@/lib/supabase'
 interface AuthState {
   user: User | null
   session: Session | null
+  remoteTokens: RemoteTokens | null
   isLoading: boolean
   initialize: () => Promise<void>
   signInWithGoogle: () => Promise<void>
   signOut: () => Promise<void>
+  setRemoteTokens: (tokens: RemoteTokens) => void
+  clearRemoteTokens: () => void
+}
+
+export type RemoteTokens = {
+  accessToken: string
+  refreshToken: string
+  expiresAt: string
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   session: null,
+  remoteTokens: null,
   isLoading: true,
 
   initialize: async (): Promise<void> => {
@@ -61,6 +71,14 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   signOut: async (): Promise<void> => {
     await supabase.auth.signOut()
-    set({ user: null, session: null })
+    set({ user: null, session: null, remoteTokens: null })
+  },
+
+  setRemoteTokens: (tokens: RemoteTokens): void => {
+    set({ remoteTokens: tokens })
+  },
+
+  clearRemoteTokens: (): void => {
+    set({ remoteTokens: null })
   },
 }))
