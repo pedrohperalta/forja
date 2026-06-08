@@ -44,6 +44,20 @@ export type SyncPullResponse = {
   deletedWorkoutSessionIds: string[]
 }
 
+export type EquipmentPhotoUploadResponse = {
+  exerciseId: string
+  path: string
+  updatedAt: string
+}
+
+export type EquipmentPhotoListResponse = {
+  photos: {
+    exerciseId: string
+    downloadUrl: string
+    updatedAt: string
+  }[]
+}
+
 type MobileAuthRefreshResponse = {
   accessToken: string
   refreshToken: string
@@ -87,32 +101,54 @@ export function createMobileApiClient(input: MobileApiClientInput): {
   pushSync(request: SyncPushRequest): Promise<SyncPushResponse>
   pullSync(cursor: string | null): Promise<SyncPullResponse>
   deleteWorkoutSession(sessionId: string): Promise<{ ok: true }>
+  uploadEquipmentPhoto(
+    exerciseId: string,
+    bytes: Uint8Array,
+  ): Promise<EquipmentPhotoUploadResponse>
+  listEquipmentPhotos(): Promise<EquipmentPhotoListResponse>
+  downloadEquipmentPhoto(downloadUrl: string): Promise<Uint8Array>
+  deleteEquipmentPhoto(exerciseId: string): Promise<{ ok: true }>
 } {
   const fetchImpl = input.fetchImpl ?? fetch
   const baseUrl = normalizeBaseUrl(input.baseUrl ?? process.env.EXPO_PUBLIC_FORJA_API_URL)
 
-  async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
+  async function authenticatedFetch(
+    path: string,
+    init: RequestInit,
+    retryOnUnauthorized = true,
+  ): Promise<Response> {
     const tokens = input.getTokens()
 
     if (!tokens) {
       throw new MobileApiError('Sessão expirada. Entre novamente.', 401, 'unauthenticated')
     }
 
-    const response = await fetchImpl(`${baseUrl}${path}`, {
-      method: options.method ?? 'GET',
+    const response = await fetchImpl(resolveUrl(path, baseUrl), {
+      ...init,
       headers: {
         Authorization: `Bearer ${tokens.accessToken}`,
-        ...(options.body ? { 'Content-Type': 'application/json' } : {}),
+        ...init.headers,
       },
-      ...(options.body ? { body: JSON.stringify(options.body) } : {}),
     })
 
-    if (response.status === 401 && options.retryOnUnauthorized !== false) {
+    if (response.status === 401 && retryOnUnauthorized) {
       const refreshed = await refreshTokens(tokens.refreshToken)
       input.setTokens(refreshed)
 
-      return request(path, { ...options, retryOnUnauthorized: false })
+      return authenticatedFetch(path, init, false)
     }
+
+    return response
+  }
+
+  async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
+    const response = await authenticatedFetch(path, {
+      method: options.method ?? 'GET',
+      headers: {
+        ...(options.body ? { 'Content-Type': 'application/json' } : {}),
+      },
+      ...(options.body ? { body: JSON.stringify(options.body) } : {}),
+    }, options.retryOnUnauthorized !== false)
 
     return readJsonResponse<T>(response)
   }
@@ -150,6 +186,47 @@ export function createMobileApiClient(input: MobileApiClientInput): {
         method: 'DELETE',
       })
     },
+
+    uploadEquipmentPhoto(
+      exerciseId,
+      bytes,
+    ): Promise<EquipmentPhotoUploadResponse> {
+      const formData = new FormData()
+      formData.append(
+        'file',
+        new Blob([toArrayBuffer(bytes)], { type: 'image/jpeg' }),
+        'photo.jpg',
+      )
+
+      return authenticatedFetch(
+        `/api/mobile/v1/photos/equipment/${encodeURIComponent(exerciseId)}`,
+        {
+          method: 'PUT',
+          body: formData,
+        },
+      ).then((response) => readJsonResponse<EquipmentPhotoUploadResponse>(response))
+    },
+
+    listEquipmentPhotos(): Promise<EquipmentPhotoListResponse> {
+      return request('/api/mobile/v1/photos/equipment')
+    },
+
+    async downloadEquipmentPhoto(downloadUrl): Promise<Uint8Array> {
+      const response = await authenticatedFetch(downloadUrl, { method: 'GET' })
+
+      if (!response.ok) {
+        await readJsonResponse<never>(response)
+      }
+
+      return new Uint8Array(await response.arrayBuffer())
+    },
+
+    deleteEquipmentPhoto(exerciseId): Promise<{ ok: true }> {
+      return request(
+        `/api/mobile/v1/photos/equipment/${encodeURIComponent(exerciseId)}`,
+        { method: 'DELETE' },
+      )
+    },
   }
 }
 
@@ -171,4 +248,19 @@ async function readJsonResponse<T>(response: Response): Promise<T> {
 
 function normalizeBaseUrl(value: string | undefined): string {
   return (value ?? DEFAULT_API_URL).replace(/\/+$/, '')
+}
+
+function resolveUrl(pathOrUrl: string, baseUrl: string): string {
+  if (/^https?:\/\//.test(pathOrUrl)) {
+    return pathOrUrl
+  }
+
+  return `${baseUrl}${pathOrUrl.startsWith('/') ? pathOrUrl : `/${pathOrUrl}`}`
+}
+
+function toArrayBuffer(bytes: Uint8Array): ArrayBuffer {
+  return bytes.buffer.slice(
+    bytes.byteOffset,
+    bytes.byteOffset + bytes.byteLength,
+  ) as ArrayBuffer
 }

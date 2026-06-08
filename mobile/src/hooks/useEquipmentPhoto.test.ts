@@ -23,28 +23,21 @@ jest.mock('expo-image-picker', () => ({
 }))
 
 let mockAuthUser: { id: string } | null = null
+let mockRemoteTokens: { accessToken: string; refreshToken: string; expiresAt: string } | null =
+  null
 
 jest.mock('@/stores/authStore', () => ({
-  useAuthStore: { getState: () => ({ user: mockAuthUser }) },
-}))
-
-const mockStorageUpload = jest.fn().mockResolvedValue({ data: {}, error: null })
-const mockStorageRemove = jest.fn().mockResolvedValue({ data: {}, error: null })
-const mockStorageList = jest.fn().mockResolvedValue({ data: [], error: null })
-const mockStorageCreateSignedUrl = jest
-  .fn()
-  .mockResolvedValue({ data: { signedUrl: 'https://example.com/signed' }, error: null })
-
-jest.mock('@/lib/supabase', () => ({
-  supabase: {
-    storage: {
-      from: () => ({
-        upload: (...args: unknown[]) => mockStorageUpload(...args),
-        remove: (...args: unknown[]) => mockStorageRemove(...args),
-        list: (...args: unknown[]) => mockStorageList(...args),
-        createSignedUrl: (...args: unknown[]) => mockStorageCreateSignedUrl(...args),
+  useAuthStore: {
+    getState: () => ({
+      user: mockAuthUser,
+      remoteTokens: mockRemoteTokens,
+      setRemoteTokens: jest.fn((tokens) => {
+        mockRemoteTokens = tokens
       }),
-    },
+      clearRemoteTokens: jest.fn(() => {
+        mockRemoteTokens = null
+      }),
+    }),
   },
 }))
 
@@ -98,6 +91,9 @@ describe('useEquipmentPhoto', () => {
     useAppStore.setState({ equipmentPhotos: {} })
     clearMockStorage()
     mockAuthUser = null
+    mockRemoteTokens = null
+    mockFetch.mockReset()
+    process.env.EXPO_PUBLIC_FORJA_API_URL = 'https://forja.example.com'
   })
 
   it('returns undefined when no photo exists', () => {
@@ -208,8 +204,10 @@ describe('useEquipmentPhoto', () => {
   })
 
   describe('cloud backup', () => {
-    it('uploads to Supabase Storage at {userId}/{exerciseId}.jpg when authenticated', async () => {
+    it('uploads through the Next photo API when authenticated', async () => {
       mockAuthUser = { id: 'user-abc' }
+      mockRemoteTokens = remoteTokens()
+      mockFetch.mockResolvedValueOnce(jsonResponse({ ok: true }))
       ;(ImagePicker.launchImageLibraryAsync as jest.Mock).mockResolvedValue({
         canceled: false,
         assets: [{ uri: 'file:///tmp/picked.jpg' }],
@@ -220,13 +218,20 @@ describe('useEquipmentPhoto', () => {
         await result.current.pickPhoto('gallery')
       })
 
-      expect(mockStorageUpload).toHaveBeenCalled()
-      const [path] = mockStorageUpload.mock.calls[0] ?? []
-      expect(path).toBe(`user-abc/${EXERCISE_ID}.jpg`)
+      expect(mockFetch).toHaveBeenCalledWith(
+        `https://forja.example.com/api/mobile/v1/photos/equipment/${EXERCISE_ID}`,
+        expect.objectContaining({
+          method: 'PUT',
+          headers: expect.objectContaining({
+            Authorization: 'Bearer access-token',
+          }),
+        }),
+      )
     })
 
     it('skips upload when user is not authenticated', async () => {
       mockAuthUser = null
+      mockRemoteTokens = null
       ;(ImagePicker.launchImageLibraryAsync as jest.Mock).mockResolvedValue({
         canceled: false,
         assets: [{ uri: 'file:///tmp/picked.jpg' }],
@@ -237,13 +242,14 @@ describe('useEquipmentPhoto', () => {
         await result.current.pickPhoto('gallery')
       })
 
-      expect(mockStorageUpload).not.toHaveBeenCalled()
+      expect(mockFetch).not.toHaveBeenCalled()
       expect(useAppStore.getState().equipmentPhotos[EXERCISE_ID]).toBeDefined()
     })
 
     it('preserves the local save even if the upload fails', async () => {
       mockAuthUser = { id: 'user-abc' }
-      mockStorageUpload.mockRejectedValueOnce(new Error('network'))
+      mockRemoteTokens = remoteTokens()
+      mockFetch.mockRejectedValueOnce(new Error('network'))
       ;(ImagePicker.launchImageLibraryAsync as jest.Mock).mockResolvedValue({
         canceled: false,
         assets: [{ uri: 'file:///tmp/picked.jpg' }],
@@ -257,8 +263,10 @@ describe('useEquipmentPhoto', () => {
       expect(useAppStore.getState().equipmentPhotos[EXERCISE_ID]).toBeDefined()
     })
 
-    it('removes from Supabase Storage when removePhoto runs authenticated', () => {
+    it('removes through the Next photo API when authenticated', () => {
       mockAuthUser = { id: 'user-abc' }
+      mockRemoteTokens = remoteTokens()
+      mockFetch.mockResolvedValueOnce(jsonResponse({ ok: true }))
       useAppStore.setState({
         equipmentPhotos: {
           [EXERCISE_ID]: 'file:///mock-docs/equipment-photos/supino-reto-vertical.jpg',
@@ -270,11 +278,15 @@ describe('useEquipmentPhoto', () => {
         result.current.removePhoto()
       })
 
-      expect(mockStorageRemove).toHaveBeenCalledWith([`user-abc/${EXERCISE_ID}.jpg`])
+      expect(mockFetch).toHaveBeenCalledWith(
+        `https://forja.example.com/api/mobile/v1/photos/equipment/${EXERCISE_ID}`,
+        expect.objectContaining({ method: 'DELETE' }),
+      )
     })
 
     it('skips remote removal when unauthenticated', () => {
       mockAuthUser = null
+      mockRemoteTokens = null
       useAppStore.setState({
         equipmentPhotos: {
           [EXERCISE_ID]: 'file:///mock-docs/equipment-photos/supino-reto-vertical.jpg',
@@ -286,38 +298,57 @@ describe('useEquipmentPhoto', () => {
         result.current.removePhoto()
       })
 
-      expect(mockStorageRemove).not.toHaveBeenCalled()
+      expect(mockFetch).not.toHaveBeenCalled()
     })
   })
 
   describe('restoreEquipmentPhotosFromCloud', () => {
     it('does nothing when unauthenticated', async () => {
       mockAuthUser = null
+      mockRemoteTokens = null
 
       await restoreEquipmentPhotosFromCloud()
 
-      expect(mockStorageList).not.toHaveBeenCalled()
+      expect(mockFetch).not.toHaveBeenCalled()
     })
 
-    it('lists the user prefix, downloads missing photos via signed URL, and saves them locally', async () => {
+    it('lists and downloads missing photos through the Next photo API', async () => {
       mockAuthUser = { id: 'user-abc' }
-      mockStorageList.mockResolvedValueOnce({
-        data: [{ name: 'supino-reto-vertical.jpg' }, { name: 'agachamento.jpg' }],
-        error: null,
-      })
-      mockFetch.mockResolvedValue({
-        arrayBuffer: jest.fn().mockResolvedValue(new ArrayBuffer(4)),
-      })
+      mockRemoteTokens = remoteTokens()
+      mockFetch
+        .mockResolvedValueOnce(
+          jsonResponse({
+            photos: [
+              {
+                exerciseId: 'supino-reto-vertical',
+                downloadUrl:
+                  '/api/mobile/v1/photos/equipment/supino-reto-vertical/download',
+                updatedAt: '2026-05-18T12:00:00.000Z',
+              },
+              {
+                exerciseId: 'agachamento',
+                downloadUrl: '/api/mobile/v1/photos/equipment/agachamento/download',
+                updatedAt: '2026-05-18T12:00:00.000Z',
+              },
+            ],
+          }),
+        )
+        .mockResolvedValueOnce(binaryResponse(new ArrayBuffer(4)))
+        .mockResolvedValueOnce(binaryResponse(new ArrayBuffer(4)))
 
       await restoreEquipmentPhotosFromCloud()
 
-      expect(mockStorageList).toHaveBeenCalledWith('user-abc')
-      expect(mockStorageCreateSignedUrl).toHaveBeenCalledWith(
-        'user-abc/supino-reto-vertical.jpg',
-        60,
+      expect(mockFetch).toHaveBeenNthCalledWith(
+        1,
+        'https://forja.example.com/api/mobile/v1/photos/equipment',
+        expect.anything(),
       )
-      expect(mockStorageCreateSignedUrl).toHaveBeenCalledWith('user-abc/agachamento.jpg', 60)
-      expect(mockFetch).toHaveBeenCalledTimes(2)
+      expect(mockFetch).toHaveBeenNthCalledWith(
+        2,
+        'https://forja.example.com/api/mobile/v1/photos/equipment/supino-reto-vertical/download',
+        expect.anything(),
+      )
+      expect(mockFetch).toHaveBeenCalledTimes(3)
       expect(mockWrite).toHaveBeenCalledTimes(2)
 
       const stored = useAppStore.getState().equipmentPhotos
@@ -327,20 +358,51 @@ describe('useEquipmentPhoto', () => {
 
     it('skips photos already present locally', async () => {
       mockAuthUser = { id: 'user-abc' }
+      mockRemoteTokens = remoteTokens()
       useAppStore.setState({
         equipmentPhotos: {
           [EXERCISE_ID]: 'file:///mock-docs/equipment-photos/supino-reto-vertical.jpg',
         },
       })
-      mockStorageList.mockResolvedValueOnce({
-        data: [{ name: 'supino-reto-vertical.jpg' }],
-        error: null,
-      })
+      mockFetch.mockResolvedValueOnce(
+        jsonResponse({
+          photos: [
+            {
+              exerciseId: 'supino-reto-vertical',
+              downloadUrl: '/api/mobile/v1/photos/equipment/supino-reto-vertical/download',
+              updatedAt: '2026-05-18T12:00:00.000Z',
+            },
+          ],
+        }),
+      )
 
       await restoreEquipmentPhotosFromCloud()
 
-      expect(mockStorageCreateSignedUrl).not.toHaveBeenCalled()
-      expect(mockFetch).not.toHaveBeenCalled()
+      expect(mockFetch).toHaveBeenCalledTimes(1)
     })
   })
 })
+
+function remoteTokens(): { accessToken: string; refreshToken: string; expiresAt: string } {
+  return {
+    accessToken: 'access-token',
+    refreshToken: 'refresh-token',
+    expiresAt: '2026-05-18T12:15:00.000Z',
+  }
+}
+
+function jsonResponse(body: unknown, status = 200): Response {
+  return {
+    ok: status >= 200 && status < 300,
+    status,
+    json: async () => body,
+  } as Response
+}
+
+function binaryResponse(body: ArrayBuffer, status = 200): Response {
+  return {
+    ok: status >= 200 && status < 300,
+    status,
+    arrayBuffer: async () => body,
+  } as Response
+}

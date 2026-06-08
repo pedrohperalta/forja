@@ -1,18 +1,12 @@
 import * as ImagePicker from 'expo-image-picker'
 import { Paths, Directory, File } from 'expo-file-system'
 
-import { supabase } from '@/lib/supabase'
 import { useAppStore } from '@/stores/appStore'
 import { useAuthStore } from '@/stores/authStore'
 import type { ExerciseId } from '@/types'
+import { createMobileApiClient, type MobileApiClient } from '@/services/mobileApiClient'
 
 const PHOTOS_DIR_NAME = 'equipment-photos'
-const PHOTOS_BUCKET = 'equipment-photos'
-
-/** Builds the Storage path for a photo: `{userId}/{exerciseId}.jpg`. */
-function getRemotePath(userId: string, exerciseId: ExerciseId): string {
-  return `${userId}/${exerciseId}.jpg`
-}
 
 /** Returns the photos directory instance. */
 function getPhotosDir(): Directory {
@@ -30,6 +24,20 @@ type UseEquipmentPhotoReturn = {
   photoUri: string | undefined
   pickPhoto: (source: PickSource) => Promise<void>
   removePhoto: () => void
+}
+
+function createPhotoApiClient(): MobileApiClient {
+  return createMobileApiClient({
+    getTokens: () => useAuthStore.getState().remoteTokens,
+    setTokens: (tokens) => useAuthStore.getState().setRemoteTokens(tokens),
+    clearTokens: () => useAuthStore.getState().clearRemoteTokens(),
+  })
+}
+
+function canUseRemotePhotos(): boolean {
+  const authState = useAuthStore.getState()
+
+  return Boolean(authState.user && authState.remoteTokens)
 }
 
 /** Hook for managing equipment reference photos per exercise. */
@@ -82,16 +90,10 @@ export function useEquipmentPhoto(exerciseId: ExerciseId): UseEquipmentPhotoRetu
     saveEquipmentPhoto(exerciseId, destFile.uri)
 
     // Cloud backup — best effort, local save always wins
-    const userId = useAuthStore.getState().user?.id
-    if (userId) {
+    if (canUseRemotePhotos()) {
       try {
         const bytes = await destFile.bytes()
-        await supabase.storage
-          .from(PHOTOS_BUCKET)
-          .upload(getRemotePath(userId, exerciseId), bytes, {
-            contentType: 'image/jpeg',
-            upsert: true,
-          })
+        await createPhotoApiClient().uploadEquipmentPhoto(exerciseId, bytes)
       } catch {
         // Swallow — photo stays local, re-sync handled elsewhere
       }
@@ -108,9 +110,8 @@ export function useEquipmentPhoto(exerciseId: ExerciseId): UseEquipmentPhotoRetu
     }
     deleteEquipmentPhoto(exerciseId)
 
-    const userId = useAuthStore.getState().user?.id
-    if (userId) {
-      void supabase.storage.from(PHOTOS_BUCKET).remove([getRemotePath(userId, exerciseId)])
+    if (canUseRemotePhotos()) {
+      void createPhotoApiClient().deleteEquipmentPhoto(exerciseId).catch(() => {})
     }
   }
 
@@ -123,11 +124,10 @@ export function useEquipmentPhoto(exerciseId: ExerciseId): UseEquipmentPhotoRetu
  * already present locally.
  */
 export async function restoreEquipmentPhotosFromCloud(): Promise<void> {
-  const userId = useAuthStore.getState().user?.id
-  if (!userId) return
+  if (!canUseRemotePhotos()) return
 
-  const { data: entries, error } = await supabase.storage.from(PHOTOS_BUCKET).list(userId)
-  if (error || !entries) return
+  const client = createPhotoApiClient()
+  const { photos } = await client.listEquipmentPhotos()
 
   const dir = getPhotosDir()
   if (!dir.exists) {
@@ -136,26 +136,15 @@ export async function restoreEquipmentPhotosFromCloud(): Promise<void> {
 
   const { saveEquipmentPhoto, equipmentPhotos } = useAppStore.getState()
 
-  for (const entry of entries) {
-    const match = entry.name.match(/^(.+)\.jpg$/)
-    if (!match || !match[1]) continue
-    const exerciseId = match[1] as ExerciseId
+  for (const photo of photos) {
+    const exerciseId = photo.exerciseId as ExerciseId
 
     if (equipmentPhotos[exerciseId]) continue
 
     const destFile = getPhotoFile(exerciseId)
 
-    // supabase-js storage.download() returns a Blob without arrayBuffer() in
-    // React Native, so use a short-lived signed URL + fetch() instead.
-    const { data: urlData, error: urlErr } = await supabase.storage
-      .from(PHOTOS_BUCKET)
-      .createSignedUrl(`${userId}/${entry.name}`, 60)
-    if (urlErr || !urlData?.signedUrl) continue
-
     try {
-      const response = await fetch(urlData.signedUrl)
-      const buffer = await response.arrayBuffer()
-      const bytes = new Uint8Array(buffer)
+      const bytes = await client.downloadEquipmentPhoto(photo.downloadUrl)
       destFile.write(bytes)
       saveEquipmentPhoto(exerciseId, destFile.uri)
     } catch {
