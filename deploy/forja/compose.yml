@@ -1,0 +1,83 @@
+services:
+  forja-postgres:
+    image: postgres:18-alpine
+    container_name: forja-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-forja}
+      POSTGRES_USER: ${POSTGRES_USER:-forja}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - forja-postgres-data:/var/lib/postgresql/data
+    networks:
+      - forja-internal
+
+  forja-web:
+    image: forja-web:latest
+    container_name: forja-web
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-forja}:${POSTGRES_PASSWORD}@forja-postgres:5432/${POSTGRES_DB:-forja}
+      UPLOADS_DIR: /data/uploads
+      NODE_ENV: production
+      PORT: 3000
+    depends_on:
+      forja-postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/api/health | grep -q 'ok'"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - forja-uploads:/data/uploads
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.forja-web.rule=Host(`forja.phperalta.me`)
+      - traefik.http.routers.forja-web.entrypoints=websecure
+      - traefik.http.routers.forja-web.tls=true
+      - traefik.http.routers.forja-web.tls.certresolver=mytlschallenge
+      - traefik.http.routers.forja-web.middlewares=cloudflare-only@file
+      - traefik.http.services.forja-web.loadbalancer.server.port=3000
+    networks:
+      - forja-internal
+      - root_default
+
+  forja-backup:
+    image: postgres:18-alpine
+    container_name: forja-backup
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-forja}:${POSTGRES_PASSWORD}@forja-postgres:5432/${POSTGRES_DB:-forja}
+      BACKUP_DIR: /backups
+      UPLOADS_DIR: /data/uploads
+      RETENTION_DAYS: 14
+    depends_on:
+      forja-postgres:
+        condition: service_healthy
+    command: >
+      sh -c "while true; do /scripts/backup.sh; sleep 86400; done"
+    volumes:
+      - ./scripts:/scripts:ro
+      - forja-backups:/backups
+      - forja-uploads:/data/uploads:ro
+    networks:
+      - forja-internal
+
+volumes:
+  forja-postgres-data:
+  forja-uploads:
+  forja-backups:
+
+networks:
+  forja-internal:
+  root_default:
+    external: true
