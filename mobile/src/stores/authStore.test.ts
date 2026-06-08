@@ -1,4 +1,5 @@
 import * as WebBrowser from 'expo-web-browser'
+import { Platform } from 'react-native'
 
 import { useAuthStore } from '@/stores/authStore'
 
@@ -14,8 +15,11 @@ const mockFetch = jest.fn()
 global.fetch = mockFetch
 
 describe('authStore', () => {
+  const originalPlatform = Platform.OS
+
   beforeEach(() => {
     jest.clearAllMocks()
+    setPlatformOS(originalPlatform)
     process.env.EXPO_PUBLIC_FORJA_API_URL = 'https://forja.example.com'
     useAuthStore.setState({
       user: null,
@@ -32,14 +36,14 @@ describe('authStore', () => {
     expect(mockFetch).not.toHaveBeenCalled()
   })
 
-  it('starts Google auth through the Next backend and exchanges returned callback code', async () => {
+  it('starts Google auth through the Next backend and leaves Android callbacks to the deep link route', async () => {
+    setPlatformOS('android')
     mockFetch
       .mockResolvedValueOnce(
         jsonResponse({
           url: 'https://accounts.google.com/o/oauth2/v2/auth?state=signed',
         }),
       )
-      .mockResolvedValueOnce(jsonResponse(authExchangeResponse()))
     ;(WebBrowser.openAuthSessionAsync as jest.Mock).mockResolvedValueOnce({
       type: 'success',
       url: 'forja://auth/callback?code=one-time-code',
@@ -55,6 +59,26 @@ describe('authStore', () => {
         body: JSON.stringify({ redirectUri: 'forja://auth/callback' }),
       }),
     )
+    expect(mockFetch).toHaveBeenCalledTimes(1)
+    expect(useAuthStore.getState().user).toBeNull()
+  })
+
+  it('exchanges returned callback codes directly on iOS auth sessions', async () => {
+    setPlatformOS('ios')
+    mockFetch
+      .mockResolvedValueOnce(
+        jsonResponse({
+          url: 'https://accounts.google.com/o/oauth2/v2/auth?state=signed',
+        }),
+      )
+      .mockResolvedValueOnce(jsonResponse(authExchangeResponse()))
+    ;(WebBrowser.openAuthSessionAsync as jest.Mock).mockResolvedValueOnce({
+      type: 'success',
+      url: 'forja://auth/callback?code=one-time-code',
+    })
+
+    await useAuthStore.getState().signInWithGoogle()
+
     expect(mockFetch).toHaveBeenNthCalledWith(
       2,
       'https://forja.example.com/api/mobile/v1/auth/google/exchange',
@@ -135,4 +159,11 @@ function authExchangeResponse(): unknown {
       expiresAt: '2026-01-01T00:15:00.000Z',
     },
   }
+}
+
+function setPlatformOS(os: typeof Platform.OS): void {
+  Object.defineProperty(Platform, 'OS', {
+    configurable: true,
+    value: os,
+  })
 }

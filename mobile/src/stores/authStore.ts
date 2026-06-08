@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { makeRedirectUri } from 'expo-auth-session'
 import * as WebBrowser from 'expo-web-browser'
+import { Platform } from 'react-native'
 import {
   createMobileApiClient,
   type MobileAuthUser,
@@ -52,7 +53,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       // On iOS, ASWebAuthenticationSession intercepts the redirect internally —
       // Linking events never fire, and the /auth/callback route never renders.
       // Exchange the code here as the iOS-only path.
-      if (result.type === 'success') {
+      if (Platform.OS === 'ios' && result.type === 'success') {
         const code = new URL(result.url).searchParams.get('code')
         if (code) {
           await useAuthStore.getState().handleAuthCallback(code)
