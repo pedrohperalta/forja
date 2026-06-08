@@ -37,7 +37,9 @@ yarn-error.*
 *.pem
 
 # local env files
+.env
 .env*.local
+deploy/forja/.env
 
 # local migration exports
 .migration/
