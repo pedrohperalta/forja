@@ -5,9 +5,9 @@ services:
 
   forja-web:
     env_file:
-      - path: .env.example
+      - path: ./deploy/forja/.env.example
         required: false
-      - path: .env
+      - path: ./deploy/forja/.env
         required: false
     environment:
       FORJA_PUBLIC_URL: http://127.0.0.1:3000
