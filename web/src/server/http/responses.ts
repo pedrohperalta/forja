@@ -11,6 +11,7 @@ export type ErrorCode =
   | 'not_found'
   | 'upload_too_large'
   | 'unsupported_media_type'
+  | 'model_output_invalid'
   | 'invalid_token'
   | 'oauth_error'
   | 'internal_error'
