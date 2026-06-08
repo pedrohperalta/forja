@@ -5,6 +5,11 @@ services:
 
   forja-web:
     env_file:
-      - .env.example
+      - path: .env.example
+        required: false
+      - path: .env
+        required: false
+    environment:
+      FORJA_PUBLIC_URL: http://127.0.0.1:3000
     ports:
       - "127.0.0.1:3000:3000"
