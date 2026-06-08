@@ -20,6 +20,8 @@ test('compose config declares the expected Portainer stack services', async () =
   assert.match(compose, /root_default:/)
   assert.match(compose, /external: true/)
   assert.match(compose, /\/api\/health/)
+  assert.match(compose, /\/var\/lib\/postgresql/)
+  assert.doesNotMatch(compose, /\/var\/lib\/postgresql\/data/)
   assert.match(compose, /\/data\/uploads/)
 })
 

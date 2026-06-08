@@ -13,7 +13,7 @@ services:
       timeout: 5s
       retries: 5
     volumes:
-      - forja-postgres-data:/var/lib/postgresql/data
+      - forja-postgres-data:/var/lib/postgresql
     networks:
       - forja-internal
 
