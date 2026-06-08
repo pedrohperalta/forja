@@ -1,10 +1,10 @@
-#!/usr/bin/env bash
-set -euo pipefail
+#!/bin/sh
+set -eu
 
 DRY_RUN=0
 TARGET_URL=""
 
-while [[ $# -gt 0 ]]; do
+while [ $# -gt 0 ]; do
   case "$1" in
     --dry-run)
       DRY_RUN=1
@@ -24,7 +24,7 @@ done
 : "${TARGET_URL:?--target-url is required}"
 : "${BACKUP_FILE:?backup file is required}"
 
-if [[ "$DRY_RUN" == "1" ]]; then
+if [ "$DRY_RUN" = "1" ]; then
   echo "DRY RUN: would restore $BACKUP_FILE into $TARGET_URL"
   exit 0
 fi
