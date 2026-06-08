@@ -30,7 +30,6 @@
   },
   "dependencies": {
     "@shopify/flash-list": "2.0.2",
-    "@supabase/supabase-js": "2.101.1",
     "expo": "55.0.9",
     "expo-auth-session": "55.0.10",
     "expo-constants": "55.0.9",

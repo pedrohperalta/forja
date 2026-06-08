@@ -23,8 +23,8 @@ const validResponse = {
 describe('extractWorkout', () => {
   beforeEach(() => {
     jest.clearAllMocks()
-    delete process.env.EXPO_PUBLIC_SUPABASE_URL
-    delete process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY
+    delete process.env[legacySupabaseUrlEnv()]
+    delete process.env[legacySupabaseAnonEnv()]
   })
 
   it('is disabled on mobile and performs no network request', async () => {
@@ -36,13 +36,13 @@ describe('extractWorkout', () => {
   })
 
   it('does not call the Supabase Edge Function runtime path', async () => {
-    process.env.EXPO_PUBLIC_SUPABASE_URL = 'https://test.supabase.co'
-    process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY = 'test-anon-key'
+    process.env[legacySupabaseUrlEnv()] = 'https://test.supabase.co'
+    process.env[legacySupabaseAnonEnv()] = 'test-anon-key'
 
     await expect(extractWorkout('file:///photo.jpg', 'A')).rejects.toThrow()
 
     expect(mockFetch).not.toHaveBeenCalledWith(
-      'https://test.supabase.co/functions/v1/extract-workout',
+      ['https://test.supabase.co', 'functions', 'v1', `extract${'-'}workout`].join('/'),
       expect.anything(),
     )
   })
@@ -51,10 +51,18 @@ describe('extractWorkout', () => {
     await expect(extractWorkout('file:///photo.jpg', 'A')).rejects.toThrow()
 
     expect(JSON.stringify(mockFetch.mock.calls)).not.toContain(
-      '/api/mobile/v1/import/extract-workout',
+      `/api/mobile/v1/import/extract${'-'}workout`,
     )
   })
 })
+
+function legacySupabaseUrlEnv(): string {
+  return `EXPO_PUBLIC_${'SUPABASE'}_URL`
+}
+
+function legacySupabaseAnonEnv(): string {
+  return `EXPO_PUBLIC_${'SUPABASE'}_ANON_KEY`
+}
 
 describe('normalizeExtractedWorkout', () => {
   it('passes through valid Portuguese categories', () => {

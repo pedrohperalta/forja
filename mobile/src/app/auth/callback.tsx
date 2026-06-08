@@ -1,10 +1,10 @@
 import { useEffect } from 'react'
 import { View, Text, ActivityIndicator } from 'react-native'
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import { supabase } from '@/lib/supabase'
+import { useAuthStore } from '@/stores/authStore'
 
 /**
- * OAuth callback screen — handles the redirect from Supabase after Google login.
+ * OAuth callback screen — handles the redirect from Google after backend login.
  * Expo Router routes `forja://auth/callback?code=xxx` here on Android.
  * On iOS, openAuthSessionAsync intercepts the redirect before this screen renders.
  */
@@ -18,8 +18,9 @@ export default function AuthCallbackScreen() {
       return
     }
 
-    supabase.auth
-      .exchangeCodeForSession(code)
+    useAuthStore
+      .getState()
+      .handleAuthCallback(code)
       .then(() => {
         router.replace('/history')
       })

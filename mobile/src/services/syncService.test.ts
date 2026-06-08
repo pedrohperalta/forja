@@ -5,20 +5,6 @@ import { useAuthStore } from '@/stores/authStore'
 import { usePlanStore } from '@/stores/planStore'
 import { deleteSessionFromServer, sync } from './syncService'
 
-jest.mock('@/lib/supabase', () => ({
-  supabase: {
-    auth: {
-      getSession: jest.fn(),
-      onAuthStateChange: jest.fn(),
-      signInWithOAuth: jest.fn(),
-      exchangeCodeForSession: jest.fn(),
-      signOut: jest.fn(),
-    },
-    from: jest.fn(() => {
-      throw new Error('syncService must not call supabase.from')
-    }),
-  },
-}))
 jest.mock('@/hooks/useEquipmentPhoto', () => ({
   restoreEquipmentPhotosFromCloud: jest.fn().mockResolvedValue(undefined),
 }))

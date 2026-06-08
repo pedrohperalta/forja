@@ -64,6 +64,17 @@ type MobileAuthRefreshResponse = {
   expiresAt: string
 }
 
+export type MobileAuthUser = {
+  id: string
+  email: string
+  name: string
+}
+
+export type MobileAuthExchangeResponse = {
+  user: MobileAuthUser
+  tokens: RemoteTokens
+}
+
 type ApiErrorBody = {
   error?: {
     code?: string
@@ -98,6 +109,12 @@ export class MobileApiError extends Error {
 export type MobileApiClient = ReturnType<typeof createMobileApiClient>
 
 export function createMobileApiClient(input: MobileApiClientInput): {
+  startGoogleAuth(redirectUri: string): Promise<{ url: string }>
+  exchangeGoogleAuthCode(
+    code: string,
+    redirectUri: string,
+  ): Promise<MobileAuthExchangeResponse>
+  logout(refreshToken: string): Promise<{ ok: true }>
   pushSync(request: SyncPushRequest): Promise<SyncPushResponse>
   pullSync(cursor: string | null): Promise<SyncPullResponse>
   deleteWorkoutSession(sessionId: string): Promise<{ ok: true }>
@@ -168,6 +185,27 @@ export function createMobileApiClient(input: MobileApiClientInput): {
   }
 
   return {
+    startGoogleAuth(redirectUri): Promise<{ url: string }> {
+      return publicRequest('/api/mobile/v1/auth/google/start', {
+        method: 'POST',
+        body: { redirectUri },
+      })
+    },
+
+    exchangeGoogleAuthCode(code, redirectUri): Promise<MobileAuthExchangeResponse> {
+      return publicRequest('/api/mobile/v1/auth/google/exchange', {
+        method: 'POST',
+        body: { code, redirectUri },
+      })
+    },
+
+    logout(refreshToken): Promise<{ ok: true }> {
+      return publicRequest('/api/mobile/v1/auth/logout', {
+        method: 'POST',
+        body: { refreshToken },
+      })
+    },
+
     pushSync(requestBody): Promise<SyncPushResponse> {
       return request('/api/mobile/v1/sync/push', {
         method: 'POST',
@@ -227,6 +265,17 @@ export function createMobileApiClient(input: MobileApiClientInput): {
         { method: 'DELETE' },
       )
     },
+  }
+
+  function publicRequest<T>(
+    path: string,
+    options: { method: 'POST'; body: unknown },
+  ): Promise<T> {
+    return fetchImpl(resolveUrl(path, baseUrl), {
+      method: options.method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(options.body),
+    }).then((response) => readJsonResponse<T>(response))
   }
 }
 

@@ -1,16 +1,19 @@
 import { create } from 'zustand'
 import { makeRedirectUri } from 'expo-auth-session'
 import * as WebBrowser from 'expo-web-browser'
-import type { Session, User } from '@supabase/supabase-js'
-import { supabase } from '@/lib/supabase'
+import {
+  createMobileApiClient,
+  type MobileAuthUser,
+} from '@/services/mobileApiClient'
 
 interface AuthState {
-  user: User | null
-  session: Session | null
+  user: MobileAuthUser | null
+  session: AuthSession | null
   remoteTokens: RemoteTokens | null
   isLoading: boolean
   initialize: () => Promise<void>
   signInWithGoogle: () => Promise<void>
+  handleAuthCallback: (code: string) => Promise<void>
   signOut: () => Promise<void>
   setRemoteTokens: (tokens: RemoteTokens) => void
   clearRemoteTokens: () => void
@@ -22,6 +25,11 @@ export type RemoteTokens = {
   expiresAt: string
 }
 
+export type AuthSession = {
+  user: MobileAuthUser
+  expiresAt: string
+}
+
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   session: null,
@@ -29,29 +37,17 @@ export const useAuthStore = create<AuthState>((set) => ({
   isLoading: true,
 
   initialize: async (): Promise<void> => {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession()
-    set({ session, user: session?.user ?? null, isLoading: false })
-
-    supabase.auth.onAuthStateChange((_event, newSession) => {
-      set({ session: newSession, user: newSession?.user ?? null })
-    })
+    set({ isLoading: false })
   },
 
   signInWithGoogle: async (): Promise<void> => {
     set({ isLoading: true })
     try {
       const redirectTo = makeRedirectUri({ scheme: 'forja', path: 'auth/callback' })
+      const authClient = createAuthClient()
+      const { url } = await authClient.startGoogleAuth(redirectTo)
 
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: { redirectTo, skipBrowserRedirect: true },
-      })
-
-      if (error ?? !data.url) throw error ?? new Error('No OAuth URL')
-
-      const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo)
+      const result = await WebBrowser.openAuthSessionAsync(url, redirectTo)
 
       // On iOS, ASWebAuthenticationSession intercepts the redirect internally —
       // Linking events never fire, and the /auth/callback route never renders.
@@ -59,7 +55,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       if (result.type === 'success') {
         const code = new URL(result.url).searchParams.get('code')
         if (code) {
-          await supabase.auth.exchangeCodeForSession(code)
+          await useAuthStore.getState().handleAuthCallback(code)
         }
       }
     } catch (err) {
@@ -69,9 +65,27 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
   },
 
+  handleAuthCallback: async (code: string): Promise<void> => {
+    const redirectTo = makeRedirectUri({ scheme: 'forja', path: 'auth/callback' })
+    const response = await createAuthClient().exchangeGoogleAuthCode(code, redirectTo)
+
+    set({
+      user: response.user,
+      session: { user: response.user, expiresAt: response.tokens.expiresAt },
+      remoteTokens: response.tokens,
+    })
+  },
+
   signOut: async (): Promise<void> => {
-    await supabase.auth.signOut()
-    set({ user: null, session: null, remoteTokens: null })
+    const tokens = useAuthStore.getState().remoteTokens
+
+    try {
+      if (tokens) {
+        await createAuthClient().logout(tokens.refreshToken)
+      }
+    } finally {
+      set({ user: null, session: null, remoteTokens: null })
+    }
   },
 
   setRemoteTokens: (tokens: RemoteTokens): void => {
@@ -82,3 +96,11 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ remoteTokens: null })
   },
 }))
+
+function createAuthClient(): ReturnType<typeof createMobileApiClient> {
+  return createMobileApiClient({
+    getTokens: () => useAuthStore.getState().remoteTokens,
+    setTokens: (tokens) => useAuthStore.getState().setRemoteTokens(tokens),
+    clearTokens: () => useAuthStore.getState().clearRemoteTokens(),
+  })
+}
