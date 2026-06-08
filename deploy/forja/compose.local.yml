@@ -2,3 +2,7 @@ services:
   forja-postgres:
     ports:
       - "127.0.0.1:55432:5432"
+
+  forja-web:
+    ports:
+      - "127.0.0.1:3000:3000"

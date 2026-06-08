@@ -27,6 +27,7 @@ test('local compose override exposes Postgres only on localhost', async () => {
   const compose = await readFile(join(DEPLOY_DIR, 'compose.local.yml'), 'utf8')
 
   assert.match(compose, /127\.0\.0\.1:55432:5432/)
+  assert.match(compose, /127\.0\.0\.1:3000:3000/)
 })
 
 test('web Dockerfile builds a non-root Node 24 standalone image', async () => {
