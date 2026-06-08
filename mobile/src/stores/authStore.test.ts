@@ -1,7 +1,10 @@
 import * as WebBrowser from 'expo-web-browser'
 import { Platform } from 'react-native'
 
+import { clearMockStorage } from '@/storage/__mocks__/mmkv'
 import { useAuthStore } from '@/stores/authStore'
+
+jest.mock('@/storage/mmkv', () => require('@/storage/__mocks__/mmkv'))
 
 jest.mock('expo-auth-session', () => ({
   makeRedirectUri: jest.fn(() => 'forja://auth/callback'),
@@ -27,6 +30,7 @@ describe('authStore', () => {
       remoteTokens: null,
       isLoading: true,
     })
+    clearMockStorage()
   })
 
   it('initializes without Supabase session lookup', async () => {
@@ -110,6 +114,52 @@ describe('authStore', () => {
       }),
     )
     expect(useAuthStore.getState().user?.id).toBe('user-id')
+  })
+
+  it('rehydrates mobile auth session and tokens from MMKV', async () => {
+    jest.resetModules()
+    jest.mock('@/storage/mmkv', () => require('@/storage/__mocks__/mmkv'))
+
+    const { mmkvStateStorage: mockStorage } =
+      require('@/storage/__mocks__/mmkv') as typeof import('@/storage/__mocks__/mmkv')
+
+    mockStorage.setItem(
+      'auth-store',
+      JSON.stringify({
+        state: {
+          user: { id: 'user-id', email: 'user@example.com', name: 'User' },
+          session: {
+            user: { id: 'user-id', email: 'user@example.com', name: 'User' },
+            expiresAt: '2026-01-01T00:15:00.000Z',
+          },
+          remoteTokens: {
+            accessToken: 'access-token',
+            refreshToken: 'refresh-token',
+            expiresAt: '2026-01-01T00:15:00.000Z',
+          },
+        },
+        version: 1,
+      }),
+    )
+
+    const { useAuthStore: freshStore } =
+      require('@/stores/authStore') as typeof import('@/stores/authStore')
+
+    await new Promise<void>((resolve) => {
+      if (freshStore.persist.hasHydrated()) {
+        resolve()
+        return
+      }
+      const unsubscribe = freshStore.persist.onFinishHydration(() => {
+        unsubscribe()
+        resolve()
+      })
+    })
+
+    expect(freshStore.getState().user?.email).toBe('user@example.com')
+    expect(freshStore.getState().remoteTokens?.accessToken).toBe('access-token')
+    expect(freshStore.getState().session?.expiresAt).toBe('2026-01-01T00:15:00.000Z')
+    expect(freshStore.getState().isLoading).toBe(true)
   })
 
   it('signs out through the Next logout endpoint and clears local auth state', async () => {
