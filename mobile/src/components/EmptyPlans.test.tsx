@@ -50,17 +50,9 @@ describe('EmptyPlans', () => {
     expect(screen.getByLabelText('Criar primeiro plano de treino')).toBeTruthy()
   })
 
-  it('renders import button', () => {
+  it('does not render the mobile AI import entry point', () => {
     render(<EmptyPlans />)
 
-    expect(screen.getByText('IMPORTAR TREINO')).toBeTruthy()
-  })
-
-  it('navigates to /import/ when import button is pressed', () => {
-    render(<EmptyPlans />)
-
-    fireEvent.press(screen.getByText('IMPORTAR TREINO'))
-
-    expect(mockPush).toHaveBeenCalledWith('/import')
+    expect(screen.queryByText('IMPORTAR TREINO')).toBeNull()
   })
 })

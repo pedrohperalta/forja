@@ -1,39 +1,5 @@
-/**
- * importApi tests — TDD: tests first, implementation second.
- *
- * Tests extractWorkout: success, 422 error, network error,
- * Zod validation failure, and category normalization.
- */
+import { extractWorkout, normalizeExtractedWorkout } from '@/services/importApi'
 
-import { extractWorkout } from '@/services/importApi'
-
-jest.mock('expo-image-manipulator', () => ({
-  ImageManipulator: {
-    manipulate: jest.fn(() => ({
-      resize: jest.fn(() => ({
-        renderAsync: jest.fn(async () => ({
-          saveAsync: jest.fn(async () => ({ uri: 'file:///compressed.jpg' })),
-        })),
-      })),
-    })),
-  },
-  SaveFormat: {
-    JPEG: 'jpeg',
-  },
-}))
-
-// Mock expo-file-system
-jest.mock('expo-file-system', () => ({
-  File: jest.fn().mockImplementation(() => ({
-    base64: jest.fn(async () => 'base64-image-data'),
-  })),
-}))
-
-// Mock environment variables
-process.env.EXPO_PUBLIC_SUPABASE_URL = 'https://test.supabase.co'
-process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY = 'test-anon-key'
-
-// Mock global fetch
 const mockFetch = jest.fn()
 global.fetch = mockFetch
 
@@ -57,132 +23,85 @@ const validResponse = {
 describe('extractWorkout', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    delete process.env.EXPO_PUBLIC_SUPABASE_URL
+    delete process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY
   })
 
-  it('returns extracted workout on success', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => validResponse,
-    })
-
-    const result = await extractWorkout('file:///photo.jpg', 'A')
-
-    expect(result.name).toBe('Treino de Peito')
-    expect(result.exercises).toHaveLength(1)
-    expect(result.exercises[0]?.name).toBe('Supino Reto')
-  })
-
-  it('sends correct request to Supabase edge function', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => validResponse,
-    })
-
-    await extractWorkout('file:///photo.jpg', 'A')
-
-    expect(mockFetch).toHaveBeenCalledWith(
-      'https://test.supabase.co/functions/v1/extract-workout',
-      expect.objectContaining({
-        method: 'POST',
-        headers: expect.objectContaining({
-          'Content-Type': 'application/json',
-          Authorization: 'Bearer test-anon-key',
-        }),
-        body: expect.stringContaining('base64-image-data'),
-      }),
-    )
-  })
-
-  it('throws on 422 error', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: false,
-      status: 422,
-      json: async () => ({ error: 'Could not extract workout' }),
-    })
-
+  it('is disabled on mobile and performs no network request', async () => {
     await expect(extractWorkout('file:///photo.jpg', 'A')).rejects.toThrow(
-      'Could not extract workout',
+      'Importação por IA está disponível apenas no admin web.',
     )
+
+    expect(mockFetch).not.toHaveBeenCalled()
   })
 
-  it('throws on network error', async () => {
-    mockFetch.mockRejectedValueOnce(new Error('Network request failed'))
-
-    await expect(extractWorkout('file:///photo.jpg', 'A')).rejects.toThrow('Network request failed')
-  })
-
-  it('throws on Zod validation failure', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ workout: { name: 'Bad', exercises: [] } }),
-    })
+  it('does not call the Supabase Edge Function runtime path', async () => {
+    process.env.EXPO_PUBLIC_SUPABASE_URL = 'https://test.supabase.co'
+    process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY = 'test-anon-key'
 
     await expect(extractWorkout('file:///photo.jpg', 'A')).rejects.toThrow()
+
+    expect(mockFetch).not.toHaveBeenCalledWith(
+      'https://test.supabase.co/functions/v1/extract-workout',
+      expect.anything(),
+    )
   })
 
-  describe('category normalization', () => {
-    it('passes through valid Portuguese categories', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => validResponse,
-      })
+  it('does not call a mobile import endpoint', async () => {
+    await expect(extractWorkout('file:///photo.jpg', 'A')).rejects.toThrow()
 
-      const result = await extractWorkout('file:///photo.jpg', 'A')
-      expect(result.exercises[0]?.category).toBe('Peito')
+    expect(JSON.stringify(mockFetch.mock.calls)).not.toContain(
+      '/api/mobile/v1/import/extract-workout',
+    )
+  })
+})
+
+describe('normalizeExtractedWorkout', () => {
+  it('passes through valid Portuguese categories', () => {
+    const result = normalizeExtractedWorkout(validResponse)
+
+    expect(result.exercises[0]?.category).toBe('Peito')
+  })
+
+  it('maps English categories to Portuguese', () => {
+    const result = normalizeExtractedWorkout({
+      workout: {
+        name: 'Chest Day',
+        exercises: [
+          {
+            name: 'Bench Press',
+            category: 'Chest',
+            sets: 3,
+            reps: '10-12',
+            restSeconds: 60,
+            equipment: 'Barbell',
+            confidence: 0.9,
+          },
+        ],
+      },
     })
 
-    it('maps English categories to Portuguese', async () => {
-      const response = {
-        workout: {
-          name: 'Chest Day',
-          exercises: [
-            {
-              name: 'Bench Press',
-              category: 'Chest',
-              sets: 3,
-              reps: '10-12',
-              restSeconds: 60,
-              equipment: 'Barbell',
-              confidence: 0.9,
-            },
-          ],
-        },
-      }
+    expect(result.exercises[0]?.category).toBe('Peito')
+  })
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => response,
-      })
-
-      const result = await extractWorkout('file:///photo.jpg', 'A')
-      expect(result.exercises[0]?.category).toBe('Peito')
+  it('defaults unknown categories to Corpo Inteiro', () => {
+    const result = normalizeExtractedWorkout({
+      workout: {
+        name: 'Unknown Day',
+        exercises: [
+          {
+            name: 'Something',
+            category: 'UnknownMuscle',
+            sets: 3,
+            reps: '10-12',
+            restSeconds: 60,
+            equipment: 'None',
+            confidence: 0.5,
+          },
+        ],
+      },
     })
 
-    it('defaults unknown categories to Corpo Inteiro', async () => {
-      const response = {
-        workout: {
-          name: 'Unknown Day',
-          exercises: [
-            {
-              name: 'Something',
-              category: 'UnknownMuscle',
-              sets: 3,
-              reps: '10-12',
-              restSeconds: 60,
-              equipment: 'None',
-              confidence: 0.5,
-            },
-          ],
-        },
-      }
-
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => response,
-      })
-
-      const result = await extractWorkout('file:///photo.jpg', 'A')
-      expect(result.exercises[0]?.category).toBe('Corpo Inteiro')
-    })
+    expect(result.exercises[0]?.category).toBe('Corpo Inteiro')
   })
 })

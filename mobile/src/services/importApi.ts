@@ -1,12 +1,10 @@
-import { File } from 'expo-file-system'
-import { ImageManipulator, SaveFormat } from 'expo-image-manipulator'
 import { ExtractWorkoutResponseSchema } from '@/schemas/import'
 import { MUSCLE_CATEGORIES } from '@/constants/categories'
 import type { ExtractedWorkout } from '@/types'
 
-/** Maps English and accent-stripped category names to MUSCLE_CATEGORIES entries. */
+const DISABLED_IMPORT_MESSAGE = 'Importação por IA está disponível apenas no admin web.'
+
 const CATEGORY_MAP: Record<string, string> = {
-  // English → Portuguese
   Chest: 'Peito',
   Back: 'Costas',
   Shoulders: 'Ombros',
@@ -19,64 +17,62 @@ const CATEGORY_MAP: Record<string, string> = {
   Glutes: 'Glúteos',
   Calves: 'Panturrilha',
   'Full Body': 'Corpo Inteiro',
-  // Accent-stripped variants
   Antebraco: 'Antebraço',
   Abdomen: 'Abdômen',
   Quadriceps: 'Quadríceps',
   Gluteos: 'Glúteos',
 }
 
-/** Valid categories set for fast lookup. */
 const VALID_CATEGORIES = new Set<string>(MUSCLE_CATEGORIES)
 
-/** Normalizes a category string to a valid MUSCLE_CATEGORIES entry. */
-function normalizeCategory(category: string): string {
-  if (VALID_CATEGORIES.has(category)) return category
-  const mapped = CATEGORY_MAP[category]
-  if (mapped) return mapped
-  return 'Corpo Inteiro'
+export async function extractWorkout(
+  _imageUri: string,
+  _label: string,
+): Promise<ExtractedWorkout> {
+  throw new Error(DISABLED_IMPORT_MESSAGE)
 }
 
-/**
- * Calls the Supabase Edge Function to extract a workout from a photo.
- *
- * Reads the image URI as base64, sends it to the edge function,
- * normalizes categories, and validates the response with Zod.
- */
-export async function extractWorkout(imageUri: string, label: string): Promise<ExtractedWorkout> {
-  // Compress image to stay under Claude's 5MB base64 limit
-  const compressed = await ImageManipulator.manipulate(imageUri)
-    .resize({ width: 1536 })
-    .renderAsync()
-  const saved = await compressed.saveAsync({ format: SaveFormat.JPEG, compress: 0.7 })
-
-  const file = new File(saved.uri)
-  const base64 = await file.base64()
-
-  const url = `${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1/extract-workout`
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY}`,
-    },
-    body: JSON.stringify({ image: base64, label }),
-  })
-
-  if (!response.ok) {
-    const errorBody = await response.json()
-    throw new Error(errorBody.error ?? `HTTP ${response.status}`)
-  }
-
-  const json = await response.json()
-
-  // Normalize categories before Zod validation
-  if (json.workout?.exercises) {
-    for (const exercise of json.workout.exercises) {
+export function normalizeExtractedWorkout(response: unknown): ExtractedWorkout {
+  if (isImportResponseCandidate(response)) {
+    for (const exercise of response.workout.exercises) {
       exercise.category = normalizeCategory(exercise.category)
     }
   }
 
-  const parsed = ExtractWorkoutResponseSchema.parse(json)
+  const parsed = ExtractWorkoutResponseSchema.parse(response)
   return parsed.workout
+}
+
+function normalizeCategory(category: string): string {
+  if (VALID_CATEGORIES.has(category)) {
+    return category
+  }
+
+  return CATEGORY_MAP[category] ?? 'Corpo Inteiro'
+}
+
+function isImportResponseCandidate(
+  response: unknown,
+): response is { workout: { exercises: { category: string }[] } } {
+  if (typeof response !== 'object' || response === null || !('workout' in response)) {
+    return false
+  }
+
+  const workout = response.workout
+  if (
+    typeof workout !== 'object' ||
+    workout === null ||
+    !('exercises' in workout) ||
+    !Array.isArray(workout.exercises)
+  ) {
+    return false
+  }
+
+  return workout.exercises.every(
+    (exercise) =>
+      typeof exercise === 'object' &&
+      exercise !== null &&
+      'category' in exercise &&
+      typeof exercise.category === 'string',
+  )
 }

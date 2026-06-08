@@ -148,21 +148,11 @@ describe('PlansScreen', () => {
     expect(screen.getByText('MEUS PLANOS')).toBeTruthy()
   })
 
-  it('renders import button', () => {
+  it('does not render the mobile AI import entry point', () => {
     setupMocks()
 
     render(<PlansScreen />)
 
-    expect(screen.getByText('IMPORTAR TREINO')).toBeTruthy()
-  })
-
-  it('navigates to /import/ when import button is pressed', () => {
-    setupMocks()
-
-    render(<PlansScreen />)
-
-    fireEvent.press(screen.getByText('IMPORTAR TREINO'))
-
-    expect(mockPush).toHaveBeenCalledWith('/import')
+    expect(screen.queryByText('IMPORTAR TREINO')).toBeNull()
   })
 })

@@ -122,15 +122,6 @@ export default function PlansScreen(): React.JSX.Element {
             NOVO PLANO
           </Text>
         </Pressable>
-        <Pressable
-          accessibilityRole="button"
-          onPress={() => router.push('/import')}
-          className="mt-3 h-[46px] items-center justify-center rounded-pill border border-border-med"
-        >
-          <Text className="font-ui text-[12px] uppercase tracking-[2px] text-text-med">
-            IMPORTAR TREINO
-          </Text>
-        </Pressable>
       </View>
     </View>
   )
