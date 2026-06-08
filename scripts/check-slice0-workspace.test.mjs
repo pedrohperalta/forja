@@ -38,8 +38,14 @@ test('future workspaces have reserved package names', () => {
 test('root scripts target the mobile workspace checks', () => {
   const rootPackage = readJson('package.json')
 
-  assert.equal(rootPackage.scripts.test, 'pnpm --filter @forja/mobile test')
-  assert.equal(rootPackage.scripts.typecheck, 'pnpm --filter @forja/mobile typecheck')
+  assert.equal(
+    rootPackage.scripts.test,
+    'pnpm --filter @forja/mobile test && pnpm --filter @forja/domain test && pnpm --filter @forja/web test',
+  )
+  assert.equal(
+    rootPackage.scripts.typecheck,
+    'pnpm --filter @forja/mobile typecheck && pnpm --filter @forja/domain typecheck && pnpm --filter @forja/web typecheck',
+  )
   assert.equal(rootPackage.scripts.lint, 'pnpm --filter @forja/mobile lint')
 })
 

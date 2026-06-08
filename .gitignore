@@ -5,6 +5,7 @@ node_modules/
 
 # Expo
 .expo/
+.next/
 dist/
 web-build/
 expo-env.d.ts
@@ -12,6 +13,7 @@ mobile/.expo/
 mobile/dist/
 mobile/web-build/
 mobile/expo-env.d.ts
+web/.next/
 
 # Native
 .kotlin/

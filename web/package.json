@@ -1,5 +1,31 @@
 {
   "name": "@forja/web",
   "version": "1.0.0",
-  "private": true
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "test": "vitest run --exclude \"src/server/**/*.integration.test.ts\"",
+    "test:db": "find src/server -name '*.integration.test.ts' -print0 | xargs -0 vitest run --maxWorkers 1",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@forja/domain": "workspace:*",
+    "drizzle-orm": "^0.45.2",
+    "next": "^16.0.7",
+    "postgres": "^3.4.9",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "zod": "^4.1.13"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "drizzle-kit": "^0.31.10",
+    "typescript": "^5.8.0",
+    "vitest": "^4.0.14"
+  }
 }
