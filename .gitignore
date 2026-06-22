@@ -39,6 +39,9 @@ yarn-error.*
 # local env files
 .env
 .env*.local
+web/.env
+web/.env.local
+web/.uploads/
 deploy/forja/.env
 
 # local migration exports

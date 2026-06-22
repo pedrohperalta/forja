@@ -8,6 +8,7 @@ import {
 
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024
 const ANTHROPIC_MESSAGES_URL = 'https://api.anthropic.com/v1/messages'
+const SUPPORTED_IMAGE_MEDIA_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'] as const
 
 const ImportEnvSchema = z.object({
   ANTHROPIC_API_KEY: z.string().min(1),
@@ -24,6 +25,7 @@ const AnthropicResponseSchema = z.object({
 })
 
 export type ImportEnv = z.infer<typeof ImportEnvSchema>
+type SupportedImageMediaType = (typeof SUPPORTED_IMAGE_MEDIA_TYPES)[number]
 
 export class ImportServiceError extends Error {
   constructor(
@@ -42,12 +44,11 @@ export class ImportServiceError extends Error {
 export type ExtractWorkoutInput = {
   image: string
   label: string
+  mediaType?: SupportedImageMediaType
   env: ImportEnv
 }
 
-export function readImportEnv(
-  env: NodeJS.ProcessEnv = process.env,
-): ImportEnv {
+export function readImportEnv(env: NodeJS.ProcessEnv = process.env): ImportEnv {
   const result = ImportEnvSchema.safeParse(env)
 
   if (!result.success) {
@@ -61,7 +62,7 @@ export async function extractWorkoutFromImage(
   input: ExtractWorkoutInput,
 ): Promise<AdminImportExtractWorkoutResponse> {
   const imageBytes = decodeBase64Image(input.image)
-  validateJpegImage(imageBytes)
+  const mediaType = getSupportedImageMediaType(imageBytes, input.mediaType)
 
   const response = await fetch(ANTHROPIC_MESSAGES_URL, {
     method: 'POST',
@@ -81,7 +82,7 @@ export async function extractWorkoutFromImage(
               type: 'image',
               source: {
                 type: 'base64',
-                media_type: 'image/jpeg',
+                media_type: mediaType,
                 data: stripDataUrl(input.image),
               },
             },
@@ -104,9 +105,7 @@ export async function extractWorkoutFromImage(
     throw new ImportServiceError('Model output is invalid', 'model_output_invalid')
   }
 
-  return parseModelOutput(
-    anthropicBody.data.content.map((block) => block.text).join('\n'),
-  )
+  return parseModelOutput(anthropicBody.data.content.map((block) => block.text).join('\n'))
 }
 
 function decodeBase64Image(image: string): Uint8Array {
@@ -122,22 +121,64 @@ function decodeBase64Image(image: string): Uint8Array {
   }
 
   if (bytes.length > MAX_IMAGE_BYTES) {
-    throw new ImportServiceError(
-      'Image must be 5 MB or smaller',
-      'upload_too_large',
-    )
+    throw new ImportServiceError('Image must be 5 MB or smaller', 'upload_too_large')
   }
 
   return new Uint8Array(bytes)
 }
 
-function validateJpegImage(bytes: Uint8Array): void {
-  if (bytes[0] !== 0xff || bytes[1] !== 0xd8 || bytes[2] !== 0xff) {
+function getSupportedImageMediaType(
+  bytes: Uint8Array,
+  requestedMediaType: SupportedImageMediaType = 'image/jpeg',
+): SupportedImageMediaType {
+  const detectedMediaType = detectImageMediaType(bytes)
+
+  if (!detectedMediaType) {
     throw new ImportServiceError(
-      'Only JPEG images are supported',
+      'Supported image formats are JPEG, PNG, GIF, or WebP',
       'unsupported_media_type',
     )
   }
+
+  return detectedMediaType ?? requestedMediaType
+}
+
+function detectImageMediaType(bytes: Uint8Array): SupportedImageMediaType | null {
+  if (bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) {
+    return 'image/jpeg'
+  }
+
+  if (
+    bytes[0] === 0x89 &&
+    bytes[1] === 0x50 &&
+    bytes[2] === 0x4e &&
+    bytes[3] === 0x47 &&
+    bytes[4] === 0x0d &&
+    bytes[5] === 0x0a &&
+    bytes[6] === 0x1a &&
+    bytes[7] === 0x0a
+  ) {
+    return 'image/png'
+  }
+
+  if (bytes[0] === 0x47 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x38) {
+    return 'image/gif'
+  }
+
+  if (
+    bytes[0] === 0x52 &&
+    bytes[1] === 0x49 &&
+    bytes[2] === 0x46 &&
+    bytes[3] === 0x46 &&
+    bytes[8] === 0x57 &&
+    bytes[9] === 0x45 &&
+    bytes[10] === 0x42 &&
+    bytes[11] === 0x50
+  ) {
+    return 'image/webp'
+  }
+
+  return null
 }
 
 function stripDataUrl(image: string): string {
@@ -151,7 +192,7 @@ function parseModelOutput(text: string): AdminImportExtractWorkoutResponse {
   const trimmed = stripMarkdownFence(text)
 
   try {
-    const normalized = normalizeCategories(JSON.parse(trimmed) as unknown)
+    const normalized = normalizeModelOutput(JSON.parse(trimmed) as unknown)
     const parsed = AdminImportExtractWorkoutResponseSchema.safeParse(normalized)
 
     if (!parsed.success) {
@@ -175,7 +216,7 @@ function stripMarkdownFence(text: string): string {
   return match?.[1] ?? trimmed
 }
 
-function normalizeCategories(value: unknown): unknown {
+function normalizeModelOutput(value: unknown): unknown {
   if (!isRecord(value)) {
     return value
   }
@@ -190,24 +231,47 @@ function normalizeCategories(value: unknown): unknown {
     workout: {
       ...workout,
       exercises: workout.exercises.map((exercise) => {
-        if (!isRecord(exercise) || typeof exercise.category !== 'string') {
+        if (!isRecord(exercise)) {
           return exercise
         }
 
         return {
           ...exercise,
-          category: normalizeCategory(exercise.category),
+          category:
+            typeof exercise.category === 'string'
+              ? normalizeCategory(exercise.category)
+              : exercise.category,
+          sets: normalizeSets(exercise.sets),
         }
       }),
     },
   }
 }
 
+function normalizeSets(sets: unknown): unknown {
+  if (typeof sets === 'number') {
+    return sets
+  }
+
+  if (typeof sets !== 'string') {
+    return sets
+  }
+
+  const values = sets
+    .match(/\d+/g)
+    ?.map((value) => Number(value))
+    .filter((value) => Number.isInteger(value) && value > 0)
+
+  if (!values?.length) {
+    return sets
+  }
+
+  return Math.max(...values)
+}
+
 function normalizeCategory(category: string): string {
   const normalized = normalizeText(category)
-  const canonical = MUSCLE_CATEGORIES.find(
-    (candidate) => normalizeText(candidate) === normalized,
-  )
+  const canonical = MUSCLE_CATEGORIES.find((candidate) => normalizeText(candidate) === normalized)
 
   return canonical ?? category
 }
@@ -222,9 +286,10 @@ function normalizeText(value: string): string {
 
 function importPrompt(label: string): string {
   return [
-    `Extract the workout plan from the uploaded JPEG image for "${label}".`,
+    `Extract the workout plan from the uploaded image for "${label}".`,
     'Return only JSON with this exact shape:',
     '{"workout":{"name":"string","exercises":[{"name":"string","category":"Peito","sets":3,"reps":"10-12","restSeconds":60,"equipment":"string","confidence":0.9}]}}',
+    'If sets/series is a range like 2-3, use the highest value as the numeric sets field, e.g. 3.',
     `Allowed categories: ${MUSCLE_CATEGORIES.join(', ')}.`,
   ].join('\n')
 }

@@ -1,16 +1,9 @@
 import { AdminImportExtractWorkoutRequestSchema } from '@forja/domain'
 
-import {
-  ADMIN_SESSION_COOKIE,
-  getAdminUserFromSessionToken,
-} from '@/server/auth/adminAuth'
+import { ADMIN_SESSION_COOKIE, getAdminUserFromSessionToken } from '@/server/auth/adminAuth'
 import { getDatabase } from '@/server/db/client'
 import { readServerEnv } from '@/server/env'
-import {
-  errorResponse,
-  jsonWithRequestId,
-  requestId,
-} from '@/server/http/responses'
+import { errorResponse, jsonWithRequestId, requestId } from '@/server/http/responses'
 import { createImportJob } from '@/server/repositories'
 import {
   extractWorkoutFromImage,
@@ -20,6 +13,7 @@ import {
 
 export async function POST(request: Request): Promise<Response> {
   const id = requestId(request.headers)
+  const shouldRedirectOnImportResult = shouldRedirectBrowserImport(request)
   const db = getDatabase()
   const admin = await getAdminUserFromSessionToken({
     db,
@@ -29,6 +23,10 @@ export async function POST(request: Request): Promise<Response> {
   })
 
   if (!admin) {
+    if (shouldRedirectOnImportResult || wantsHtmlResponse(request)) {
+      return redirectWithRequestId(new URL('/admin/login', request.url), id)
+    }
+
     return errorResponse('unauthenticated', 'Unauthenticated', 401, id)
   }
 
@@ -36,12 +34,17 @@ export async function POST(request: Request): Promise<Response> {
   const parsed = AdminImportExtractWorkoutRequestSchema.safeParse(body)
 
   if (!parsed.success) {
+    if (shouldRedirectOnImportResult) {
+      return redirectToImportError(request.url, 'invalid_request', id)
+    }
+
     return errorResponse('invalid_request', 'Invalid import request', 400, id)
   }
 
   try {
     const result = await extractWorkoutFromImage({
       ...parsed.data,
+      mediaType: getRequestBodyMediaType(body),
       env: readImportEnv(),
     })
 
@@ -52,6 +55,10 @@ export async function POST(request: Request): Promise<Response> {
       completedAt: new Date(),
       now: new Date(),
     })
+
+    if (shouldRedirectOnImportResult) {
+      return redirectToImportNotice(request.url, 'extraction_finished', id)
+    }
 
     return jsonWithRequestId(result, 200, id)
   } catch (error) {
@@ -65,11 +72,54 @@ export async function POST(request: Request): Promise<Response> {
         now: new Date(),
       })
 
+      if (shouldRedirectOnImportResult) {
+        return redirectToImportError(request.url, error.code, id)
+      }
+
       return importErrorResponse(error, id)
     }
 
     return errorResponse('internal_error', 'Import failed', 500, id)
   }
+}
+
+function isMultipartFormSubmission(request: Request): boolean {
+  return (request.headers.get('content-type') ?? '').includes('multipart/form-data')
+}
+
+function wantsHtmlResponse(request: Request): boolean {
+  return (request.headers.get('accept') ?? '').includes('text/html')
+}
+
+function wantsJsonResponse(request: Request): boolean {
+  return (request.headers.get('accept') ?? '').includes('application/json')
+}
+
+function shouldRedirectBrowserImport(request: Request): boolean {
+  return wantsHtmlResponse(request) || (isMultipartFormSubmission(request) && !wantsJsonResponse(request))
+}
+
+function redirectToImportError(requestUrl: string, errorCode: string, id?: string): Response {
+  const url = new URL('/admin/import', requestUrl)
+  url.searchParams.set('error', errorCode)
+
+  return redirectWithRequestId(url, id)
+}
+
+function redirectToImportNotice(requestUrl: string, noticeCode: string, id: string): Response {
+  const url = new URL('/admin/import', requestUrl)
+  url.searchParams.set('notice', noticeCode)
+
+  return redirectWithRequestId(url, id)
+}
+
+function redirectWithRequestId(url: URL, id?: string): Response {
+  const headers = new Headers({ location: url.toString() })
+  if (id) {
+    headers.set('x-request-id', id)
+  }
+
+  return new Response(null, { headers, status: 303 })
 }
 
 async function readRequestBody(request: Request): Promise<unknown> {
@@ -87,10 +137,38 @@ async function readRequestBody(request: Request): Promise<unknown> {
     return {
       image: Buffer.from(await image.arrayBuffer()).toString('base64'),
       label,
+      mediaType: getSupportedMediaType(image.type),
     }
   }
 
   return request.json()
+}
+
+function getSupportedMediaType(
+  mediaType: string,
+): 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp' {
+  if (
+    mediaType === 'image/jpeg' ||
+    mediaType === 'image/png' ||
+    mediaType === 'image/gif' ||
+    mediaType === 'image/webp'
+  ) {
+    return mediaType
+  }
+
+  return 'image/jpeg'
+}
+
+function getRequestBodyMediaType(
+  body: unknown,
+): 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp' {
+  if (typeof body !== 'object' || body === null || !('mediaType' in body)) {
+    return 'image/jpeg'
+  }
+
+  const mediaType = body.mediaType
+
+  return typeof mediaType === 'string' ? getSupportedMediaType(mediaType) : 'image/jpeg'
 }
 
 function getCookieValue(headers: Headers, name: string): string | null {

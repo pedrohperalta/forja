@@ -1,3 +1,5 @@
+import { join } from 'node:path'
+
 import {
   EquipmentPhotoListResponseSchema,
   EquipmentPhotoUploadResponseSchema,
@@ -59,7 +61,7 @@ export class PhotoServiceError extends Error {
 }
 
 export function getUploadsDir(): string {
-  return process.env.UPLOADS_DIR ?? '/data/uploads'
+  return process.env.UPLOADS_DIR || join(process.cwd(), '.uploads')
 }
 
 export async function uploadEquipmentPhoto(

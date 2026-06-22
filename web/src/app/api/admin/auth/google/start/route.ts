@@ -21,6 +21,16 @@ export async function GET(request: Request): Promise<Response> {
 
     return response
   } catch (error) {
+    if (wantsHtmlResponse(request)) {
+      const response = NextResponse.redirect(
+        new URL('/admin/login?error=oauth_start_failed', request.url),
+        { status: 303 },
+      )
+      response.headers.set('x-request-id', id)
+
+      return response
+    }
+
     return errorResponse(
       'invalid_request',
       error instanceof Error ? error.message : 'Invalid request',
@@ -28,4 +38,8 @@ export async function GET(request: Request): Promise<Response> {
       id,
     )
   }
+}
+
+function wantsHtmlResponse(request: Request): boolean {
+  return (request.headers.get('accept') ?? '').includes('text/html')
 }

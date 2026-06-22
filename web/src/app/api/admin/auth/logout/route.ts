@@ -24,7 +24,9 @@ export async function POST(request: Request): Promise<Response> {
     now: new Date(),
   })
 
-  const response = NextResponse.json({ ok: true })
+  const response = wantsHtmlResponse(request)
+    ? NextResponse.redirect(new URL('/admin/login', request.url), { status: 303 })
+    : NextResponse.json({ ok: true })
   response.headers.set('x-request-id', id)
   response.cookies.set(ADMIN_SESSION_COOKIE, '', {
     httpOnly: true,
@@ -35,4 +37,8 @@ export async function POST(request: Request): Promise<Response> {
   })
 
   return response
+}
+
+function wantsHtmlResponse(request: Request): boolean {
+  return (request.headers.get('accept') ?? '').includes('text/html')
 }

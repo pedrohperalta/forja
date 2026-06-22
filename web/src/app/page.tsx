@@ -1,5 +1,5 @@
-import { createElement, type ReactElement } from 'react'
+import { redirect } from 'next/navigation'
 
-export default function HomePage(): ReactElement {
-  return createElement('main', null, createElement('h1', null, 'Forja'))
+export default function HomePage(): never {
+  redirect('/admin')
 }

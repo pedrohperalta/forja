@@ -10,11 +10,13 @@ import { createUser } from '../../repositories'
 import {
   archivePlan,
   createDraftPlan,
+  deletePlanPermanently,
   getAdminPlan,
   getLatestPublishedPlanRevision,
   listAdminPlans,
   publishDraftPlan,
   reorderDraftExercises,
+  restoreArchivedPlan,
   updateDraftExercise,
   updateDraftPlanDetails,
 } from './planService'
@@ -244,6 +246,85 @@ describe('plan service', () => {
     expect(archived.deletedAt.toISOString()).toBe(LATER.toISOString())
     expect(plan?.archived).toBe(true)
     expect(plan?.tombstone?.deletedAt.toISOString()).toBe(LATER.toISOString())
+  })
+
+  it('permanently deletes a plan and removes it from admin views', async () => {
+    await createDraftPlan(db, {
+      userId: USER_ID,
+      planId: 'plan_delete',
+      label: 'DEL',
+      name: 'Treino para excluir',
+      focus: 'Costas',
+      exercises: [firstExercise],
+      now: NOW,
+    })
+    await publishDraftPlan(db, {
+      userId: USER_ID,
+      planId: 'plan_delete',
+      now: NOW,
+    })
+    await archivePlan(db, {
+      userId: USER_ID,
+      planId: 'plan_delete',
+      now: LATER,
+    })
+
+    const deleted = await deletePlanPermanently(db, {
+      userId: USER_ID,
+      planId: 'plan_delete',
+    })
+    const detail = await getAdminPlan(db, {
+      userId: USER_ID,
+      planId: 'plan_delete',
+    })
+    const plans = await listAdminPlans(db, {
+      userId: USER_ID,
+      includeArchived: true,
+    })
+
+    expect(deleted.id).toBe('plan_delete')
+    expect(detail).toBeNull()
+    expect(plans.map((plan) => plan.plan.id)).not.toContain('plan_delete')
+  })
+
+  it('restores an archived plan for editing and requires a new publication', async () => {
+    await createDraftPlan(db, {
+      userId: USER_ID,
+      planId: 'plan_restore',
+      label: 'R',
+      name: 'Treino para restaurar',
+      focus: 'Peito',
+      exercises: [firstExercise],
+      now: NOW,
+    })
+    await publishDraftPlan(db, {
+      userId: USER_ID,
+      planId: 'plan_restore',
+      now: NOW,
+    })
+    await archivePlan(db, {
+      userId: USER_ID,
+      planId: 'plan_restore',
+      now: LATER,
+    })
+
+    const restored = await restoreArchivedPlan(db, {
+      userId: USER_ID,
+      planId: 'plan_restore',
+      now: new Date('2026-05-18T14:00:00.000Z'),
+    })
+    const detail = await getAdminPlan(db, {
+      userId: USER_ID,
+      planId: 'plan_restore',
+    })
+    const activePlans = await listAdminPlans(db, { userId: USER_ID })
+
+    expect(restored.archivedAt).toBeNull()
+    expect(detail?.archived).toBe(false)
+    expect(detail?.tombstone).toBeNull()
+    expect(detail?.draft?.data.updatedAt).toBe('2026-05-18T14:00:00.000Z')
+    expect(detail?.latestRevision?.data.updatedAt).toBe(NOW.toISOString())
+    expect(activePlans.map((plan) => plan.plan.id)).toContain('plan_restore')
   })
 
   it('rejects invalid plan data through domain validation', async () => {

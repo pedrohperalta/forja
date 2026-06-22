@@ -440,6 +440,52 @@ export async function findPlanById(
   return plan ?? null
 }
 
+export async function deletePlanById(
+  db: Database,
+  userId: string,
+  planId: string,
+): Promise<PlanRow | null> {
+  const [plan] = await db
+    .delete(schema.plans)
+    .where(and(eq(schema.plans.userId, userId), eq(schema.plans.id, planId)))
+    .returning()
+
+  return plan ?? null
+}
+
+export async function restorePlanById(
+  db: Database,
+  userId: string,
+  planId: string,
+  restoredAt: Date,
+): Promise<PlanRow | null> {
+  const [plan] = await db
+    .update(schema.plans)
+    .set({ archivedAt: null, updatedAt: restoredAt })
+    .where(and(eq(schema.plans.userId, userId), eq(schema.plans.id, planId)))
+    .returning()
+
+  return plan ?? null
+}
+
+export async function deletePlanTombstone(
+  db: Database,
+  userId: string,
+  planId: string,
+): Promise<PlanTombstoneRow | null> {
+  const [tombstone] = await db
+    .delete(schema.planTombstones)
+    .where(
+      and(
+        eq(schema.planTombstones.userId, userId),
+        eq(schema.planTombstones.planId, planId),
+      ),
+    )
+    .returning()
+
+  return tombstone ?? null
+}
+
 export async function findPlanDraft(
   db: Database,
   userId: string,

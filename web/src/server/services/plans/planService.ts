@@ -7,12 +7,15 @@ import {
 import {
   createPlanDraft,
   createPlanTombstone,
+  deletePlanById,
+  deletePlanTombstone,
   findLatestPlanRevision,
   findPlanById,
   findPlanDraft,
   findPlanTombstone,
   listPlansByUser,
   publishPlanRevision,
+  restorePlanById,
   updatePlanDraft,
   type Database,
   type PlanDraftRow,
@@ -76,6 +79,12 @@ export type ArchivePlanInput = {
   now: Date
 }
 
+export type RestoreArchivedPlanInput = {
+  userId: string
+  planId: string
+  now: Date
+}
+
 export type PlanLookupInput = {
   userId: string
   planId: string
@@ -98,6 +107,7 @@ export type AdminPlanDetail = {
   plan: PlanRow
   draft: PlanDraftRow | null
   latestRevisionNumber: number | null
+  latestRevision: Pick<PlanRevisionRow, 'revisionNumber' | 'data'> | null
   archived: boolean
   tombstone: PlanTombstoneRow | null
 }
@@ -256,6 +266,50 @@ export async function archivePlan(
   })
 }
 
+export async function deletePlanPermanently(
+  db: Database,
+  input: PlanLookupInput,
+): Promise<PlanRow> {
+  const plan = await deletePlanById(db, input.userId, input.planId)
+
+  if (!plan) {
+    throw new Error('Plan not found')
+  }
+
+  return plan
+}
+
+export async function restoreArchivedPlan(
+  db: Database,
+  input: RestoreArchivedPlanInput,
+): Promise<PlanRow> {
+  const plan = await restorePlanById(db, input.userId, input.planId, input.now)
+
+  if (!plan) {
+    throw new Error('Plan not found')
+  }
+
+  await deletePlanTombstone(db, input.userId, input.planId)
+
+  const draft = await findPlanDraft(db, input.userId, input.planId)
+  if (draft) {
+    const data = PlanSchema.parse({
+      ...draft.data,
+      updatedAt: input.now.toISOString(),
+    })
+
+    await updatePlanDraft(db, {
+      planId: input.planId,
+      userId: input.userId,
+      label: draft.data.label,
+      data,
+      now: input.now,
+    })
+  }
+
+  return plan
+}
+
 export async function listAdminPlans(
   db: Database,
   input: ListAdminPlansInput,
@@ -302,6 +356,12 @@ export async function getAdminPlan(
     plan,
     draft,
     latestRevisionNumber: latestRevision?.revisionNumber ?? null,
+    latestRevision: latestRevision
+      ? {
+          revisionNumber: latestRevision.revisionNumber,
+          data: latestRevision.data,
+        }
+      : null,
     archived: plan.archivedAt !== null,
     tombstone,
   }
