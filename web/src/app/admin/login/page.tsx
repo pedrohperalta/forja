@@ -3,11 +3,9 @@ import type { ReactElement } from 'react'
 export default function AdminLoginPage(): ReactElement {
   return (
     <main className="admin-login-page">
-      <div className="admin-login-grid" aria-hidden="true" />
+      <div className="admin-login-rings" aria-hidden="true" />
       <div className="admin-login-glow" aria-hidden="true" />
-      <span className="admin-login-watermark admin-display" aria-hidden="true">
-        FORJA
-      </span>
+      <div className="admin-login-glow admin-login-glow--alt" aria-hidden="true" />
       <section className="admin-login-card">
         <span className="admin-login-bar" aria-hidden="true" />
         <p className="admin-login-eyebrow">
