@@ -2,15 +2,13 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { GET } from './route'
 
+import { invalidCursor, unauthenticated } from '@/server/http/appError'
+
 vi.mock('@/server/auth/defaultService', () => ({
   createDefaultMobileAuthService: () => ({
-    getCurrentMobileUser: async ({
-      authorization,
-    }: {
-      authorization: string | null
-    }) => {
+    getCurrentMobileUser: async ({ authorization }: { authorization: string | null }) => {
       if (authorization !== 'Bearer valid-token') {
-        throw new Error('Unauthenticated')
+        throw unauthenticated('Unauthenticated')
       }
 
       return { id: 'user-id', email: 'user@example.com', name: 'User' }
@@ -45,9 +43,7 @@ describe('GET /api/mobile/v1/sync/pull', () => {
   })
 
   it('returns 401 when unauthenticated', async () => {
-    const response = await GET(
-      new Request('https://forja.example.com/api/mobile/v1/sync/pull'),
-    )
+    const response = await GET(new Request('https://forja.example.com/api/mobile/v1/sync/pull'))
     const body = (await response.json()) as { error: { code: string } }
 
     expect(response.status).toBe(401)
@@ -55,13 +51,12 @@ describe('GET /api/mobile/v1/sync/pull', () => {
   })
 
   it('returns 400 for invalid cursors', async () => {
-    pullPlanChanges.mockRejectedValueOnce(new Error('Invalid cursor'))
+    pullPlanChanges.mockRejectedValueOnce(invalidCursor('Invalid cursor'))
 
     const response = await GET(
-      new Request(
-        'https://forja.example.com/api/mobile/v1/sync/pull?cursor=bad',
-        { headers: { authorization: 'Bearer valid-token' } },
-      ),
+      new Request('https://forja.example.com/api/mobile/v1/sync/pull?cursor=bad', {
+        headers: { authorization: 'Bearer valid-token' },
+      }),
     )
     const body = (await response.json()) as { error: { code: string } }
 

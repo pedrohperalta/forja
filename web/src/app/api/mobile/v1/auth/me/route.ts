@@ -1,5 +1,5 @@
 import { createDefaultMobileAuthService } from '@/server/auth/defaultService'
-import { errorResponse, jsonWithRequestId, requestId } from '@/server/http/responses'
+import { jsonWithRequestId, requestId, toErrorResponse } from '@/server/http/responses'
 
 export async function GET(request: Request): Promise<Response> {
   const id = requestId(request.headers)
@@ -10,7 +10,7 @@ export async function GET(request: Request): Promise<Response> {
     })
 
     return jsonWithRequestId(user, 200, id)
-  } catch {
-    return errorResponse('unauthenticated', 'Unauthenticated', 401, id)
+  } catch (error) {
+    return toErrorResponse(error, id)
   }
 }

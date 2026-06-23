@@ -6,6 +6,7 @@ import {
 } from '../repositories'
 import { hmacSha256, randomOpaqueToken } from './crypto'
 import { signOAuthState } from './oauthState'
+import { badRequest } from '@/server/http/appError'
 
 export const ADMIN_SESSION_COOKIE = 'forja_admin_session'
 
@@ -19,10 +20,7 @@ export type AdminAuthEnv = {
 
 export type StartAdminGoogleOAuthInput = {
   returnTo: string
-  env: Pick<
-    AdminAuthEnv,
-    'FORJA_PUBLIC_URL' | 'GOOGLE_CLIENT_ID' | 'FORJA_OAUTH_STATE_SECRET'
-  >
+  env: Pick<AdminAuthEnv, 'FORJA_PUBLIC_URL' | 'GOOGLE_CLIENT_ID' | 'FORJA_OAUTH_STATE_SECRET'>
   now: Date
   nonce: string
 }
@@ -47,10 +45,7 @@ export function startAdminGoogleOAuth(
   })
   const url = new URL('https://accounts.google.com/o/oauth2/v2/auth')
   url.searchParams.set('client_id', input.env.GOOGLE_CLIENT_ID)
-  url.searchParams.set(
-    'redirect_uri',
-    `${input.env.FORJA_PUBLIC_URL}/api/auth/google/callback`,
-  )
+  url.searchParams.set('redirect_uri', `${input.env.FORJA_PUBLIC_URL}/api/auth/google/callback`)
   url.searchParams.set('response_type', 'code')
   url.searchParams.set('scope', 'openid email profile')
   url.searchParams.set('state', state)
@@ -120,7 +115,7 @@ function resolveAdminRedirect(returnTo: string, publicUrl: string): string {
   const redirect = new URL(returnTo, base)
 
   if (redirect.origin !== base.origin || !redirect.pathname.startsWith('/admin')) {
-    throw new Error('Invalid admin redirect URI')
+    throw badRequest('Invalid admin redirect URI')
   }
 
   return redirect.toString()

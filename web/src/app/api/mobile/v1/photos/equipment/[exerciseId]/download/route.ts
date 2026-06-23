@@ -1,9 +1,6 @@
 import { createDefaultMobileAuthService } from '@/server/auth/defaultService'
 import { getDatabase } from '@/server/db/client'
-import {
-  errorResponse,
-  requestId,
-} from '@/server/http/responses'
+import { errorResponse, requestId, toErrorResponse } from '@/server/http/responses'
 import {
   downloadEquipmentPhoto,
   getUploadsDir,
@@ -15,10 +12,7 @@ type DownloadRouteContext = {
   }>
 }
 
-export async function GET(
-  request: Request,
-  context: DownloadRouteContext,
-): Promise<Response> {
+export async function GET(request: Request, context: DownloadRouteContext): Promise<Response> {
   const id = requestId(request.headers)
 
   try {
@@ -43,14 +37,11 @@ export async function GET(
         'x-request-id': id,
       },
     })
-  } catch {
-    return errorResponse('unauthenticated', 'Unauthenticated', 401, id)
+  } catch (error) {
+    return toErrorResponse(error, id)
   }
 }
 
 function toArrayBuffer(bytes: Uint8Array): ArrayBuffer {
-  return bytes.buffer.slice(
-    bytes.byteOffset,
-    bytes.byteOffset + bytes.byteLength,
-  ) as ArrayBuffer
+  return bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer
 }

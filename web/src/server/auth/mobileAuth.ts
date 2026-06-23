@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto'
 
+import { badRequest, forbidden, invalidToken, unauthenticated } from '@/server/http/appError'
 import {
   createAdminSession,
   createMobileAuthCode,
@@ -38,10 +39,7 @@ export type MobileAuthEnv = {
 
 export type StartMobileGoogleOAuthInput = {
   redirectUri: string
-  env: Pick<
-    MobileAuthEnv,
-    'FORJA_PUBLIC_URL' | 'GOOGLE_CLIENT_ID' | 'FORJA_OAUTH_STATE_SECRET'
-  >
+  env: Pick<MobileAuthEnv, 'FORJA_PUBLIC_URL' | 'GOOGLE_CLIENT_ID' | 'FORJA_OAUTH_STATE_SECRET'>
   now: Date
   nonce: string
 }
@@ -55,7 +53,7 @@ export function startMobileGoogleOAuth(
   input: StartMobileGoogleOAuthInput,
 ): StartMobileGoogleOAuthResult {
   if (input.redirectUri !== MOBILE_REDIRECT_URI) {
-    throw new Error('Invalid mobile redirect URI')
+    throw badRequest('Invalid mobile redirect URI')
   }
 
   const state = signOAuthState({
@@ -69,10 +67,7 @@ export function startMobileGoogleOAuth(
   })
   const url = new URL('https://accounts.google.com/o/oauth2/v2/auth')
   url.searchParams.set('client_id', input.env.GOOGLE_CLIENT_ID)
-  url.searchParams.set(
-    'redirect_uri',
-    `${input.env.FORJA_PUBLIC_URL}/api/auth/google/callback`,
-  )
+  url.searchParams.set('redirect_uri', `${input.env.FORJA_PUBLIC_URL}/api/auth/google/callback`)
   url.searchParams.set('response_type', 'code')
   url.searchParams.set('scope', 'openid email profile')
   url.searchParams.set('state', state)
@@ -95,10 +90,7 @@ export function createMobileAuthService(input: CreateMobileAuthServiceInput): {
     code: string
     state: string
   }): Promise<{ redirectUrl: string; adminSessionToken?: string }>
-  exchangeMobileAuthCode(args: {
-    code: string
-    redirectUri: string
-  }): Promise<{
+  exchangeMobileAuthCode(args: { code: string; redirectUri: string }): Promise<{
     user: { id: string; email: string; name: string }
     tokens: { accessToken: string; refreshToken: string; expiresAt: string }
   }>
@@ -163,7 +155,7 @@ export function createMobileAuthService(input: CreateMobileAuthServiceInput): {
       tokens: { accessToken: string; refreshToken: string; expiresAt: string }
     }> {
       if (args.redirectUri !== MOBILE_REDIRECT_URI) {
-        throw new Error('Invalid mobile redirect URI')
+        throw badRequest('Invalid mobile redirect URI')
       }
 
       const code = await useMobileAuthCode(
@@ -173,12 +165,12 @@ export function createMobileAuthService(input: CreateMobileAuthServiceInput): {
         now(),
       )
       if (!code) {
-        throw new Error('Invalid auth code')
+        throw unauthenticated('Invalid auth code')
       }
 
       const user = await findUserById(input.db, code.userId)
       if (!user) {
-        throw new Error('Invalid auth code')
+        throw unauthenticated('Invalid auth code')
       }
 
       const tokens = await issueMobileTokens({
@@ -205,28 +197,20 @@ export function createMobileAuthService(input: CreateMobileAuthServiceInput): {
       refreshToken: string
       expiresAt: string
     }> {
-      const tokenHash = hmacSha256(
-        args.refreshToken,
-        input.env.FORJA_REFRESH_TOKEN_SECRET,
-      )
+      const tokenHash = hmacSha256(args.refreshToken, input.env.FORJA_REFRESH_TOKEN_SECRET)
       const existing = await findRefreshTokenByHash(input.db, tokenHash)
 
-      if (
-        !existing ||
-        existing.revokedAt ||
-        existing.rotatedAt ||
-        existing.expiresAt <= now()
-      ) {
+      if (!existing || existing.revokedAt || existing.rotatedAt || existing.expiresAt <= now()) {
         if (existing) {
           await revokeRefreshTokenFamily(input.db, existing.familyId, now())
         }
-        throw new Error('Invalid refresh token')
+        throw invalidToken('Invalid refresh token')
       }
 
       await markRefreshTokenRotated(input.db, tokenHash, now())
       const user = await findUserById(input.db, existing.userId)
       if (!user) {
-        throw new Error('Invalid refresh token')
+        throw invalidToken('Invalid refresh token')
       }
 
       return issueMobileTokens({
@@ -258,17 +242,13 @@ export function createMobileAuthService(input: CreateMobileAuthServiceInput): {
         ? args.authorization.slice('Bearer '.length)
         : null
       if (!token) {
-        throw new Error('Unauthenticated')
+        throw unauthenticated('Unauthenticated')
       }
 
-      const payload = verifyAccessToken(
-        token,
-        input.env.FORJA_ACCESS_TOKEN_SECRET,
-        now(),
-      )
+      const payload = verifyAccessToken(token, input.env.FORJA_ACCESS_TOKEN_SECRET, now())
       const user = await findUserById(input.db, payload.sub)
       if (!user) {
-        throw new Error('Unauthenticated')
+        throw unauthenticated('Unauthenticated')
       }
 
       return {
@@ -289,7 +269,7 @@ async function findOrCreateOAuthUser(
   if (account) {
     const user = await findUserById(db, account.userId)
     if (!user) {
-      throw new Error('OAuth account has no user')
+      throw unauthenticated('OAuth account has no user')
     }
 
     return user
@@ -332,10 +312,7 @@ async function issueMobileTokens(args: {
 
   await createRefreshToken(args.db, {
     userId: args.user.id,
-    tokenHash: hmacSha256(
-      args.refreshToken,
-      args.env.FORJA_REFRESH_TOKEN_SECRET,
-    ),
+    tokenHash: hmacSha256(args.refreshToken, args.env.FORJA_REFRESH_TOKEN_SECRET),
     familyId: args.familyId,
     expiresAt: new Date(args.now.getTime() + 30 * 24 * 60 * 60 * 1000),
     now: args.now,
@@ -355,7 +332,7 @@ function assertAllowedEmail(email: string, allowedEmails: string): void {
     .filter(Boolean)
 
   if (!allowed.includes(email.toLowerCase())) {
-    throw new Error('Google account is not allowlisted')
+    throw forbidden('Google account is not allowlisted')
   }
 }
 

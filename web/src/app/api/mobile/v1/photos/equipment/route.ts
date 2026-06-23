@@ -2,11 +2,7 @@ import { EquipmentPhotoListResponseSchema } from '@forja/domain'
 
 import { createDefaultMobileAuthService } from '@/server/auth/defaultService'
 import { getDatabase } from '@/server/db/client'
-import {
-  errorResponse,
-  jsonWithRequestId,
-  requestId,
-} from '@/server/http/responses'
+import { jsonWithRequestId, requestId, toErrorResponse } from '@/server/http/responses'
 import { listEquipmentPhotos } from '@/server/services/photos/equipmentPhotoService'
 
 export async function GET(request: Request): Promise<Response> {
@@ -20,7 +16,7 @@ export async function GET(request: Request): Promise<Response> {
     const validated = EquipmentPhotoListResponseSchema.parse(response)
 
     return jsonWithRequestId(validated, 200, id)
-  } catch {
-    return errorResponse('unauthenticated', 'Unauthenticated', 401, id)
+  } catch (error) {
+    return toErrorResponse(error, id)
   }
 }

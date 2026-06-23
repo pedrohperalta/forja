@@ -1,9 +1,5 @@
-import {
-  ExerciseSchema,
-  PlanSchema,
-  type Exercise,
-  type MuscleCategory,
-} from '@forja/domain'
+import { ExerciseSchema, PlanSchema, type Exercise, type MuscleCategory } from '@forja/domain'
+import { forbidden, notFound, validation } from '@/server/http/appError'
 import {
   createPlanDraft,
   createPlanTombstone,
@@ -171,12 +167,12 @@ export async function updateDraftExercise(
   )
 
   if (exerciseIndex === -1) {
-    throw new Error('Exercise not found')
+    throw notFound('Exercise not found')
   }
 
   const existingExercise = draft.data.exercises[exerciseIndex]
   if (!existingExercise) {
-    throw new Error('Exercise not found')
+    throw notFound('Exercise not found')
   }
   const updatedExercise = ExerciseSchema.parse({
     id: input.exerciseId,
@@ -203,23 +199,21 @@ export async function reorderDraftExercises(
   input: ReorderDraftExercisesInput,
 ): Promise<PlanDraftRow> {
   const draft = await requireEditableDraft(db, input.userId, input.planId)
-  const exerciseById = new Map(
-    draft.data.exercises.map((exercise) => [exercise.id, exercise]),
-  )
+  const exerciseById = new Map(draft.data.exercises.map((exercise) => [exercise.id, exercise]))
   const uniqueIds = new Set(input.exerciseIds)
 
   if (
     input.exerciseIds.length !== draft.data.exercises.length ||
     uniqueIds.size !== draft.data.exercises.length
   ) {
-    throw new Error('Exercise order must include each exercise once')
+    throw validation('Exercise order must include each exercise once')
   }
 
   const exercises = input.exerciseIds.map((exerciseId) => {
     const exercise = exerciseById.get(exerciseId)
 
     if (!exercise) {
-      throw new Error('Exercise order includes an unknown exercise')
+      throw validation('Exercise order includes an unknown exercise')
     }
 
     return exercise
@@ -256,7 +250,7 @@ export async function archivePlan(
   const plan = await findPlanById(db, input.userId, input.planId)
 
   if (!plan) {
-    throw new Error('Plan not found')
+    throw notFound('Plan not found')
   }
 
   return createPlanTombstone(db, {
@@ -273,7 +267,7 @@ export async function deletePlanPermanently(
   const plan = await deletePlanById(db, input.userId, input.planId)
 
   if (!plan) {
-    throw new Error('Plan not found')
+    throw notFound('Plan not found')
   }
 
   return plan
@@ -286,7 +280,7 @@ export async function restoreArchivedPlan(
   const plan = await restorePlanById(db, input.userId, input.planId, input.now)
 
   if (!plan) {
-    throw new Error('Plan not found')
+    throw notFound('Plan not found')
   }
 
   await deletePlanTombstone(db, input.userId, input.planId)
@@ -319,11 +313,7 @@ export async function listAdminPlans(
   return Promise.all(
     plans.map(async (plan) => {
       const draft = await findPlanDraft(db, input.userId, plan.id)
-      const latestRevision = await findLatestPlanRevision(
-        db,
-        input.userId,
-        plan.id,
-      )
+      const latestRevision = await findLatestPlanRevision(db, input.userId, plan.id)
 
       return {
         plan,
@@ -383,10 +373,7 @@ type SaveDraftDataInput = {
   now: Date
 }
 
-async function saveDraftData(
-  db: Database,
-  input: SaveDraftDataInput,
-): Promise<PlanDraftRow> {
+async function saveDraftData(db: Database, input: SaveDraftDataInput): Promise<PlanDraftRow> {
   const data = PlanSchema.parse({
     ...input.draft.data,
     exercises: input.exercises,
@@ -412,11 +399,11 @@ async function requireEditableDraft(
   const detail = await getAdminPlan(db, { userId, planId })
 
   if (!detail?.draft) {
-    throw new Error('Plan draft not found')
+    throw notFound('Plan draft not found')
   }
 
   if (detail.archived) {
-    throw new Error('Archived plans cannot be edited')
+    throw forbidden('Archived plans cannot be edited')
   }
 
   return detail.draft
@@ -424,7 +411,7 @@ async function requireEditableDraft(
 
 function requireUpdatedDraft(draft: PlanDraftRow | null): PlanDraftRow {
   if (!draft) {
-    throw new Error('Plan draft not found')
+    throw notFound('Plan draft not found')
   }
 
   return draft

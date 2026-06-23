@@ -1,7 +1,4 @@
-import {
-  EquipmentPhotoUploadResponseSchema,
-  OkResponseSchema,
-} from '@forja/domain'
+import { EquipmentPhotoUploadResponseSchema, OkResponseSchema } from '@forja/domain'
 
 import { createDefaultMobileAuthService } from '@/server/auth/defaultService'
 import { getDatabase } from '@/server/db/client'
@@ -9,6 +6,7 @@ import {
   errorResponse,
   jsonWithRequestId,
   requestId,
+  toErrorResponse,
 } from '@/server/http/responses'
 import {
   deleteEquipmentPhoto,
@@ -23,10 +21,7 @@ type PhotoRouteContext = {
   }>
 }
 
-export async function PUT(
-  request: Request,
-  context: PhotoRouteContext,
-): Promise<Response> {
+export async function PUT(request: Request, context: PhotoRouteContext): Promise<Response> {
   const id = requestId(request.headers)
 
   try {
@@ -42,12 +37,7 @@ export async function PUT(
     }
 
     if (file.type !== 'image/jpeg') {
-      return errorResponse(
-        'unsupported_media_type',
-        'Only JPEG uploads are supported',
-        415,
-        id,
-      )
+      return errorResponse('unsupported_media_type', 'Only JPEG uploads are supported', 415, id)
     }
 
     const response = await uploadEquipmentPhoto(getDatabase(), {
@@ -66,14 +56,11 @@ export async function PUT(
       return photoErrorResponse(error, id)
     }
 
-    return errorResponse('unauthenticated', 'Unauthenticated', 401, id)
+    return toErrorResponse(error, id)
   }
 }
 
-export async function DELETE(
-  request: Request,
-  context: PhotoRouteContext,
-): Promise<Response> {
+export async function DELETE(request: Request, context: PhotoRouteContext): Promise<Response> {
   const id = requestId(request.headers)
 
   try {
@@ -90,8 +77,8 @@ export async function DELETE(
     const validated = OkResponseSchema.parse(response)
 
     return jsonWithRequestId(validated, 200, id)
-  } catch {
-    return errorResponse('unauthenticated', 'Unauthenticated', 401, id)
+  } catch (error) {
+    return toErrorResponse(error, id)
   }
 }
 

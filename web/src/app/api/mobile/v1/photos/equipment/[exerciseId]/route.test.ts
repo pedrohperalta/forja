@@ -2,15 +2,13 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { DELETE, PUT } from './route'
 
+import { unauthenticated } from '@/server/http/appError'
+
 vi.mock('@/server/auth/defaultService', () => ({
   createDefaultMobileAuthService: () => ({
-    getCurrentMobileUser: async ({
-      authorization,
-    }: {
-      authorization: string | null
-    }) => {
+    getCurrentMobileUser: async ({ authorization }: { authorization: string | null }) => {
       if (authorization !== 'Bearer valid-token') {
-        throw new Error('Unauthenticated')
+        throw unauthenticated('Unauthenticated')
       }
 
       return { id: 'user-id', email: 'user@example.com', name: 'User' }
@@ -60,9 +58,12 @@ describe('/api/mobile/v1/photos/equipment/[exerciseId]', () => {
   })
 
   it('rejects unauthenticated uploads', async () => {
-    const response = await PUT(uploadRequest(), {
-      params: Promise.resolve({ exerciseId: 'supino-reto' }),
-    })
+    const response = await PUT(
+      new Request('https://forja.example.com/api/mobile/v1/photos/equipment/supino-reto', {
+        method: 'PUT',
+      }),
+      { params: Promise.resolve({ exerciseId: 'supino-reto' }) },
+    )
     const body = (await response.json()) as { error: { code: string } }
 
     expect(response.status).toBe(401)

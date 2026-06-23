@@ -10,6 +10,7 @@ import {
 import * as schema from '../../db/schema'
 import type { Database } from '../../repositories'
 import { base64UrlDecode, base64UrlEncode, hmacSha256, safeEqual } from '../../auth/crypto'
+import { invalidCursor } from '@/server/http/appError'
 
 const MAX_PULL_CHANGES = 500
 const INITIAL_CURSOR = {
@@ -46,10 +47,7 @@ type TombstoneChange = {
 
 type SyncChange = PlanChange | TombstoneChange
 
-export function signSyncCursor(
-  payload: SyncCursorPayload,
-  secret: string,
-): string {
+export function signSyncCursor(payload: SyncCursorPayload, secret: string): string {
   const parsed = SyncCursorPayloadSchema.parse(payload)
   const encodedPayload = base64UrlEncode(JSON.stringify(parsed))
   const signature = hmacSha256(encodedPayload, secret)
@@ -57,27 +55,22 @@ export function signSyncCursor(
   return `${encodedPayload}.${signature}`
 }
 
-export function verifySyncCursor(
-  cursor: string,
-  secret: string,
-): SyncCursorPayload {
+export function verifySyncCursor(cursor: string, secret: string): SyncCursorPayload {
   const [encodedPayload, signature] = cursor.split('.')
 
   if (!encodedPayload || !signature) {
-    throw new Error('Invalid cursor')
+    throw invalidCursor('Invalid cursor')
   }
 
   const expectedSignature = hmacSha256(encodedPayload, secret)
   if (!safeEqual(signature, expectedSignature)) {
-    throw new Error('Invalid cursor')
+    throw invalidCursor('Invalid cursor')
   }
 
   try {
-    return SyncCursorPayloadSchema.parse(
-      JSON.parse(base64UrlDecode(encodedPayload)),
-    )
+    return SyncCursorPayloadSchema.parse(JSON.parse(base64UrlDecode(encodedPayload)))
   } catch {
-    throw new Error('Invalid cursor')
+    throw invalidCursor('Invalid cursor')
   }
 }
 
@@ -90,9 +83,7 @@ export async function pullPlanChanges(
     : INITIAL_CURSOR
   const limit = Math.min(input.limit ?? MAX_PULL_CHANGES, MAX_PULL_CHANGES)
   const allChanges = await listPlanSyncChanges(db, input.userId)
-  const filteredChanges = allChanges.filter((change) =>
-    isAfterCursor(change, cursorPayload),
-  )
+  const filteredChanges = allChanges.filter((change) => isAfterCursor(change, cursorPayload))
   const selectedChanges = filteredChanges.slice(0, limit)
   const lastChange = selectedChanges.at(-1)
   const nextCursorPayload = lastChange
@@ -118,10 +109,7 @@ export async function pullPlanChanges(
   return SyncPullResponseSchema.parse(response)
 }
 
-async function listPlanSyncChanges(
-  db: Database,
-  userId: string,
-): Promise<SyncChange[]> {
+async function listPlanSyncChanges(db: Database, userId: string): Promise<SyncChange[]> {
   const [plans, revisions, tombstones] = await Promise.all([
     db
       .select()
@@ -139,10 +127,7 @@ async function listPlanSyncChanges(
       .orderBy(asc(schema.planTombstones.deletedAt), asc(schema.planTombstones.planId)),
   ])
   const activePlanIds = new Set(plans.map((plan) => plan.id))
-  const latestRevisionByPlanId = new Map<
-    string,
-    typeof schema.planRevisions.$inferSelect
-  >()
+  const latestRevisionByPlanId = new Map<string, typeof schema.planRevisions.$inferSelect>()
 
   for (const revision of revisions) {
     if (!activePlanIds.has(revision.planId)) {
@@ -184,10 +169,7 @@ function compareChanges(left: SyncChange, right: SyncChange): number {
   return left.id.localeCompare(right.id)
 }
 
-function isAfterCursor(
-  change: SyncChange,
-  cursor: SyncCursorPayload,
-): boolean {
+function isAfterCursor(change: SyncChange, cursor: SyncCursorPayload): boolean {
   const cursorTime = new Date(cursor.lastChangedAt).getTime()
   const changeTime = change.changedAt.getTime()
 

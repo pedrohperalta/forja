@@ -1,6 +1,7 @@
 import { z } from 'zod'
 
 import { base64UrlDecode, base64UrlEncode, hmacSha256, safeEqual } from './crypto'
+import { badRequest } from '@/server/http/appError'
 
 const OAuthStatePayloadSchema = z.object({
   flow: z.enum(['mobile', 'admin']),
@@ -29,29 +30,25 @@ export type VerifyOAuthStateInput = {
   now: Date
 }
 
-export function verifyOAuthState(
-  input: VerifyOAuthStateInput,
-): OAuthStatePayload {
+export function verifyOAuthState(input: VerifyOAuthStateInput): OAuthStatePayload {
   const [payload, signature] = input.state.split('.')
 
   if (!payload || !signature) {
-    throw new Error('Invalid OAuth state')
+    throw badRequest('Invalid OAuth state')
   }
 
   const expectedSignature = hmacSha256(payload, input.secret)
   if (!safeEqual(signature, expectedSignature)) {
-    throw new Error('Invalid OAuth state')
+    throw badRequest('Invalid OAuth state')
   }
 
-  const parsed = OAuthStatePayloadSchema.safeParse(
-    JSON.parse(base64UrlDecode(payload)),
-  )
+  const parsed = OAuthStatePayloadSchema.safeParse(JSON.parse(base64UrlDecode(payload)))
   if (!parsed.success) {
-    throw new Error('Invalid OAuth state')
+    throw badRequest('Invalid OAuth state')
   }
 
   if (new Date(parsed.data.expiresAt) <= input.now) {
-    throw new Error('expired OAuth state')
+    throw badRequest('expired OAuth state')
   }
 
   return parsed.data

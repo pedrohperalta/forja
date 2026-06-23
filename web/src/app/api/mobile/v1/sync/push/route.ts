@@ -6,6 +6,7 @@ import {
   errorResponse,
   jsonWithRequestId,
   requestId,
+  toErrorResponse,
 } from '@/server/http/responses'
 import { pushWorkoutSessions } from '@/server/services/sync/workoutPushService'
 
@@ -35,10 +36,6 @@ export async function POST(request: Request): Promise<Response> {
 
     return jsonWithRequestId(validated.data, 200, id)
   } catch (error) {
-    if (error instanceof SyntaxError) {
-      return errorResponse('invalid_request', 'Invalid JSON body', 400, id)
-    }
-
-    return errorResponse('unauthenticated', 'Unauthenticated', 401, id)
+    return toErrorResponse(error, id)
   }
 }

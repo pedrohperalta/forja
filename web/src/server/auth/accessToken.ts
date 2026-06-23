@@ -1,6 +1,7 @@
 import { z } from 'zod'
 
 import { base64UrlDecode, base64UrlEncode, hmacSha256, safeEqual } from './crypto'
+import { invalidToken } from '@/server/http/appError'
 
 const AccessTokenPayloadSchema = z.object({
   sub: z.string().uuid(),
@@ -44,31 +45,25 @@ export function signAccessToken(input: SignAccessTokenInput): SignedAccessToken 
   }
 }
 
-export function verifyAccessToken(
-  token: string,
-  secret: string,
-  now: Date,
-): AccessTokenPayload {
+export function verifyAccessToken(token: string, secret: string, now: Date): AccessTokenPayload {
   const [header, payload, signature] = token.split('.')
 
   if (!header || !payload || !signature) {
-    throw new Error('Invalid access token')
+    throw invalidToken('Invalid access token')
   }
 
   const expectedSignature = hmacSha256(`${header}.${payload}`, secret)
   if (!safeEqual(signature, expectedSignature)) {
-    throw new Error('Invalid access token')
+    throw invalidToken('Invalid access token')
   }
 
-  const parsed = AccessTokenPayloadSchema.safeParse(
-    JSON.parse(base64UrlDecode(payload)),
-  )
+  const parsed = AccessTokenPayloadSchema.safeParse(JSON.parse(base64UrlDecode(payload)))
   if (!parsed.success) {
-    throw new Error('Invalid access token')
+    throw invalidToken('Invalid access token')
   }
 
   if (parsed.data.exp <= Math.floor(now.getTime() / 1000)) {
-    throw new Error('Invalid access token')
+    throw invalidToken('Invalid access token')
   }
 
   return parsed.data
