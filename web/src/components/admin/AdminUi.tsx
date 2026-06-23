@@ -28,6 +28,10 @@ type FieldProps = {
   children: ReactNode
 }
 
+type AdminTagProps = {
+  children: ReactNode
+}
+
 const NAV_ITEMS = [
   { key: 'overview', href: '/admin', label: 'Painel' },
   { key: 'plans', href: '/admin/plans', label: 'Planos' },
@@ -107,6 +111,10 @@ export function StatusPill({ children, tone = 'neutral' }: StatusPillProps): Rea
       {children}
     </span>
   )
+}
+
+export function AdminTag({ children }: AdminTagProps): ReactElement {
+  return <span className="admin-tag">{children}</span>
 }
 
 export function AdminField({ label, children }: FieldProps): ReactElement {
