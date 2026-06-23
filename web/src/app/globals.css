@@ -82,7 +82,7 @@
   align-items: center;
   gap: 1rem;
   border: 1px solid var(--color-border);
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   padding: 1rem;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.025), rgba(255, 255, 255, 0)),
@@ -104,7 +104,7 @@
 .admin-build-status-rail {
   width: 3px;
   min-height: 100%;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: var(--color-border-med);
 }
 
@@ -176,7 +176,7 @@
   max-height: 36rem;
   margin: 0;
   border: 1px solid var(--color-border);
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   padding: 1.1rem;
   background:
     radial-gradient(circle at top left, rgba(194, 240, 0, 0.08), transparent 18rem),
@@ -522,7 +522,7 @@ select:disabled {
   gap: 0.45rem;
   min-height: 5rem;
   border: 1px solid var(--color-border);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   background: rgba(28, 28, 28, 0.72);
   color: var(--color-muted);
   padding: 0.85rem;
@@ -566,7 +566,7 @@ select:disabled {
 
 .admin-error-banner {
   border: 1px solid rgba(255, 69, 58, 0.36);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   background: var(--color-danger-dim);
   color: var(--color-danger);
   padding: 0.9rem 1rem;
@@ -588,7 +588,7 @@ select:disabled {
 
 .admin-notice-banner {
   border: 1px solid rgba(194, 240, 0, 0.3);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   background: var(--color-accent-dim);
   color: var(--color-accent);
   padding: 0.9rem 1rem;
@@ -638,7 +638,7 @@ select:disabled {
 .admin-live-status {
   min-height: 2.75rem;
   border: 1px solid var(--color-border);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   background: rgba(28, 28, 28, 0.62);
   color: var(--color-text-med);
   font-size: 0.8rem;
@@ -649,7 +649,7 @@ select:disabled {
 .admin-card {
   overflow: hidden;
   border: 1px solid var(--color-border);
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   background: var(--color-surface);
 }
 
@@ -761,7 +761,7 @@ select:disabled {
   height: 1rem;
   border: 2px solid rgba(8, 8, 8, 0.28);
   border-top-color: var(--color-background);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   margin-right: 0.55rem;
   animation: admin-spin 0.8s linear infinite;
 }
@@ -789,7 +789,7 @@ select:disabled {
   content: '';
   width: 0.3rem;
   height: 0.3rem;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: var(--color-dim);
 }
 
@@ -845,7 +845,7 @@ select:disabled {
   width: 100%;
   min-height: 3.25rem;
   border: 1px solid var(--color-border-med);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   background: var(--color-surface-2);
   color: var(--color-text);
   padding: 0 0.95rem;
@@ -878,7 +878,7 @@ select:disabled {
   align-items: center;
   min-height: 3.75rem;
   border: 1px dashed rgba(194, 240, 0, 0.36);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   background: linear-gradient(180deg, rgba(194, 240, 0, 0.08), var(--color-surface-2));
   color: var(--color-text);
   cursor: pointer;
@@ -952,7 +952,7 @@ select:disabled {
   gap: 0.75rem;
   align-items: center;
   border: 1px solid var(--color-border);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   background: rgba(28, 28, 28, 0.72);
   padding: 0.55rem;
 }
@@ -960,7 +960,7 @@ select:disabled {
 .admin-file-preview img {
   width: 4rem;
   height: 4rem;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   object-fit: cover;
 }
 
@@ -982,7 +982,7 @@ select:disabled {
   display: grid;
   gap: 0.35rem;
   border: 1px solid var(--color-border);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   background: rgba(28, 28, 28, 0.72);
   padding: 0.9rem;
 }
@@ -1008,7 +1008,7 @@ select:disabled {
   display: grid;
   gap: 0.65rem;
   border: 1px solid var(--color-border);
-  border-radius: 14px;
+  border-radius: var(--radius-md);
   background: rgba(20, 20, 20, 0.72);
   padding: 0.8rem;
 }
@@ -1040,7 +1040,7 @@ select:disabled {
   grid-template-columns: 2.25rem minmax(0, 1fr);
   gap: 0.8rem;
   border: 1px solid var(--color-border);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   background: var(--color-surface-2);
   padding: 0.9rem;
 }
@@ -1152,7 +1152,7 @@ select:disabled {
 
 .admin-exercise-card {
   margin-top: 0.75rem;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
 }
 
 .admin-draggable-exercise {
@@ -1317,7 +1317,7 @@ select:disabled {
   display: grid;
   gap: 1rem;
   border: 1px solid var(--color-border);
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   background: rgba(17, 17, 17, 0.78);
   padding: 1.1rem;
 }
@@ -1470,7 +1470,7 @@ select:disabled {
   width: 0.55rem;
   height: 0.55rem;
   margin-top: 0.2rem;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: var(--color-border-med);
 }
 
@@ -1517,7 +1517,7 @@ select:disabled {
   margin-top: 1rem;
   overflow: hidden;
   border: 1px solid var(--color-border);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
 }
 
 .admin-table-row {
@@ -1587,7 +1587,7 @@ select:disabled {
 
 .admin-plan-card {
   min-height: 18rem;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
 }
 
 .admin-plan-card.admin-card-accent {
@@ -1758,7 +1758,7 @@ select:disabled {
   display: grid;
   gap: 0.25rem;
   border: 1px solid rgba(246, 181, 71, 0.28);
-  border-radius: 14px;
+  border-radius: var(--radius-md);
   background: rgba(246, 181, 71, 0.08);
   padding: 0.9rem 1rem;
 }
@@ -1811,7 +1811,7 @@ select:disabled {
   align-items: center;
   justify-content: space-between;
   border: 1px solid var(--color-border);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   padding: 0 0.95rem;
   background: var(--color-surface-2);
   color: var(--color-text-med);
@@ -1842,7 +1842,7 @@ select:disabled {
   width: 0.5rem;
   height: 0.5rem;
   margin-top: 0.35rem;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: var(--color-accent);
 }
 
@@ -1864,7 +1864,7 @@ select:disabled {
   z-index: 2;
   margin-top: 1.25rem;
   border: 1px solid rgba(194, 240, 0, 0.28);
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   background: rgba(17, 17, 17, 0.96);
   padding: 1rem;
   box-shadow: 0 0 24px rgba(0, 0, 0, 0.32);
@@ -1877,7 +1877,7 @@ select:disabled {
   gap: 1.25rem;
   margin-top: 1.5rem;
   border: 1px solid rgba(194, 240, 0, 0.3);
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   background: linear-gradient(135deg, rgba(194, 240, 0, 0.11), var(--color-surface));
   padding: 1.25rem;
 }
@@ -1889,7 +1889,7 @@ select:disabled {
   align-items: center;
   margin-top: 1.5rem;
   border: 1px solid rgba(194, 240, 0, 0.3);
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   background: linear-gradient(135deg, rgba(194, 240, 0, 0.11), var(--color-surface));
   padding: 1.25rem;
 }
@@ -1984,7 +1984,7 @@ select:disabled {
   align-items: center;
   margin-top: 1rem;
   border: 1px solid var(--color-border);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   background: rgba(28, 28, 28, 0.58);
   padding: 0.95rem;
 }
@@ -2145,7 +2145,7 @@ select:disabled {
   right: -12%;
   width: min(80vw, 60rem);
   height: min(80vw, 60rem);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: radial-gradient(circle, rgba(194, 240, 0, 0.14), transparent 64%);
   animation: admin-login-breathe 7s ease-in-out infinite;
 }
@@ -2210,7 +2210,7 @@ select:disabled {
 .admin-login-spark {
   width: 0.5rem;
   height: 0.5rem;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: var(--color-accent);
   box-shadow: 0 0 12px var(--color-accent);
   animation: admin-login-pulse 1.8s ease-in-out infinite;

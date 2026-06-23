@@ -7,6 +7,15 @@ const cssPath = fileURLToPath(new URL('./globals.css', import.meta.url))
 const css = readFileSync(cssPath, 'utf8')
 
 describe('admin responsive CSS', () => {
+  it('maps admin border radii to the radius token scale', () => {
+    const literalRadiusDeclarations = Array.from(css.matchAll(/border-radius:\s*([^;]+);/g))
+      .map((match) => match[1]?.trim() ?? '')
+      .filter((value) => value !== 'inherit')
+      .filter((value) => !value.startsWith('var(--radius-'))
+
+    expect(literalRadiusDeclarations).toEqual([])
+  })
+
   it('keeps the admin usable as a mobile web app', () => {
     expect(css).toContain('@media (max-width: 860px)')
     expect(css).toContain('@media (max-width: 520px)')
