@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Forja — Playbook de Engenharia</title>
+  <meta name="description" content="Como o Forja transforma uma ideia em software em produção: o fluxo de ponta a ponta, os artefatos de cada etapa e os padrões que regem o código." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg:#080808; --surface:#111111; --surface-2:#1c1c1c; --border:#222222; --border-med:#333333;
+      --accent:#c2f000; --accent-dim:rgba(194,240,0,0.10); --accent-glow:rgba(194,240,0,0.22);
+      --text:#ffffff; --text-med:#aaaaaa; --muted:#888888; --dim:#555555;
+      --danger:#ff453a; --warning:#f59e0b;
+      --font-display:'Bebas Neue',sans-serif; --font-ui:'Syne',sans-serif;
+      --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+      --maxw:1100px;
+    }
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+    html{scroll-behavior:smooth;scroll-padding-top:84px}
+    body{
+      font-family:var(--font-ui);background:var(--bg);color:var(--text);line-height:1.65;
+      -webkit-font-smoothing:antialiased;overflow-x:hidden;
+      background-image:
+        radial-gradient(circle at 15% -10%, rgba(194,240,0,0.07), transparent 42%),
+        radial-gradient(circle at 100% 0%, rgba(194,240,0,0.04), transparent 38%);
+      background-attachment:fixed;
+    }
+    /* faint grid texture */
+    body::before{
+      content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.4;
+      background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);
+      background-size:64px 64px;
+      -webkit-mask-image:radial-gradient(circle at 50% 0%,#000,transparent 70%);
+      mask-image:radial-gradient(circle at 50% 0%,#000,transparent 70%);
+    }
+    a{color:inherit}
+    code,.mono{font-family:var(--mono)}
+    .eyebrow{font-family:var(--font-ui);font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--accent)}
+
+    /* ---- top bar ---- */
+    .topbar{
+      position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;
+      gap:16px;padding:14px 24px;border-bottom:1px solid var(--border);
+      background:rgba(8,8,8,0.78);backdrop-filter:blur(12px);
+    }
+    .brand{display:flex;align-items:baseline;gap:10px}
+    .brand .logo{font-family:var(--font-display);font-size:26px;letter-spacing:1px;line-height:1}
+    .brand .logo b{color:var(--accent)}
+    .brand .tag{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted)}
+    .topbar .back{font-size:12px;font-weight:600;color:var(--text-med);text-decoration:none;padding:7px 14px;border:1px solid var(--border);border-radius:100px;transition:.15s}
+    .topbar .back:hover{border-color:var(--accent);color:var(--accent)}
+
+    /* ---- hero ---- */
+    .hero{position:relative;z-index:1;max-width:var(--maxw);margin:0 auto;padding:96px 24px 56px}
+    .hero .eyebrow{margin-bottom:18px}
+    .hero h1{
+      font-family:var(--font-display);font-weight:400;font-size:clamp(64px,12vw,148px);line-height:.88;
+      letter-spacing:1px;text-wrap:balance;
+    }
+    .hero h1 .lime{color:var(--accent);text-shadow:0 0 48px var(--accent-glow)}
+    .hero .lead{max-width:620px;margin-top:24px;font-size:clamp(16px,2.2vw,20px);color:var(--text-med)}
+    .hero .lead strong{color:var(--text);font-weight:600}
+    .hero .meta{display:flex;flex-wrap:wrap;gap:10px;margin-top:32px}
+    .chip{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:var(--text-med);
+      background:var(--surface);border:1px solid var(--border);border-radius:100px;padding:7px 14px}
+    .chip .dot{width:6px;height:6px;border-radius:50%;background:var(--accent)}
+
+    /* ---- pipeline ribbon ---- */
+    .pipeline-wrap{position:relative;z-index:1;border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:rgba(17,17,17,0.5);margin-top:24px}
+    .pipeline{max-width:var(--maxw);margin:0 auto;padding:40px 24px;display:flex;gap:0;overflow-x:auto;scrollbar-width:none}
+    .pipeline::-webkit-scrollbar{display:none}
+    .pstep{position:relative;flex:1 0 auto;min-width:118px;text-decoration:none;padding:0 6px;text-align:center}
+    .pstep .line{position:absolute;top:21px;left:50%;width:100%;height:2px;background:var(--border-med)}
+    .pstep:last-child .line{display:none}
+    .pnode{position:relative;z-index:2;width:44px;height:44px;margin:0 auto 12px;border-radius:50%;
+      display:grid;place-items:center;font-family:var(--font-display);font-size:20px;
+      background:var(--bg);border:2px solid var(--border-med);color:var(--muted);transition:.2s}
+    .pstep:hover .pnode{border-color:var(--accent);color:var(--accent);box-shadow:0 0 0 6px var(--accent-dim)}
+    .pstep .pname{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-med);transition:.2s}
+    .pstep:hover .pname{color:var(--text)}
+    .pstep .pphase{font-size:10px;color:var(--dim);margin-top:3px}
+
+    /* ---- layout ---- */
+    .shell{max-width:var(--maxw);margin:0 auto;padding:56px 24px 0;display:grid;grid-template-columns:212px 1fr;gap:48px;position:relative;z-index:1}
+    nav.toc{position:sticky;top:84px;align-self:start;height:max-content;padding-top:4px}
+    nav.toc .toc-label{font-size:10px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--dim);margin-bottom:14px}
+    nav.toc a{display:block;font-size:13px;color:var(--muted);text-decoration:none;padding:6px 0 6px 14px;border-left:2px solid var(--border);transition:.15s}
+    nav.toc a:hover{color:var(--text-med);border-color:var(--border-med)}
+    nav.toc a.active{color:var(--accent);border-color:var(--accent);font-weight:600}
+    main{min-width:0}
+
+    section{padding-bottom:64px;scroll-margin-top:84px}
+    .sec-head{display:flex;align-items:baseline;gap:14px;margin-bottom:8px}
+    .sec-num{font-family:var(--font-display);font-size:22px;color:var(--accent);line-height:1}
+    h2{font-family:var(--font-display);font-weight:400;font-size:clamp(34px,5vw,46px);letter-spacing:.5px;line-height:1}
+    .sec-intro{color:var(--text-med);font-size:16px;max-width:64ch;margin-bottom:28px}
+    h3{font-family:var(--font-ui);font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin:0 0 14px}
+
+    /* stage cards */
+    .stage{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:14px;padding:24px 26px;margin-bottom:18px}
+    .stage-top{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+    .stage-n{font-family:var(--font-display);font-size:30px;color:var(--accent);line-height:1;min-width:34px}
+    .stage-title{font-family:var(--font-display);font-size:30px;letter-spacing:.5px;line-height:1}
+    .stage-skill{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--accent);background:var(--accent-dim);border:1px solid rgba(194,240,0,0.18);border-radius:100px;padding:5px 12px;white-space:nowrap}
+    .stage p{color:var(--text-med);font-size:15px;margin-bottom:16px}
+    .stage p strong{color:var(--text);font-weight:600}
+    .facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;border-top:1px solid var(--border);padding-top:16px}
+    .fact .k{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--dim);margin-bottom:5px}
+    .fact .v{font-size:13.5px;color:var(--text-med)}
+    .fact .v code{font-size:12.5px;color:var(--accent);background:rgba(194,240,0,0.07);padding:1px 6px;border-radius:5px;word-break:break-word}
+    .fact.gate .v{color:var(--text)}
+    .fact.gate .v::before{content:"✓ ";color:var(--accent);font-weight:700}
+
+    /* principles grid */
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+    .pr{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px}
+    .pr:hover{border-color:var(--border-med)}
+    .pr .ico{font-family:var(--font-display);font-size:18px;color:var(--accent);border:1px solid rgba(194,240,0,0.25);border-radius:9px;width:38px;height:38px;display:grid;place-items:center;margin-bottom:14px}
+    .pr h4{font-family:var(--font-display);font-size:22px;letter-spacing:.4px;margin-bottom:6px;font-weight:400}
+    .pr p{color:var(--text-med);font-size:13.5px;line-height:1.55}
+    .pr code{font-family:var(--mono);font-size:12px;color:var(--accent)}
+
+    /* gates diagram */
+    .gates{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+    .gate-col{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;position:relative}
+    .gate-col .when{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--dim)}
+    .gate-col h4{font-family:var(--font-display);font-size:26px;letter-spacing:.4px;margin:4px 0 14px;font-weight:400}
+    .gate-col.auth{border-color:rgba(194,240,0,0.35);box-shadow:0 0 0 1px rgba(194,240,0,0.12)}
+    .gate-col.auth h4{color:var(--accent)}
+    .gate-col ul{list-style:none;display:flex;flex-direction:column;gap:9px}
+    .gate-col li{font-size:13px;color:var(--text-med);padding-left:18px;position:relative}
+    .gate-col li::before{content:"";position:absolute;left:0;top:8px;width:7px;height:7px;border-radius:2px;background:var(--accent);opacity:.7}
+    .gate-note{font-size:13px;color:var(--muted);margin-top:16px;padding:14px 16px;background:var(--surface);border:1px dashed var(--border-med);border-radius:10px}
+    .gate-note b{color:var(--accent);font-weight:600}
+
+    /* code block */
+    pre.code{background:#0c0c0c;border:1px solid var(--border);border-radius:12px;padding:18px 20px;overflow-x:auto;margin-top:18px;font-family:var(--mono);font-size:13px;line-height:1.7;color:var(--text-med)}
+    pre.code .c{color:var(--dim)}
+    pre.code .a{color:var(--accent)}
+
+    .closing{max-width:var(--maxw);margin:0 auto;padding:8px 24px 96px;position:relative;z-index:1}
+    .closing .rule{height:1px;background:var(--border);margin-bottom:40px}
+    .closing blockquote{font-family:var(--font-display);font-weight:400;font-size:clamp(28px,4.5vw,42px);line-height:1.05;letter-spacing:.5px;max-width:20ch}
+    .closing blockquote .lime{color:var(--accent)}
+    footer{border-top:1px solid var(--border);background:rgba(17,17,17,0.4);position:relative;z-index:1}
+    footer .inner{max-width:var(--maxw);margin:0 auto;padding:28px 24px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;color:var(--dim);font-size:12px}
+    footer a{color:var(--muted);text-decoration:none}
+    footer a:hover{color:var(--accent)}
+
+    /* reveal animation */
+    .reveal{opacity:0;transform:translateY(18px);transition:opacity .6s cubic-bezier(.2,.7,.2,1),transform .6s cubic-bezier(.2,.7,.2,1)}
+    .reveal.in{opacity:1;transform:none}
+    @media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}html{scroll-behavior:auto}}
+
+    @media (max-width:920px){
+      .shell{grid-template-columns:1fr;gap:0}
+      nav.toc{display:none}
+      .gates{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="logo">FOR<b>JA</b></span><span class="tag">Playbook de Engenharia</span></div>
+    <a class="back" href="../index.html">← Docs</a>
+  </header>
+
+  <!-- HERO -->
+  <header class="hero">
+    <div class="eyebrow reveal">Da ideia à produção</div>
+    <h1 class="reveal">COMO O FORJA<br />É <span class="lime">CONSTRUÍDO</span></h1>
+    <p class="lead reveal">O caminho que toda mudança percorre — de uma frase solta até o software no ar.
+      Um fluxo deliberado de <strong>artefatos</strong>, <strong>portões de qualidade</strong> e
+      <strong>TDD estrito</strong>, onde nada entra em produção sem passar pelo gate local.</p>
+    <div class="meta reveal">
+      <span class="chip"><span class="dot"></span>Monorepo pnpm · mobile · web · domain</span>
+      <span class="chip"><span class="dot"></span>TDD estrito</span>
+      <span class="chip"><span class="dot"></span>Gate local autoritativo (sem CI)</span>
+      <span class="chip"><span class="dot"></span>Loop superpowers · revisores acoplados via hooks</span>
+    </div>
+  </header>
+
+  <!-- PIPELINE RIBBON -->
+  <div class="pipeline-wrap reveal">
+    <div class="pipeline">
+      <a class="pstep" href="#ideia"><span class="line"></span><span class="pnode">01</span><span class="pname">Ideia</span><span class="pphase">o porquê</span></a>
+      <a class="pstep" href="#discovery"><span class="line"></span><span class="pnode">02</span><span class="pname">Discovery</span><span class="pphase">PRD</span></a>
+      <a class="pstep" href="#solution"><span class="line"></span><span class="pnode">03</span><span class="pname">Solução</span><span class="pphase">design técnico</span></a>
+      <a class="pstep" href="#spec"><span class="line"></span><span class="pnode">04</span><span class="pname">Spec</span><span class="pphase">design + fases</span></a>
+      <a class="pstep" href="#plano"><span class="line"></span><span class="pnode">05</span><span class="pname">Plano</span><span class="pphase">passo a passo</span></a>
+      <a class="pstep" href="#implementacao"><span class="line"></span><span class="pnode">06</span><span class="pname">Build</span><span class="pphase">TDD</span></a>
+      <a class="pstep" href="#gates"><span class="line"></span><span class="pnode">07</span><span class="pname">Gates</span><span class="pphase">qualidade</span></a>
+      <a class="pstep" href="#producao"><span class="pnode">08</span><span class="pname">Produção</span><span class="pphase">no ar</span></a>
+    </div>
+  </div>
+
+  <!-- BODY -->
+  <div class="shell">
+    <nav class="toc" aria-label="Índice">
+      <div class="toc-label">O fluxo</div>
+      <a href="#ideia">01 — Ideia</a>
+      <a href="#discovery">02 — Discovery / PRD</a>
+      <a href="#solution">03 — Solution Design</a>
+      <a href="#spec">04 — Spec</a>
+      <a href="#plano">05 — Plano</a>
+      <a href="#implementacao">06 — Implementação</a>
+      <a href="#gates">07 — Quality Gates</a>
+      <a href="#producao">08 — Produção</a>
+      <a href="#principios">Princípios</a>
+    </nav>
+
+    <main>
+      <section id="ideia" class="reveal">
+        <div class="sec-head"><span class="sec-num">01</span><h2>Ideia</h2></div>
+        <p class="sec-intro">Tudo começa com um problema, não com uma solução. A ideia é capturada em
+          linguagem natural, focando no <strong>porquê</strong> e em quem é impactado.</p>
+        <div class="stage">
+          <div class="stage-top"><span class="stage-n">01</span><span class="stage-title">CAPTURA DO PROBLEMA</span></div>
+          <p>Uma anotação curta descrevendo a dor, a oportunidade e o resultado esperado — sem comprometer com implementação. É o insumo para o brainstorming que vem a seguir.</p>
+          <div class="facts">
+            <div class="fact"><div class="k">Artefato</div><div class="v"><code>docs/ideas/&lt;slug&gt;/idea/input.md</code></div></div>
+            <div class="fact"><div class="k">Foco</div><div class="v">Problema e impacto, não solução</div></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="discovery" class="reveal">
+        <div class="sec-head"><span class="sec-num">02</span><h2>Discovery</h2></div>
+        <p class="sec-intro">Brainstorming colaborativo transforma a ideia em um PRD — em nível de
+          <strong>produto e negócio</strong>, sem detalhe técnico.</p>
+        <div class="stage">
+          <div class="stage-top"><span class="stage-n">02</span><span class="stage-title">PRD</span><span class="stage-skill">superpowers:brainstorming</span></div>
+          <p>Exploração de intenção e requisitos <strong>uma pergunta por vez</strong>, alternativas com trade-offs e uma recomendação. O resultado é um PRD publicado com a identidade da marca (tema escuro, accent lime), revisável.</p>
+          <div class="facts">
+            <div class="fact"><div class="k">Artefato</div><div class="v"><code>discovery/prd.html</code> (versionado)</div></div>
+            <div class="fact"><div class="k">Nível</div><div class="v">Produto / negócio — pt-BR</div></div>
+            <div class="fact gate"><div class="k">Portão</div><div class="v">PRD revisado e aprovado</div></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="solution" class="reveal">
+        <div class="sec-head"><span class="sec-num">03</span><h2>Solution Design</h2></div>
+        <p class="sec-intro">O PRD aprovado vira desenho técnico: como resolver, com quais decisões de
+          arquitetura, e como fatiar o trabalho em <strong>incrementos</strong> entregáveis.</p>
+        <div class="stage">
+          <div class="stage-top"><span class="stage-n">03</span><span class="stage-title">DESENHO DA SOLUÇÃO</span></div>
+          <p>Decisões de arquitetura, integrações e riscos, com a solução fatiada em incrementos independentes. Cada incremento entra no <strong>loop do superpowers</strong> — brainstorming → spec → plano → build — no seu próprio ciclo.</p>
+          <div class="facts">
+            <div class="fact"><div class="k">Artefato</div><div class="v"><code>solution/solution-design.html</code></div></div>
+            <div class="fact"><div class="k">Decompõe em</div><div class="v">Incrementos → loop do superpowers</div></div>
+            <div class="fact gate"><div class="k">Portão</div><div class="v">Solution design aprovado</div></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="spec" class="reveal">
+        <div class="sec-head"><span class="sec-num">04</span><h2>Spec</h2></div>
+        <p class="sec-intro">Antes de tocar em código, cada incremento ganha um documento de design técnico —
+          com objetivo, não-objetivos, decisões e <strong>fases de entrega</strong>.</p>
+        <div class="stage">
+          <div class="stage-top"><span class="stage-n">04</span><span class="stage-title">DOCUMENTO DE DESIGN</span><span class="stage-skill">brainstorming</span></div>
+          <p>Um brainstorming técnico fecha o escopo (incluindo o que fica de <strong>fora</strong>), registra a decisão arquitetural principal e organiza o trabalho em fases independentes, cada uma testável e commitável. Passa por uma auto-revisão e pela revisão do autor.</p>
+          <div class="facts">
+            <div class="fact"><div class="k">Artefato</div><div class="v"><code>docs/superpowers/specs/AAAA-MM-DD-&lt;tema&gt;-design.md</code></div></div>
+            <div class="fact"><div class="k">Contém</div><div class="v">Contexto · escopo/não-escopo · decisões · fases · riscos</div></div>
+            <div class="fact gate"><div class="k">Portão</div><div class="v">Spec revisado e aprovado</div></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="plano" class="reveal">
+        <div class="sec-head"><span class="sec-num">05</span><h2>Plano</h2></div>
+        <p class="sec-intro">O spec aprovado é traduzido em um plano de implementação detalhado.</p>
+        <div class="stage">
+          <div class="stage-top"><span class="stage-n">05</span><span class="stage-title">PLANO DE IMPLEMENTAÇÃO</span><span class="stage-skill">superpowers:writing-plans</span></div>
+          <p>Cada fase é <strong>independente, testável e commitável</strong>, com critérios de aceite claros e a ordem que minimiza retrabalho — lint primeiro (base), depois refatorações guardadas por testes, depois portões.</p>
+          <div class="facts">
+            <div class="fact"><div class="k">Saída</div><div class="v">Fases ordenadas com critérios de aceite</div></div>
+            <div class="fact"><div class="k">Princípio</div><div class="v">1 fase → 1 (ou poucos) commits</div></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="implementacao" class="reveal">
+        <div class="sec-head"><span class="sec-num">06</span><h2>Implementação</h2></div>
+        <p class="sec-intro">Cada fase é construída sob <strong>TDD estrito</strong>: nenhum código de
+          produção sem um teste falhando antes.</p>
+        <div class="stage">
+          <div class="stage-top"><span class="stage-n">06</span><span class="stage-title">RED · GREEN · REFACTOR</span><span class="stage-skill">test-driven-development</span></div>
+          <p>Escreva o teste e veja-o <strong>falhar</strong> (RED). Escreva o mínimo para passar (GREEN). Limpe mantendo o verde (REFACTOR). Refatorações puras são guardadas pelos testes existentes. Commits seguem <strong>Conventional Commits</strong>, um por fase.</p>
+          <div class="facts">
+            <div class="fact"><div class="k">Feedback imediato</div><div class="v">Hook <code>lint-after-edit</code> linta cada arquivo editado</div></div>
+            <div class="fact"><div class="k">Revisão</div><div class="v">Subagentes acoplados via hooks/checkpoints do superpowers (ver Gates)</div></div>
+            <div class="fact"><div class="k">Commits</div><div class="v"><code>feat</code> · <code>fix</code> · <code>refactor</code> · <code>test</code> · <code>docs</code> · <code>chore</code></div></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="gates" class="reveal">
+        <div class="sec-head"><span class="sec-num">07</span><h2>Quality Gates</h2></div>
+        <p class="sec-intro">Duas camadas de portões, todas <strong>locais</strong>: checks
+          determinísticos e revisores em forma de subagentes — acoplados ao loop do superpowers via
+          hooks. O pre-push é a fonte de verdade sobre o que pode entrar.</p>
+        <h3>Checks determinísticos</h3>
+        <div class="gates">
+          <div class="gate-col">
+            <div class="when">a cada edição</div>
+            <h4>EDIT</h4>
+            <ul>
+              <li>Hook <code>lint-after-edit</code></li>
+              <li>ESLint no arquivo tocado</li>
+              <li>Advisório (não bloqueia)</li>
+            </ul>
+          </div>
+          <div class="gate-col">
+            <div class="when">pre-commit</div>
+            <h4>COMMIT</h4>
+            <ul>
+              <li>Prettier (re-stage)</li>
+              <li>ESLint + typecheck</li>
+              <li>commitlint (Conventional)</li>
+            </ul>
+          </div>
+          <div class="gate-col auth">
+            <div class="when">pre-push · autoritativo</div>
+            <h4>VERIFY</h4>
+            <ul>
+              <li>build <code>@forja/domain</code></li>
+              <li>typecheck — todos os pacotes</li>
+              <li>lint — todos os pacotes</li>
+              <li>testes unitários — todos</li>
+            </ul>
+          </div>
+        </div>
+        <pre class="code"><span class="c"># o gate que decide o que vai para produção</span>
+$ pnpm verify
+  <span class="a">→</span> build domain  <span class="a">→</span> typecheck  <span class="a">→</span> lint  <span class="a">→</span> test   <span class="c"># falhou? o push é barrado</span></pre>
+        <p class="gate-note">Testes de <b>integração</b> (<code>*.integration.test.ts</code>) precisam de Postgres e rodam sob demanda via <code>pnpm --filter @forja/web test:db</code> — fora do gate para não flakar. Cobertura é medida (<code>pnpm coverage</code>) com um piso que sobe conforme os testes crescem.</p>
+
+        <h3 style="margin-top:38px">Revisores como subagentes · acoplados via hooks</h3>
+        <p class="sec-intro" style="margin-bottom:20px">O loop do superpowers <strong>pluga subagentes revisores via hooks</strong> (PostToolUse) e nos checkpoints da execução. São eles que produzem os <strong>gates de qualidade e segurança</strong> — e bloqueiam em achados de alta severidade.</p>
+        <div class="grid">
+          <div class="pr"><div class="ico">↺</div><h4>lint-after-edit</h4><p><code>hook · PostToolUse</code> — roda o ESLint no arquivo recém-editado. Feedback imediato e advisório, não bloqueia.</p></div>
+          <div class="pr"><div class="ico">◐</div><h4>ux-patterns-reviewer</h4><p><code>subagente</code> — valida a UI contra o design system (modo plano + diff). Bloqueia em achados altos.</p></div>
+          <div class="pr"><div class="ico">⌥</div><h4>code review</h4><p><code>subagente</code> — revisa o diff contra o plano e os padrões do projeto, com severidade e confiança.</p></div>
+          <div class="pr"><div class="ico">⛨</div><h4>security review</h4><p><code>subagente</code> — varre as mudanças pendentes em busca de vulnerabilidades antes do push.</p></div>
+        </div>
+      </section>
+
+      <section id="producao" class="reveal">
+        <div class="sec-head"><span class="sec-num">08</span><h2>Produção</h2></div>
+        <p class="sec-intro">Verde no pre-push e confirmação explícita: o código sobe para a <code>main</code>
+          e é entregue.</p>
+        <div class="stage">
+          <div class="stage-top"><span class="stage-n">08</span><span class="stage-title">DEPLOY</span><span class="stage-skill">finishing-a-development-branch</span></div>
+          <p><strong>Nunca</strong> se faz push em <code>main</code> sem confirmação — ele dispara a entrega. O <code>web</code> sobe como imagem Docker via compose; o app <strong>mobile</strong> usa EAS Workflows (preview no push em <code>main</code>, produção em tags <code>v*</code>).</p>
+          <div class="facts">
+            <div class="fact"><div class="k">Web</div><div class="v">Imagem Docker · <code>deploy/forja/compose.yml</code></div></div>
+            <div class="fact"><div class="k">Mobile</div><div class="v">EAS Workflows — preview / produção</div></div>
+            <div class="fact gate"><div class="k">Portão</div><div class="v">pre-push verde + confirmação de push</div></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="principios" class="reveal">
+        <div class="sec-head"><span class="sec-num">★</span><h2>Princípios</h2></div>
+        <p class="sec-intro">As regras transversais que valem em todas as etapas.</p>
+        <div class="grid">
+          <div class="pr"><div class="ico">⌗</div><h4>Monorepo em camadas</h4><p>pnpm: <code>mobile</code> · <code>web</code> · <code>domain</code>. Fluxo <code>route → service → repository → db</code>, imposto por ESLint.</p></div>
+          <div class="pr"><div class="ico">RG</div><h4>TDD estrito</h4><p>Nenhum código de produção sem um teste falhando antes. Viu falhar, então implementa.</p></div>
+          <div class="pr"><div class="ico">!</div><h4>Erros tipados</h4><p><code>AppError</code> + <code>toErrorResponse</code> mapeiam código e status HTTP. Nada de <em>catch-all</em> que vira 401.</p></div>
+          <div class="pr"><div class="ico">⎇</div><h4>Commits convencionais</h4><p><code>feat</code>/<code>fix</code>/<code>refactor</code>… Nunca push em <code>main</code> sem confirmação explícita.</p></div>
+          <div class="pr"><div class="ico">文</div><h4>Idiomas</h4><p>Código e comentários em <strong>inglês</strong>; texto de interface em <strong>pt-BR</strong>.</p></div>
+          <div class="pr"><div class="ico">◐</div><h4>Design system de marca</h4><p>Bebas Neue + Syne + accent lime, via tokens. Pesquisa de UX antes de telas novas; <code>ux-patterns-reviewer</code> guarda o padrão.</p></div>
+          <div class="pr"><div class="ico">✓</div><h4>Gate local é a verdade</h4><p>Sem CI. O <code>pre-push</code> (<code>pnpm verify</code>) decide o que entra — local e determinístico.</p></div>
+          <div class="pr"><div class="ico">▤</div><h4>Documentação viva</h4><p>PRD → solution → spec versionados e publicados no GitHub Pages. O processo é tão rastreável quanto o código.</p></div>
+          <div class="pr"><div class="ico">⚇</div><h4>Revisores como subagentes</h4><p>Acoplados ao loop do <strong>superpowers</strong> via hooks/checkpoints; formam os gates de segurança e qualidade, bloqueando em alta severidade.</p></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="closing reveal">
+    <div class="rule"></div>
+    <blockquote>Da <span class="lime">ideia</span> à <span class="lime">produção</span> — com portões, não com fé.</blockquote>
+  </div>
+
+  <footer>
+    <div class="inner">
+      <span>Forja — Playbook de Engenharia</span>
+      <span><a href="../index.html">Docs</a> · GitHub Pages</span>
+    </div>
+  </footer>
+
+  <script>
+    // Staggered reveal on scroll
+    const revs = [...document.querySelectorAll('.reveal')];
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
+    revs.forEach((el, i) => { el.style.transitionDelay = Math.min(i * 40, 240) + 'ms'; io.observe(el); });
+
+    // Scroll-spy for the TOC
+    const links = [...document.querySelectorAll('nav.toc a')];
+    const map = new Map(links.map((a) => [a.getAttribute('href').slice(1), a]));
+    const spy = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) {
+          links.forEach((l) => l.classList.remove('active'));
+          map.get(e.target.id)?.classList.add('active');
+        }
+      });
+    }, { rootMargin: '-20% 0px -70% 0px' });
+    document.querySelectorAll('main section[id]').forEach((s) => spy.observe(s));
+  </script>
+</body>
+</html>
