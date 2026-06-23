@@ -140,31 +140,11 @@
   line-height: 1.35;
 }
 
-.admin-build-type {
-  display: inline-flex;
-  margin-bottom: 0.35rem;
-  border: 1px solid rgba(194, 240, 0, 0.26);
-  border-radius: 999px;
-  padding: 0.2rem 0.55rem;
-  color: var(--color-accent);
-  font-size: 0.66rem;
-  letter-spacing: 0.12rem;
-}
-
 .admin-build-meta {
   display: flex;
   flex-wrap: wrap;
   gap: 0.45rem;
   margin-top: 0.8rem;
-}
-
-.admin-build-meta span {
-  border: 1px solid var(--color-border);
-  border-radius: 999px;
-  padding: 0.28rem 0.58rem;
-  color: var(--color-muted);
-  font-size: 0.72rem;
-  line-height: 1.2;
 }
 
 .admin-log-panel .admin-card-body {
@@ -1097,17 +1077,6 @@ select:disabled {
   gap: 0.45rem;
 }
 
-.admin-import-exercise-meta span {
-  display: inline-flex;
-  min-height: 1.85rem;
-  align-items: center;
-  border: 1px solid var(--color-border-med);
-  border-radius: var(--radius-pill);
-  color: var(--color-text-med);
-  font-size: 0.68rem;
-  padding: 0 0.65rem;
-}
-
 .admin-field-error {
   margin: -0.25rem 0 0;
   color: var(--color-danger);
@@ -1943,21 +1912,6 @@ select:disabled {
   gap: 0.5rem;
 }
 
-.admin-publication-meta span {
-  display: inline-flex;
-  min-height: 2.25rem;
-  align-items: center;
-  border: 1px solid var(--color-border-med);
-  border-radius: var(--radius-pill);
-  background: rgba(28, 28, 28, 0.82);
-  color: var(--color-text-med);
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.08rem;
-  padding: 0 0.8rem;
-  text-transform: uppercase;
-}
-
 .admin-exercise-advanced {
   margin-top: 1rem;
   border-top: 1px solid var(--color-border);
@@ -2154,21 +2108,6 @@ select:disabled {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
-}
-
-.admin-login-assurance span {
-  display: inline-flex;
-  min-height: 2rem;
-  align-items: center;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-pill);
-  background: var(--color-surface-2);
-  color: var(--color-text-med);
-  font-size: 0.66rem;
-  font-weight: 600;
-  letter-spacing: 0.08rem;
-  padding: 0 0.7rem;
-  text-transform: uppercase;
 }
 
 .admin-back-link {

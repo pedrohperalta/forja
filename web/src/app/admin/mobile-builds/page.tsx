@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import type { ReactElement } from 'react'
 
-import { AdminCard, AdminFrame, StatusPill } from '@/components/admin/AdminUi'
+import { AdminCard, AdminFrame, AdminTag, StatusPill } from '@/components/admin/AdminUi'
 import { AdminBuildAutoRefresh } from '@/components/admin/AdminBuildAutoRefresh'
 import { AdminBuildLog } from '@/components/admin/AdminBuildLog'
 import { getCurrentAdminUser } from '@/server/auth/currentAdmin'
@@ -145,7 +145,7 @@ function BuildRow({ build }: { build: MobileBuildJob }): ReactElement {
       <div className="admin-build-row-main">
         <div className="admin-build-row-title">
           <div>
-            <span className="admin-build-type">{build.type.toUpperCase()}</span>
+            <AdminTag>{build.type.toUpperCase()}</AdminTag>
             <strong>{build.artifactName ?? build.id}</strong>
           </div>
           {build.status === 'completed' ? null : (
@@ -155,10 +155,12 @@ function BuildRow({ build }: { build: MobileBuildJob }): ReactElement {
           )}
         </div>
         <div className="admin-build-meta">
-          <span>#{build.id}</span>
-          <span>Criada {formatDate(build.createdAt)}</span>
-          {build.completedAt ? <span>Finalizada {formatDate(build.completedAt)}</span> : null}
-          {build.artifactBytes ? <span>{formatBytes(build.artifactBytes)}</span> : null}
+          <AdminTag>#{build.id}</AdminTag>
+          <AdminTag>Criada {formatDate(build.createdAt)}</AdminTag>
+          {build.completedAt ? (
+            <AdminTag>Finalizada {formatDate(build.completedAt)}</AdminTag>
+          ) : null}
+          {build.artifactBytes ? <AdminTag>{formatBytes(build.artifactBytes)}</AdminTag> : null}
         </div>
       </div>
 

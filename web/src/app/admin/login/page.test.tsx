@@ -14,6 +14,8 @@ describe('/admin/login', () => {
     expect(markup).toContain('/api/admin/auth/google/start')
     expect(markup).toContain('admin-login-page')
     expect(markup).toContain('admin-login-assurance')
+    // assurances are static metadata, not buttons — rendered as AdminTag
+    expect(markup).toContain('admin-tag')
     expect(markup).toContain('admin-primary-button')
     expect(markup).toContain('bg-accent')
   })

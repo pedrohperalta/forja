@@ -4,7 +4,7 @@ import { notFound, redirect } from 'next/navigation'
 import type { ReactElement } from 'react'
 
 import { AdminPlanDraftForm } from '@/components/admin/AdminPlanDraftForm'
-import { AdminCard, AdminFrame, StatusPill } from '@/components/admin/AdminUi'
+import { AdminCard, AdminFrame, AdminTag, StatusPill } from '@/components/admin/AdminUi'
 import { getCurrentAdminUser } from '@/server/auth/currentAdmin'
 import { getDatabase } from '@/server/db/client'
 import {
@@ -17,10 +17,7 @@ import {
   updateDraftExercise,
   updateDraftPlanDetails,
 } from '@/server/services/plans/planService'
-import {
-  getUploadsDir,
-  uploadEquipmentPhoto,
-} from '@/server/services/photos/equipmentPhotoService'
+import { getUploadsDir, uploadEquipmentPhoto } from '@/server/services/photos/equipmentPhotoService'
 
 type PlanEditorViewProps = {
   plan: {
@@ -93,10 +90,10 @@ export function PlanEditorView({ plan }: PlanEditorViewProps): ReactElement {
         </div>
         <div>
           <div className="admin-publication-meta">
-            <span>
+            <AdminTag>
               {plan.latestRevisionNumber ? `Rev. ${plan.latestRevisionNumber}` : 'Sem revisão'}
-            </span>
-            <span>{draft.data.exercises.length} exercícios</span>
+            </AdminTag>
+            <AdminTag>{draft.data.exercises.length} exercícios</AdminTag>
           </div>
           <p className="admin-muted admin-editor-next-copy">{status.publishDescription}</p>
           <div className="admin-actions-row admin-actions-row-tight">

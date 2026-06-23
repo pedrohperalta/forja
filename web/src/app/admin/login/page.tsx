@@ -1,5 +1,7 @@
 import type { ReactElement } from 'react'
 
+import { AdminTag } from '@/components/admin/AdminUi'
+
 export default function AdminLoginPage(): ReactElement {
   return (
     <main className="admin-login-page">
@@ -9,12 +11,11 @@ export default function AdminLoginPage(): ReactElement {
           <p className="admin-wordmark">FORJA ADMIN</p>
           <h1 className="admin-title">Painel de treino</h1>
           <p className="admin-subtitle">
-            Edite planos, publique revisões e mantenha o conteúdo do app no mesmo padrão da
-            Forja.
+            Edite planos, publique revisões e mantenha o conteúdo do app no mesmo padrão da Forja.
           </p>
           <div className="admin-login-assurance" aria-label="Garantias do admin">
-            <span>Acesso restrito</span>
-            <span>Publicação sempre manual</span>
+            <AdminTag>Acesso restrito</AdminTag>
+            <AdminTag>Publicação sempre manual</AdminTag>
           </div>
           <div className="admin-actions-row">
             <a className="admin-primary-button bg-accent" href="/api/admin/auth/google/start">
