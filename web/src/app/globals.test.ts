@@ -16,6 +16,29 @@ describe('admin responsive CSS', () => {
     expect(literalRadiusDeclarations).toEqual([])
   })
 
+  it('maps admin spacing declarations to the spacing token scale', () => {
+    const literalSpacingDeclarations = Array.from(
+      css.matchAll(/(?:padding|margin|gap)(?:-[a-z]+)?:\s*([^;]+);/g),
+    )
+      .map((match) => match[0])
+      .filter((declaration) => {
+        const numericValues = declaration.match(/-?\d*\.?\d+(?:rem|px)/g) ?? []
+
+        return numericValues.some((value) => !['1px', '2px', '3px', '-1px'].includes(value))
+      })
+
+    expect(literalSpacingDeclarations).toEqual([])
+  })
+
+  it('maps admin type sizes to the text and display token scales', () => {
+    const literalTypeDeclarations = Array.from(css.matchAll(/font-size:\s*([^;]+);/g))
+      .map((match) => match[1]?.trim() ?? '')
+      .filter((value) => !value.startsWith('var(--text-'))
+      .filter((value) => !value.startsWith('var(--display-'))
+
+    expect(literalTypeDeclarations).toEqual([])
+  })
+
   it('keeps the admin usable as a mobile web app', () => {
     expect(css).toContain('@media (max-width: 860px)')
     expect(css).toContain('@media (max-width: 520px)')
