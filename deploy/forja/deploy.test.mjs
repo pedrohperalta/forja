@@ -23,6 +23,9 @@ test('compose config declares the expected Portainer stack services', async () =
   assert.match(compose, /\/var\/lib\/postgresql/)
   assert.doesNotMatch(compose, /\/var\/lib\/postgresql\/data/)
   assert.match(compose, /\/data\/uploads/)
+  assert.match(compose, /\/data\/mobile-builds/)
+  assert.match(compose, /\/var\/run\/docker\.sock/)
+  assert.match(compose, /\/root\/projects\/forja:\/repo:ro/)
 })
 
 test('local compose override exposes Postgres only on localhost', async () => {
@@ -39,9 +42,12 @@ test('web Dockerfile builds a non-root Node 24 standalone image', async () => {
   const dockerfile = await readFile(join(ROOT, 'web', 'Dockerfile'), 'utf8')
 
   assert.match(dockerfile, /FROM node:24-alpine/)
+  assert.match(dockerfile, /docker-cli/)
   assert.match(dockerfile, /pnpm --filter @forja\/web build/)
   assert.match(dockerfile, /COPY --from=builder .*standalone/)
   assert.match(dockerfile, /USER nextjs/)
+  assert.match(dockerfile, /\/app\/web\/public/)
+  assert.match(dockerfile, /\/data\/mobile-builds/)
   assert.match(dockerfile, /\/data\/uploads/)
 })
 

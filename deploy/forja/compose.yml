@@ -21,11 +21,30 @@ services:
     image: forja-web:latest
     container_name: forja-web
     restart: unless-stopped
+    group_add:
+      - "${DOCKER_GID:-988}"
     env_file:
       - path: .env
         required: false
     environment:
       DATABASE_URL: postgres://${POSTGRES_USER:-forja}:${POSTGRES_PASSWORD}@forja-postgres:5432/${POSTGRES_DB:-forja}
+      FORJA_PUBLIC_URL: ${FORJA_PUBLIC_URL:?set FORJA_PUBLIC_URL}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:?set GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:?set GOOGLE_CLIENT_SECRET}
+      FORJA_ALLOWED_USER_EMAILS: ${FORJA_ALLOWED_USER_EMAILS:?set FORJA_ALLOWED_USER_EMAILS}
+      FORJA_ADMIN_EMAILS: ${FORJA_ADMIN_EMAILS:?set FORJA_ADMIN_EMAILS}
+      FORJA_ACCESS_TOKEN_SECRET: ${FORJA_ACCESS_TOKEN_SECRET:?set FORJA_ACCESS_TOKEN_SECRET}
+      FORJA_REFRESH_TOKEN_SECRET: ${FORJA_REFRESH_TOKEN_SECRET:?set FORJA_REFRESH_TOKEN_SECRET}
+      FORJA_ADMIN_SESSION_SECRET: ${FORJA_ADMIN_SESSION_SECRET:?set FORJA_ADMIN_SESSION_SECRET}
+      FORJA_AUTH_CODE_SECRET: ${FORJA_AUTH_CODE_SECRET:?set FORJA_AUTH_CODE_SECRET}
+      FORJA_OAUTH_STATE_SECRET: ${FORJA_OAUTH_STATE_SECRET:?set FORJA_OAUTH_STATE_SECRET}
+      FORJA_SYNC_CURSOR_SECRET: ${FORJA_SYNC_CURSOR_SECRET:?set FORJA_SYNC_CURSOR_SECRET}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:?set ANTHROPIC_API_KEY}
+      ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-sonnet-4-5}
+      FORJA_MOBILE_BUILD_API_URL: ${FORJA_MOBILE_BUILD_API_URL:-https://forja.phperalta.me}
+      FORJA_MOBILE_BUILD_OUTPUT_DIR: /data/mobile-builds
+      FORJA_MOBILE_BUILD_REPO_DIR: /repo
+      FORJA_MOBILE_BUILD_SCRIPT: /repo/build-apk.sh
       UPLOADS_DIR: /data/uploads
       NODE_ENV: production
       PORT: 3000
@@ -39,13 +58,17 @@ services:
       retries: 5
     volumes:
       - forja-uploads:/data/uploads
+      - forja-mobile-builds:/data/mobile-builds
+      - /root/projects/forja:/repo:ro
+      - /var/run/docker.sock:/var/run/docker.sock
     labels:
       - traefik.enable=true
-      - traefik.http.routers.forja-web.rule=Host(`forja.phperalta.me`)
-      - traefik.http.routers.forja-web.entrypoints=websecure
+      - traefik.docker.network=root_default
+      - traefik.http.routers.forja-web.rule=Host(`${FORJA_HOST:?set FORJA_HOST}`)
+      - traefik.http.routers.forja-web.entrypoints=web,websecure
       - traefik.http.routers.forja-web.tls=true
       - traefik.http.routers.forja-web.tls.certresolver=mytlschallenge
-      - traefik.http.routers.forja-web.middlewares=cloudflare-only@file
+      - traefik.http.routers.forja-web.middlewares=cf-only@docker
       - traefik.http.services.forja-web.loadbalancer.server.port=3000
     networks:
       - forja-internal
@@ -75,6 +98,7 @@ services:
 volumes:
   forja-postgres-data:
   forja-uploads:
+  forja-mobile-builds:
   forja-backups:
 
 networks:

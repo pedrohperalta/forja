@@ -1,0 +1,14 @@
+.git
+.next
+node_modules
+mobile/node_modules
+packages/*/node_modules
+web/node_modules
+
+.env
+.env.*
+deploy/forja/.env
+
+*.log
+coverage
+dist

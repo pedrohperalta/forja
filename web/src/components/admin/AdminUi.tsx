@@ -2,7 +2,7 @@ import Link from 'next/link'
 import type { ReactElement, ReactNode } from 'react'
 
 type AdminFrameProps = {
-  active: 'overview' | 'plans' | 'import'
+  active: 'overview' | 'plans' | 'import' | 'builds'
   eyebrow: string
   title: string
   subtitle?: string
@@ -32,6 +32,7 @@ const NAV_ITEMS = [
   { key: 'overview', href: '/admin', label: 'Painel' },
   { key: 'plans', href: '/admin/plans', label: 'Planos' },
   { key: 'import', href: '/admin/import', label: 'Importar' },
+  { key: 'builds', href: '/admin/mobile-builds', label: 'Builds' },
 ] satisfies Array<{
   key: AdminFrameProps['active']
   href: string
@@ -54,16 +55,16 @@ export function AdminFrame({
             FORJA ADMIN
           </Link>
           <nav className="admin-top-nav" aria-label="Navegação admin">
-          {NAV_ITEMS.map((item) => (
-            <Link
-              key={item.key}
-              className="admin-nav-link"
-              data-active={item.key === active}
-              href={item.href}
-            >
-              <span>{item.label}</span>
-            </Link>
-          ))}
+            {NAV_ITEMS.map((item) => (
+              <Link
+                key={item.key}
+                className="admin-nav-link"
+                data-active={item.key === active}
+                href={item.href}
+              >
+                <span>{item.label}</span>
+              </Link>
+            ))}
           </nav>
           <form action="/api/admin/auth/logout" method="post">
             <button className="admin-secondary-button" type="submit">

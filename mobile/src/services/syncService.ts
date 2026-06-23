@@ -38,9 +38,7 @@ async function pushData(client: MobileApiClient): Promise<void> {
     clientMutationId: Crypto.randomUUID(),
   })
 
-  useAppStore
-    .getState()
-    .markSessionsSynced(response.acceptedWorkoutSessionIds as WorkoutId[])
+  useAppStore.getState().markSessionsSynced(response.acceptedWorkoutSessionIds as WorkoutId[])
   mergePulledWorkoutSessions(response.currentWorkoutSessions.map((change) => change.data))
 }
 
@@ -71,7 +69,7 @@ async function pullData(client: MobileApiClient): Promise<void> {
 }
 
 /**
- * Pushes local unsynced data to Supabase, then pulls remote data.
+ * Pushes local unsynced data to the Forja API, then pulls remote data.
  * Push-first ensures local changes are preserved on conflict.
  * No-op if not authenticated or a sync is already in progress.
  */
