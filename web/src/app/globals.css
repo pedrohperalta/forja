@@ -442,6 +442,7 @@ select:disabled {
   align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
+  margin-bottom: var(--space-6);
 }
 
 .admin-section-label {
@@ -455,10 +456,10 @@ select:disabled {
   margin: 0;
   color: var(--color-text);
   font-family: 'BebasNeue', Impact, sans-serif;
-  font-size: 4.8rem;
+  font-size: var(--display-lg);
   font-weight: 400;
   letter-spacing: 1px;
-  line-height: 0.92;
+  line-height: 0.95;
 }
 
 .admin-subtitle {
@@ -1554,7 +1555,7 @@ select:disabled {
 .admin-table-row small {
   display: block;
   margin-top: 0.2rem;
-  color: var(--color-dim);
+  color: var(--color-muted);
   font-size: 0.72rem;
 }
 
@@ -1676,7 +1677,7 @@ select:disabled {
 }
 
 .admin-plan-card-meta dt {
-  color: var(--color-dim);
+  color: var(--color-muted);
   font-size: 0.62rem;
   font-weight: 700;
   letter-spacing: 0.12rem;
@@ -2169,10 +2170,6 @@ select:disabled {
     padding: var(--space-5) var(--space-4) calc(6rem + env(safe-area-inset-bottom));
   }
 
-  .admin-title {
-    font-size: 3.8rem;
-  }
-
   .admin-focus-title {
     font-size: 2.85rem;
   }
@@ -2420,11 +2417,6 @@ select:disabled {
 
   .admin-header-row {
     gap: 0.85rem;
-  }
-
-  .admin-title {
-    font-size: 3rem;
-    line-height: 0.95;
   }
 
   .admin-focus-title {
