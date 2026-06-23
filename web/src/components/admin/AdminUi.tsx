@@ -52,30 +52,34 @@ export function AdminFrame({
   children,
 }: AdminFrameProps): ReactElement {
   return (
-    <main className="admin-shell">
-      <div className="admin-content">
-        <div className="admin-topbar">
-          <Link className="admin-wordmark" href="/admin">
-            FORJA ADMIN
-          </Link>
-          <nav className="admin-top-nav" aria-label="Navegação admin">
-            {NAV_ITEMS.map((item) => (
+    <div className="admin-shell">
+      <aside className="admin-sidebar" aria-label="Navegação admin">
+        <Link className="admin-wordmark" href="/admin">
+          FORJA ADMIN
+        </Link>
+        <nav className="admin-nav">
+          {NAV_ITEMS.map((item) => {
+            const isActive = item.key === active
+            return (
               <Link
                 key={item.key}
                 className="admin-nav-link"
-                data-active={item.key === active}
+                data-active={isActive}
+                aria-current={isActive ? 'page' : undefined}
                 href={item.href}
               >
                 <span>{item.label}</span>
               </Link>
-            ))}
-          </nav>
-          <form action="/api/admin/auth/logout" method="post">
-            <button className="admin-secondary-button" type="submit">
-              Sair
-            </button>
-          </form>
-        </div>
+            )
+          })}
+        </nav>
+        <form className="admin-sidebar-footer" action="/api/admin/auth/logout" method="post">
+          <button className="admin-secondary-button admin-button-sm" type="submit">
+            Sair
+          </button>
+        </form>
+      </aside>
+      <main className="admin-content">
         <header className="admin-header-row">
           <div>
             <p className="admin-section-label">{eyebrow}</p>
@@ -85,8 +89,8 @@ export function AdminFrame({
           {action}
         </header>
         {children}
-      </div>
-    </main>
+      </main>
+    </div>
   )
 }
 
