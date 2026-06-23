@@ -659,7 +659,7 @@ select:disabled {
 }
 
 .admin-card-body {
-  padding: 1.25rem;
+  padding: var(--space-6);
 }
 
 .admin-accent-bar {
@@ -1089,7 +1089,7 @@ select:disabled {
 }
 
 .admin-section {
-  margin-top: 1.25rem;
+  margin-top: var(--space-8);
 }
 
 .admin-plan-draft-form {
@@ -1276,8 +1276,8 @@ select:disabled {
 
 .admin-simple-dashboard {
   display: grid;
-  gap: 1rem;
-  width: min(100%, 46rem);
+  gap: var(--space-5);
+  width: min(100%, 60rem);
   margin-top: 1.5rem;
 }
 
@@ -2105,7 +2105,22 @@ select:disabled {
 }
 
 .admin-login-card {
-  width: min(100%, 28rem);
+  width: min(100%, 30rem);
+}
+
+.admin-login-card .admin-card-body {
+  display: grid;
+  gap: var(--space-5);
+  padding: var(--space-8);
+}
+
+.admin-login-card .admin-title {
+  font-size: var(--display-xl);
+}
+
+.admin-login-card .admin-subtitle,
+.admin-login-card .admin-actions-row {
+  margin-top: 0;
 }
 
 .admin-login-assurance {
