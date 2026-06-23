@@ -63,3 +63,45 @@ interfaces.
 
 No CI. `pnpm verify` (root) runs on `git push` (lefthook `pre-push`) and is the
 authoritative gate: build domain → typecheck → lint → unit tests, all packages.
+
+## UI design system
+
+The admin has **no Tailwind / component library** — it is hand-written CSS in
+`src/app/globals.css`, namespaced `.admin-*`, consuming design tokens defined as
+CSS custom properties on `:root`. **That `:root` block is the source of truth.**
+Never hardcode hex colors or px radii in a component — reference a token.
+
+- **Brand / theme:** dark UI on `--color-background: #080808`, surfaces
+  `--color-surface`/`--color-surface-2`, borders `--color-border`/`-med`. Lime
+  accent `--color-accent: #c2f000` (+ `--color-accent-dim`/`-glow`). Feedback:
+  `--color-danger` (#ff453a), `--color-warning` (#f59e0b), each with a `-dim`.
+  Text scale: `--color-text` / `-med` / `--color-muted` / `--color-dim`. This
+  matches the mobile app's brand (lime accent, Bebas Neue) — keep them aligned.
+- **Typography:** `'BebasNeue'` (display — titles, hero text, stat/KPI numbers);
+  `'Syne'` (UI — body, labels, buttons). Section labels use `.admin-section-label`,
+  titles `.admin-section-title`.
+- **Shape:** buttons are pills — `--radius-pill: 100px`.
+- **Buttons:** `.admin-primary-button` (CTA; pair with the `.bg-accent` utility
+  for the lime fill), `.admin-compact-button` (smaller), `.admin-danger-button`
+  (destructive). `.bg-accent` (`background: var(--color-accent)`) is a real,
+  intentional utility — not a leftover Tailwind class.
+- **Component vocabulary** (extend these; don't invent parallel styles):
+  sections/cards (`.admin-section`, `.admin-card`, `.admin-panel`), KPIs
+  (`.admin-kpi-*`), forms (`.admin-form-*`, `.admin-field-*`, `.admin-input`),
+  file upload (`.admin-file-*`), build pipeline (`.admin-build-*`,
+  `.admin-log-*`), plans/imports/workflows (`.admin-plan-*`, `.admin-import-*`,
+  `.admin-workflow-*`), login (`.admin-login-*`).
+- **States:** loading/empty/error/feedback have dedicated classes — reuse them:
+  `.admin-empty-state`, `.admin-error-banner`, `.admin-notice-banner`,
+  `.admin-field-error`, `.admin-save-status`, `.admin-live-status`,
+  `.admin-danger-zone`, `.admin-muted`.
+
+Adding UI: extend `globals.css` with `.admin-*` classes that consume the
+existing tokens; reuse the component vocabulary above before adding new classes.
+
+### UX research before new screens
+
+Before implementing a **new** admin screen (not a tweak to an existing one),
+run a UX research sub-agent first to ground layout, states, and interactions —
+then build. Validate diffs that touch `src/app/**` or `src/components/**`
+against this design system (see the `ux-patterns-reviewer` agent).
