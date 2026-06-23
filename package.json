@@ -14,7 +14,7 @@
   "scripts": {
     "test": "pnpm --filter @forja/mobile test && pnpm --filter @forja/domain test && pnpm --filter @forja/web test",
     "typecheck": "pnpm --filter @forja/mobile typecheck && pnpm --filter @forja/domain typecheck && pnpm --filter @forja/web typecheck",
-    "lint": "pnpm --filter @forja/mobile lint",
+    "lint": "pnpm -r --if-present lint",
     "check:slice0": "node --test scripts/check-slice0-workspace.test.mjs"
   },
   "devDependencies": {

@@ -1,12 +1,7 @@
-import { and, asc, desc, eq, gt, isNull, max, sql } from 'drizzle-orm'
+import { and, asc, desc, eq, gt, isNull, max } from 'drizzle-orm'
 import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js'
 
-import {
-  PlanSchema,
-  WorkoutSessionSchema,
-  type Plan,
-  type WorkoutSession,
-} from '@forja/domain'
+import { PlanSchema, WorkoutSessionSchema, type Plan, type WorkoutSession } from '@forja/domain'
 import * as schema from '../db/schema'
 
 export type Database = PostgresJsDatabase<typeof schema>
@@ -38,10 +33,7 @@ export type CreateUserInput = {
   now: Date
 }
 
-export async function createUser(
-  db: Database,
-  input: CreateUserInput,
-): Promise<UserRow> {
+export async function createUser(db: Database, input: CreateUserInput): Promise<UserRow> {
   const [user] = await db
     .insert(schema.users)
     .values({
@@ -57,28 +49,14 @@ export async function createUser(
   return required(user)
 }
 
-export async function findUserByEmail(
-  db: Database,
-  email: string,
-): Promise<UserRow | null> {
-  const [user] = await db
-    .select()
-    .from(schema.users)
-    .where(eq(schema.users.email, email))
-    .limit(1)
+export async function findUserByEmail(db: Database, email: string): Promise<UserRow | null> {
+  const [user] = await db.select().from(schema.users).where(eq(schema.users.email, email)).limit(1)
 
   return user ?? null
 }
 
-export async function findUserById(
-  db: Database,
-  id: string,
-): Promise<UserRow | null> {
-  const [user] = await db
-    .select()
-    .from(schema.users)
-    .where(eq(schema.users.id, id))
-    .limit(1)
+export async function findUserById(db: Database, id: string): Promise<UserRow | null> {
+  const [user] = await db.select().from(schema.users).where(eq(schema.users.id, id)).limit(1)
 
   return user ?? null
 }
@@ -104,10 +82,7 @@ export async function linkOAuthAccount(
       updatedAt: input.now,
     })
     .onConflictDoUpdate({
-      target: [
-        schema.oauthAccounts.provider,
-        schema.oauthAccounts.providerAccountId,
-      ],
+      target: [schema.oauthAccounts.provider, schema.oauthAccounts.providerAccountId],
       set: {
         userId: input.userId,
         updatedAt: input.now,
@@ -299,10 +274,8 @@ export async function useMobileAuthCode(
   redirectUriOrUsedAt: string | Date,
   maybeUsedAt?: Date,
 ): Promise<MobileAuthCodeRow | null> {
-  const redirectUri =
-    typeof redirectUriOrUsedAt === 'string' ? redirectUriOrUsedAt : null
-  const usedAt =
-    redirectUriOrUsedAt instanceof Date ? redirectUriOrUsedAt : maybeUsedAt
+  const redirectUri = typeof redirectUriOrUsedAt === 'string' ? redirectUriOrUsedAt : null
+  const usedAt = redirectUriOrUsedAt instanceof Date ? redirectUriOrUsedAt : maybeUsedAt
 
   if (!usedAt) {
     throw new Error('usedAt is required')
@@ -405,9 +378,7 @@ export async function updatePlanDraft(
       label: input.label,
       updatedAt: input.now,
     })
-    .where(
-      and(eq(schema.plans.id, input.planId), eq(schema.plans.userId, input.userId)),
-    )
+    .where(and(eq(schema.plans.id, input.planId), eq(schema.plans.userId, input.userId)))
 
   const [draft] = await db
     .update(schema.planDrafts)
@@ -416,10 +387,7 @@ export async function updatePlanDraft(
       updatedAt: input.now,
     })
     .where(
-      and(
-        eq(schema.planDrafts.planId, input.planId),
-        eq(schema.planDrafts.userId, input.userId),
-      ),
+      and(eq(schema.planDrafts.planId, input.planId), eq(schema.planDrafts.userId, input.userId)),
     )
     .returning()
 
@@ -475,12 +443,7 @@ export async function deletePlanTombstone(
 ): Promise<PlanTombstoneRow | null> {
   const [tombstone] = await db
     .delete(schema.planTombstones)
-    .where(
-      and(
-        eq(schema.planTombstones.userId, userId),
-        eq(schema.planTombstones.planId, planId),
-      ),
-    )
+    .where(and(eq(schema.planTombstones.userId, userId), eq(schema.planTombstones.planId, planId)))
     .returning()
 
   return tombstone ?? null
@@ -494,12 +457,7 @@ export async function findPlanDraft(
   const [draft] = await db
     .select()
     .from(schema.planDrafts)
-    .where(
-      and(
-        eq(schema.planDrafts.userId, userId),
-        eq(schema.planDrafts.planId, planId),
-      ),
-    )
+    .where(and(eq(schema.planDrafts.userId, userId), eq(schema.planDrafts.planId, planId)))
     .limit(1)
 
   return draft ? parsePlanDraft(draft) : null
@@ -531,12 +489,7 @@ export async function findLatestPlanRevision(
   const [revision] = await db
     .select()
     .from(schema.planRevisions)
-    .where(
-      and(
-        eq(schema.planRevisions.userId, userId),
-        eq(schema.planRevisions.planId, planId),
-      ),
-    )
+    .where(and(eq(schema.planRevisions.userId, userId), eq(schema.planRevisions.planId, planId)))
     .orderBy(desc(schema.planRevisions.revisionNumber))
     .limit(1)
 
@@ -551,12 +504,7 @@ export async function findPlanTombstone(
   const [tombstone] = await db
     .select()
     .from(schema.planTombstones)
-    .where(
-      and(
-        eq(schema.planTombstones.userId, userId),
-        eq(schema.planTombstones.planId, planId),
-      ),
-    )
+    .where(and(eq(schema.planTombstones.userId, userId), eq(schema.planTombstones.planId, planId)))
     .limit(1)
 
   return tombstone ?? null
@@ -697,12 +645,7 @@ export async function findWorkoutSessionById(
   const [session] = await db
     .select()
     .from(schema.workoutSessions)
-    .where(
-      and(
-        eq(schema.workoutSessions.userId, userId),
-        eq(schema.workoutSessions.id, id),
-      ),
-    )
+    .where(and(eq(schema.workoutSessions.userId, userId), eq(schema.workoutSessions.id, id)))
     .limit(1)
 
   return session ? parseWorkoutSession(session) : null
@@ -731,10 +674,7 @@ export async function markWorkoutSessionDeleted(
       deletedAt: input.deletedAt,
     })
     .where(
-      and(
-        eq(schema.workoutSessions.userId, input.userId),
-        eq(schema.workoutSessions.id, input.id),
-      ),
+      and(eq(schema.workoutSessions.userId, input.userId), eq(schema.workoutSessions.id, input.id)),
     )
     .returning()
 
@@ -806,12 +746,7 @@ export async function listActiveEquipmentPhotos(
   return db
     .select()
     .from(schema.equipmentPhotos)
-    .where(
-      and(
-        eq(schema.equipmentPhotos.userId, userId),
-        isNull(schema.equipmentPhotos.deletedAt),
-      ),
-    )
+    .where(and(eq(schema.equipmentPhotos.userId, userId), isNull(schema.equipmentPhotos.deletedAt)))
     .orderBy(asc(schema.equipmentPhotos.exerciseId))
 }
 
@@ -888,15 +823,11 @@ function parsePlanDraft(row: typeof schema.planDrafts.$inferSelect): PlanDraftRo
   return { ...row, data: PlanSchema.parse(row.data) }
 }
 
-function parsePlanRevision(
-  row: typeof schema.planRevisions.$inferSelect,
-): PlanRevisionRow {
+function parsePlanRevision(row: typeof schema.planRevisions.$inferSelect): PlanRevisionRow {
   return { ...row, data: PlanSchema.parse(row.data) }
 }
 
-function parseWorkoutSession(
-  row: typeof schema.workoutSessions.$inferSelect,
-): WorkoutSessionRow {
+function parseWorkoutSession(row: typeof schema.workoutSessions.$inferSelect): WorkoutSessionRow {
   return { ...row, data: WorkoutSessionSchema.parse(row.data) }
 }
 

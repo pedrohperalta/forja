@@ -8,7 +8,6 @@ import {
 
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024
 const ANTHROPIC_MESSAGES_URL = 'https://api.anthropic.com/v1/messages'
-const SUPPORTED_IMAGE_MEDIA_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'] as const
 
 const ImportEnvSchema = z.object({
   ANTHROPIC_API_KEY: z.string().min(1),
@@ -25,7 +24,7 @@ const AnthropicResponseSchema = z.object({
 })
 
 export type ImportEnv = z.infer<typeof ImportEnvSchema>
-type SupportedImageMediaType = (typeof SUPPORTED_IMAGE_MEDIA_TYPES)[number]
+type SupportedImageMediaType = 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp'
 
 export class ImportServiceError extends Error {
   constructor(
@@ -230,7 +229,7 @@ function normalizeModelOutput(value: unknown): unknown {
     ...value,
     workout: {
       ...workout,
-      exercises: workout.exercises.map((exercise) => {
+      exercises: (workout.exercises as unknown[]).map((exercise) => {
         if (!isRecord(exercise)) {
           return exercise
         }

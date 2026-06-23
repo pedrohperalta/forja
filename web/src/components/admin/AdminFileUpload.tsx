@@ -181,6 +181,7 @@ export function AdminFileUpload({
       {helper ? <p className="admin-file-helper">{helper}</p> : null}
       {previewUrl ? (
         <div className="admin-file-preview">
+          {/* eslint-disable-next-line @next/next/no-img-element -- preview renders a local object URL that next/image cannot optimize */}
           <img alt="Prévia da imagem selecionada" src={previewUrl} />
           <span>Prévia carregada</span>
         </div>

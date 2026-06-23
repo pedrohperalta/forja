@@ -4,7 +4,10 @@ import { ADMIN_SESSION_COOKIE, getAdminUserFromSessionToken } from '@/server/aut
 import { getDatabase } from '@/server/db/client'
 import { readServerEnv } from '@/server/env'
 import { errorResponse, jsonWithRequestId, requestId } from '@/server/http/responses'
-import { createImportJob } from '@/server/repositories'
+import {
+  recordCompletedImport,
+  recordFailedImport,
+} from '@/server/services/import/importJobService'
 import {
   extractWorkoutFromImage,
   ImportServiceError,
@@ -48,11 +51,9 @@ export async function POST(request: Request): Promise<Response> {
       env: readImportEnv(),
     })
 
-    await createImportJob(db, {
+    await recordCompletedImport(db, {
       userId: admin.id,
       label: parsed.data.label,
-      status: 'completed',
-      completedAt: new Date(),
       now: new Date(),
     })
 
@@ -63,12 +64,10 @@ export async function POST(request: Request): Promise<Response> {
     return jsonWithRequestId(result, 200, id)
   } catch (error) {
     if (isImportError(error)) {
-      await createImportJob(db, {
+      await recordFailedImport(db, {
         userId: admin.id,
         label: parsed.data.label,
-        status: 'failed',
         errorMessage: error.message,
-        completedAt: new Date(),
         now: new Date(),
       })
 
@@ -96,7 +95,10 @@ function wantsJsonResponse(request: Request): boolean {
 }
 
 function shouldRedirectBrowserImport(request: Request): boolean {
-  return wantsHtmlResponse(request) || (isMultipartFormSubmission(request) && !wantsJsonResponse(request))
+  return (
+    wantsHtmlResponse(request) ||
+    (isMultipartFormSubmission(request) && !wantsJsonResponse(request))
+  )
 }
 
 function redirectToImportError(requestUrl: string, errorCode: string, id?: string): Response {
