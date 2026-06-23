@@ -9,6 +9,7 @@
     "start": "next start",
     "test": "vitest run --exclude \"src/server/**/*.integration.test.ts\"",
     "test:db": "find src/server -name '*.integration.test.ts' -print0 | xargs -0 vitest run --maxWorkers 1",
+    "coverage": "vitest run --coverage --exclude \"src/server/**/*.integration.test.ts\"",
     "db:seed:personal": "node src/server/db/seeds/personal-seed.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
@@ -28,13 +29,15 @@
     "@types/node": "^25.0.0",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
+    "@vitest/coverage-v8": "^4.1.9",
     "drizzle-kit": "^0.31.10",
     "eslint": "^9.39.4",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-react-hooks": "^7.1.1",
     "globals": "^17.7.0",
+    "jsdom": "^29.1.1",
     "typescript": "^5.8.0",
     "typescript-eslint": "^8.62.0",
-    "vitest": "^4.0.14"
+    "vitest": "^4.1.9"
   }
 }
