@@ -4,9 +4,9 @@
 
 Before writing any code, read and follow these files:
 
-- **Tech Stack**: `conductor/tech-stack.md` — all technology choices, versions, and architecture decisions
-- **TypeScript Style Guide**: `conductor/code_styleguides/typescript.md` — coding patterns, project structure, naming conventions, Zustand patterns, testing conventions, accessibility, and animation patterns
-- **Workflow**: `conductor/workflow.md` — TDD policy (strict), commit strategy, language rules
+- **Architecture & Tech Stack**: `docs/ARCHITECTURE.md` — all technology choices, versions, and architecture decisions
+- **TypeScript Style Guide**: `docs/styleguides/typescript.md` — coding patterns, project structure, naming conventions, Zustand patterns, testing conventions, accessibility, and animation patterns
+- **Workflow**: `CONTRIBUTING.md` — TDD policy (strict), commit strategy, language rules
 
 ## Key Rules
 
@@ -100,6 +100,6 @@ Quando o usuário pedir para criar um PRD, seguir este processo:
 - **Prefer continuity in the current thread**: continue in this session when there is enough context and no tool/session boundary requires a new one. Recommend a new session only when it materially reduces risk or context noise.
 - **Be explicit about ownership**: if something is blocked, name the exact blocker and the smallest action that unblocks progress.
 
-## Conductor
+## Workflow
 
-This project uses Conductor for track-based development. See `conductor/index.md` for navigation.
+Development follows the **superpowers** loop (brainstorming → writing-plans → implementation with strict TDD → finishing-a-development-branch). See `CONTRIBUTING.md` for the contribution workflow and local gates, and `docs/engineering/index.html` for the end-to-end flow.

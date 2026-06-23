@@ -1,6 +1,14 @@
-# Tech Stack — Forja
+# Architecture & Tech Stack — Forja
 
-## Overview
+> Architecture / tech-stack reference for the Forja workspace.
+
+Forja is a **pnpm monorepo**:
+
+- `mobile/` (`@forja/mobile`) — the Expo app (stack detailed below).
+- `web/` (`@forja/web`) — Next.js 16 admin + mobile sync/auth API (Drizzle + Postgres); its layering and conventions live in [`../web/AGENTS.md`](../web/AGENTS.md).
+- `packages/domain/` (`@forja/domain`) — shared Zod schemas / domain types.
+
+## Mobile app — Overview
 
 Offline-first mobile app with no backend. All data lives on the device via MMKV with Zustand state management. Built on Expo SDK 55 with mandatory New Architecture (Fabric + TurboModules + JSI). React Compiler handles memoization automatically.
 

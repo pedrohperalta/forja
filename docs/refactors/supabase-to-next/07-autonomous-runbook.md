@@ -7,9 +7,9 @@ Use this runbook when starting an autonomous implementation session for this ref
 Before editing code, read:
 
 1. `AGENTS.md`
-2. `conductor/tech-stack.md`
-3. `conductor/code_styleguides/typescript.md`
-4. `conductor/workflow.md`
+2. `docs/ARCHITECTURE.md`
+3. `docs/styleguides/typescript.md`
+4. `CONTRIBUTING.md`
 5. `docs/refactors/supabase-to-next/README.md`
 6. `docs/refactors/supabase-to-next/01-decisions.md`
 7. `docs/refactors/supabase-to-next/02-api-contract.md`

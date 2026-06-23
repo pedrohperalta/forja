@@ -9,9 +9,9 @@ Implement the next slice from `docs/refactors/supabase-to-next/05-implementation
 
 Before editing code, read:
 - AGENTS.md
-- conductor/tech-stack.md
-- conductor/code_styleguides/typescript.md
-- conductor/workflow.md
+- docs/ARCHITECTURE.md
+- docs/styleguides/typescript.md
+- CONTRIBUTING.md
 - docs/refactors/supabase-to-next/README.md
 - docs/refactors/supabase-to-next/01-decisions.md
 - docs/refactors/supabase-to-next/02-api-contract.md

@@ -31,4 +31,4 @@
 ## UI Language
 
 - All user-facing text: **Portuguese (pt-BR)**
-- Code, documentation, and Conductor files: **English**
+- Code and documentation: **English**

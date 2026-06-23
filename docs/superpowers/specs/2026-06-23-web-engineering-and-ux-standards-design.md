@@ -9,7 +9,7 @@
 
 After the latest `git pull`, Forja is a **pnpm monorepo** with three packages:
 
-- `mobile/` (`@forja/mobile`) — Expo/React Native app. Already mature: ESLint (expo preset), Jest, Conductor, strict TDD.
+- `mobile/` (`@forja/mobile`) — Expo/React Native app. Already mature: ESLint (expo preset), Jest, strict TDD.
 - `web/` (`@forja/web`) — Next.js 16 admin (App Router) + Drizzle ORM + Postgres. Serves the admin UI **and** the mobile sync/auth API.
 - `packages/domain` (`@forja/domain`) — shared Zod schemas / domain types.
 
