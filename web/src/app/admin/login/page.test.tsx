@@ -9,14 +9,13 @@ describe('/admin/login', () => {
 
     expect(markup).toContain('FORJA ADMIN')
     expect(markup).toContain('Entrar com Google')
-    expect(markup).toContain('Acesso restrito')
-    expect(markup).toContain('Publicação sempre manual')
     expect(markup).toContain('/api/admin/auth/google/start')
     expect(markup).toContain('admin-login-page')
-    expect(markup).toContain('admin-login-assurance')
-    // assurances are static metadata, not buttons — rendered as AdminTag
-    expect(markup).toContain('admin-tag')
     expect(markup).toContain('admin-primary-button')
+    // login assurance chips removed as unnecessary noise
+    expect(markup).not.toContain('admin-login-assurance')
+    expect(markup).not.toContain('Acesso restrito')
+    expect(markup).not.toContain('Publicação sempre manual')
     expect(markup).toContain('bg-accent')
   })
 })

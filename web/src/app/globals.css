@@ -2099,34 +2099,240 @@ select:disabled {
 }
 
 .admin-login-page {
+  position: relative;
   display: grid;
   place-items: center;
-  padding: 1.5rem;
+  min-height: 100vh;
+  padding: var(--space-6);
+  overflow: hidden;
+  isolation: isolate;
+  background:
+    radial-gradient(55% 45% at 85% -10%, rgba(194, 240, 0, 0.22), transparent 60%),
+    radial-gradient(40% 38% at 8% 12%, rgba(194, 240, 0, 0.07), transparent 60%),
+    radial-gradient(70% 50% at 48% 116%, rgba(194, 240, 0, 0.1), transparent 62%),
+    linear-gradient(180deg, #0b0c08, #060606 58%);
+}
+
+/* fine film grain for premium texture */
+.admin-login-page::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* faint technical grid, faded toward the edges */
+.admin-login-grid {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+  background-size: 56px 56px;
+  -webkit-mask-image: radial-gradient(circle at 50% 42%, #000, transparent 72%);
+  mask-image: radial-gradient(circle at 50% 42%, #000, transparent 72%);
+}
+
+.admin-login-glow {
+  position: absolute;
+  z-index: -2;
+  top: -24%;
+  right: -12%;
+  width: min(80vw, 60rem);
+  height: min(80vw, 60rem);
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(194, 240, 0, 0.14), transparent 64%);
+  animation: admin-login-breathe 7s ease-in-out infinite;
+}
+
+/* oversized brand watermark for depth/scale */
+.admin-login-watermark {
+  position: absolute;
+  right: -2vw;
+  bottom: -9vh;
+  z-index: -1;
+  background: linear-gradient(180deg, rgba(194, 240, 0, 0.08), rgba(194, 240, 0, 0.01));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-size: 26rem;
+  line-height: 0.8;
+  letter-spacing: 0.02em;
+  pointer-events: none;
+  user-select: none;
 }
 
 .admin-login-card {
-  width: min(100%, 30rem);
-}
-
-.admin-login-card .admin-card-body {
+  position: relative;
   display: grid;
   gap: var(--space-5);
-  padding: var(--space-8);
+  width: min(100%, 32rem);
+  overflow: hidden;
+  border: 1px solid var(--color-border-med);
+  border-radius: var(--radius-lg);
+  padding: var(--space-10) var(--space-8) var(--space-8);
+  background:
+    linear-gradient(180deg, rgba(194, 240, 0, 0.05), transparent 42%),
+    rgba(17, 17, 17, 0.72);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  box-shadow:
+    0 40px 80px -40px rgba(0, 0, 0, 0.9),
+    0 0 90px -55px var(--color-accent-glow);
+  animation: admin-login-rise 600ms var(--ease-standard) both;
 }
 
-.admin-login-card .admin-title {
-  font-size: var(--display-xl);
+.admin-login-bar {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, var(--color-accent), transparent);
+  background-size: 200% 100%;
+  animation: admin-login-shimmer 3.2s linear infinite;
 }
 
-.admin-login-card .admin-subtitle,
-.admin-login-card .admin-actions-row {
-  margin-top: 0;
+.admin-login-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  color: var(--color-accent);
+  font-size: var(--text-2xs);
+  font-weight: 600;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  animation: admin-login-rise 600ms var(--ease-standard) 80ms both;
 }
 
-.admin-login-assurance {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
+.admin-login-spark {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 999px;
+  background: var(--color-accent);
+  box-shadow: 0 0 12px var(--color-accent);
+  animation: admin-login-pulse 1.8s ease-in-out infinite;
+}
+
+.admin-login-title {
+  margin: 0;
+  color: var(--color-text);
+  line-height: 0.92;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  animation: admin-login-rise 600ms var(--ease-standard) 140ms both;
+  font-size: 4.5rem;
+}
+
+.admin-login-title span {
+  color: var(--color-accent);
+}
+
+.admin-login-subtitle {
+  max-width: 26rem;
+  margin: 0;
+  color: var(--color-text-med);
+  font-size: var(--text-base);
+  line-height: 1.6;
+  animation: admin-login-rise 600ms var(--ease-standard) 220ms both;
+}
+
+.admin-login-cta {
+  width: 100%;
+  margin-top: var(--space-2);
+  gap: var(--space-3);
+  animation: admin-login-rise 600ms var(--ease-standard) 300ms both;
+}
+
+.admin-login-cta svg {
+  transition: transform var(--duration-base) var(--ease-standard);
+}
+
+.admin-login-cta:hover svg {
+  transform: translateX(4px);
+}
+
+@keyframes admin-login-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes admin-login-shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes admin-login-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.35;
+    transform: scale(0.6);
+  }
+}
+
+@keyframes admin-login-breathe {
+  0%,
+  100% {
+    opacity: 0.65;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-login-card,
+  .admin-login-eyebrow,
+  .admin-login-title,
+  .admin-login-subtitle,
+  .admin-login-cta {
+    animation: none;
+  }
+
+  .admin-login-bar {
+    animation: none;
+    background: var(--color-accent);
+  }
+
+  .admin-login-spark,
+  .admin-login-glow {
+    animation: none;
+  }
+}
+
+@media (max-width: 560px) {
+  .admin-login-title {
+    font-size: 2.75rem;
+  }
+
+  .admin-login-watermark {
+    font-size: 13rem;
+  }
+
+  .admin-login-card {
+    padding: var(--space-8) var(--space-6) var(--space-6);
+  }
 }
 
 .admin-back-link {

@@ -1,28 +1,41 @@
 import type { ReactElement } from 'react'
 
-import { AdminTag } from '@/components/admin/AdminUi'
-
 export default function AdminLoginPage(): ReactElement {
   return (
     <main className="admin-login-page">
-      <section className="admin-card admin-login-card">
-        <div className="admin-accent-bar" />
-        <div className="admin-card-body">
-          <p className="admin-wordmark">FORJA ADMIN</p>
-          <h1 className="admin-title">Painel de treino</h1>
-          <p className="admin-subtitle">
-            Edite planos, publique revisões e mantenha o conteúdo do app no mesmo padrão da Forja.
-          </p>
-          <div className="admin-login-assurance" aria-label="Garantias do admin">
-            <AdminTag>Acesso restrito</AdminTag>
-            <AdminTag>Publicação sempre manual</AdminTag>
-          </div>
-          <div className="admin-actions-row">
-            <a className="admin-primary-button bg-accent" href="/api/admin/auth/google/start">
-              Entrar com Google
-            </a>
-          </div>
-        </div>
+      <div className="admin-login-grid" aria-hidden="true" />
+      <div className="admin-login-glow" aria-hidden="true" />
+      <span className="admin-login-watermark admin-display" aria-hidden="true">
+        FORJA
+      </span>
+      <section className="admin-login-card">
+        <span className="admin-login-bar" aria-hidden="true" />
+        <p className="admin-login-eyebrow">
+          <span className="admin-login-spark" aria-hidden="true" />
+          FORJA ADMIN
+        </p>
+        <h1 className="admin-login-title admin-display">
+          Painel de <span>treino</span>
+        </h1>
+        <p className="admin-login-subtitle">
+          Edite planos, publique revisões e mantenha o conteúdo do app no mesmo padrão da Forja.
+        </p>
+        <a
+          className="admin-primary-button bg-accent admin-button-lg admin-login-cta"
+          href="/api/admin/auth/google/start"
+        >
+          <span>Entrar com Google</span>
+          <svg aria-hidden="true" viewBox="0 0 20 20" width="18" height="18">
+            <path
+              d="M4 10h11M11 5l5 5-5 5"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </a>
       </section>
     </main>
   )
