@@ -94,9 +94,7 @@ describe('repositories', () => {
     })
 
     expect(user.id).toBe(USER_ID)
-    await expect(findUserByEmail(db, 'user@example.com')).resolves.toMatchObject(
-      { id: USER_ID },
-    )
+    await expect(findUserByEmail(db, 'user@example.com')).resolves.toMatchObject({ id: USER_ID })
     await expect(findUserById(db, USER_ID)).resolves.toMatchObject({
       email: 'user@example.com',
     })
@@ -113,9 +111,9 @@ describe('repositories', () => {
     })
 
     expect(account.userId).toBe(USER_ID)
-    await expect(
-      findOAuthAccount(db, 'google', 'google-user-id'),
-    ).resolves.toMatchObject({ userId: USER_ID })
+    await expect(findOAuthAccount(db, 'google', 'google-user-id')).resolves.toMatchObject({
+      userId: USER_ID,
+    })
   })
 
   it('creates a plan draft and publishes immutable revisions', async () => {
