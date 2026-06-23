@@ -7,8 +7,14 @@ pre-commit:
     format:
       glob: "*.{ts,tsx,json}"
       run: pnpm exec prettier --write {staged_files}
+      stage_fixed: true
     typecheck:
       run: pnpm typecheck
+
+pre-push:
+  commands:
+    verify:
+      run: pnpm verify
 
 commit-msg:
   commands:
