@@ -7,7 +7,7 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY mobile/package.json mobile/package.json
 COPY packages/domain/package.json packages/domain/package.json
 COPY web/package.json web/package.json
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --frozen-lockfile --ignore-scripts
 
 FROM deps AS builder
 COPY . .
