@@ -202,7 +202,7 @@ export function AdminPlanDraftForm({
                 <summary>
                   <button
                     aria-label={`Arraste para reordenar ${exercise.name}`}
-                    className="admin-drag-handle"
+                    className="admin-drag-icon-button"
                     disabled={archived}
                     draggable={!archived}
                     onClick={(event) => {
@@ -215,7 +215,19 @@ export function AdminPlanDraftForm({
                     title="Arraste para reordenar. Use seta para cima ou para baixo pelo teclado."
                     type="button"
                   >
-                    Arrastar
+                    <svg
+                      aria-hidden="true"
+                      className="admin-drag-icon"
+                      focusable="false"
+                      viewBox="0 0 16 16"
+                    >
+                      <circle cx="5" cy="4" r="1.35" />
+                      <circle cx="11" cy="4" r="1.35" />
+                      <circle cx="5" cy="8" r="1.35" />
+                      <circle cx="11" cy="8" r="1.35" />
+                      <circle cx="5" cy="12" r="1.35" />
+                      <circle cx="11" cy="12" r="1.35" />
+                    </svg>
                   </button>
                   <span className="admin-chip">#{index + 1}</span>
                   <span className="admin-exercise-summary-copy">

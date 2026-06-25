@@ -48,8 +48,8 @@ export function PlanListView({ plans }: PlanListViewProps): ReactElement {
           <AdminCard accent className="admin-empty-state">
             <p className="admin-section-title">Nenhum plano cadastrado</p>
             <p className="admin-muted">
-              Crie a primeira ficha estruturada. Ela nasce como draft e só aparece no app depois
-              da publicação.
+              Crie a primeira ficha estruturada. Ela nasce como draft e só aparece no app depois da
+              publicação.
             </p>
             <Link className="admin-primary-button bg-accent" href="/admin/plans/new">
               Criar primeiro plano
@@ -119,32 +119,27 @@ function PlanCard({ item }: { item: PlanListItemViewModel }): ReactElement {
           </div>
           {item.archived ? (
             <StatusPill tone="danger">Arquivado</StatusPill>
-        ) : item.latestRevisionNumber ? (
-          <StatusPill tone="accent">Publicado no app</StatusPill>
+          ) : item.latestRevisionNumber ? (
+            <StatusPill tone="accent">Publicado no app</StatusPill>
           ) : (
             <StatusPill tone="warning">Rascunho não publicado</StatusPill>
           )}
         </header>
 
-        <dl className="admin-plan-card-meta">
-          <div>
-            <dt>Revisão</dt>
-            <dd>{item.latestRevisionNumber ? `Rev. ${item.latestRevisionNumber}` : 'Sem revisão'}</dd>
-          </div>
-          <div>
-            <dt>Próxima ação</dt>
-            <dd>{getRecommendedAction(item)}</dd>
-          </div>
-          {item.archived ? (
+        {item.archived ? (
+          <dl className="admin-plan-card-meta">
             <div>
               <dt>Aplicativo</dt>
               <dd>Não aparece no app</dd>
             </div>
-          ) : null}
-        </dl>
+          </dl>
+        ) : null}
 
         <div className="admin-plan-card-actions">
-          <Link className="admin-secondary-button admin-compact-button" href={`/admin/plans/${item.plan.id}`}>
+          <Link
+            className="admin-secondary-button admin-compact-button"
+            href={`/admin/plans/${item.plan.id}`}
+          >
             {getPlanActionLabel(item)}
           </Link>
           {item.archived ? (
@@ -181,18 +176,6 @@ function PermanentDeleteForm({ planId }: { planId: string }): ReactElement {
       </form>
     </details>
   )
-}
-
-function getRecommendedAction(item: PlanListItemViewModel): string {
-  if (item.archived) {
-    return 'Somente leitura'
-  }
-
-  if (!item.latestRevisionNumber) {
-    return 'Publicar draft'
-  }
-
-  return 'Revisar conteúdo'
 }
 
 function getPlanActionLabel(item: PlanListItemViewModel): string {

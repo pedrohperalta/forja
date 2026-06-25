@@ -3,7 +3,7 @@
 import { useRef, useState, type FormEvent, type ReactElement } from 'react'
 
 import { AdminFileUpload, SUPPORTED_IMAGE_ACCEPT } from '@/components/admin/AdminFileUpload'
-import { AdminCard, AdminField } from '@/components/admin/AdminUi'
+import { AdminCard, AdminField, AdminTag } from '@/components/admin/AdminUi'
 
 type ImportWorkoutFormProps = {
   error?: string | undefined
@@ -382,10 +382,10 @@ function ImportWorkoutReview({
                     {exercise.category} · {exercise.equipment}
                   </p>
                   <div className="admin-import-exercise-meta">
-                    <span>{exercise.sets} séries</span>
-                    <span>{exercise.reps} reps</span>
-                    <span>{exercise.restSeconds}s descanso</span>
-                    <span>{Math.round(exercise.confidence * 100)}% confiança</span>
+                    <AdminTag>{exercise.sets} séries</AdminTag>
+                    <AdminTag>{exercise.reps} reps</AdminTag>
+                    <AdminTag>{exercise.restSeconds}s descanso</AdminTag>
+                    <AdminTag>{Math.round(exercise.confidence * 100)}% confiança</AdminTag>
                   </div>
                 </div>
               </article>

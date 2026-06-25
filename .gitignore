@@ -50,6 +50,9 @@ deploy/forja/.env
 # typescript
 *.tsbuildinfo
 
+# git worktrees
+.worktrees/
+
 # generated native folders
 /ios
 /android

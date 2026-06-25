@@ -1,14 +1,16 @@
 .git
-.next
-node_modules
-mobile/node_modules
-packages/*/node_modules
-web/node_modules
+**/.next
+**/node_modules
+**/.expo
+mobile/android
+mobile/ios
+packages/*/dist
 
 .env
 .env.*
 deploy/forja/.env
 
 *.log
-coverage
-dist
+**/coverage
+**/dist
+**/build
