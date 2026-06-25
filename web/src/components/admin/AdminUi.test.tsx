@@ -48,6 +48,8 @@ describe('AdminFrame shell', () => {
     expect(markup).toContain('aria-current="page"')
     expect(markup).toContain('data-active="true"')
     expect(markup).toContain('Sair')
+    expect(markup).toContain('admin-sidebar-logout')
+    expect(markup).not.toContain('admin-button-sm" type="submit">Sair')
     expect(markup).toContain('conteúdo')
   })
 })

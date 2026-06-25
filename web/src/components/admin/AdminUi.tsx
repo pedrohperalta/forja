@@ -74,7 +74,7 @@ export function AdminFrame({
           })}
         </nav>
         <form className="admin-sidebar-footer" action="/api/admin/auth/logout" method="post">
-          <button className="admin-secondary-button admin-button-sm" type="submit">
+          <button className="admin-secondary-button admin-sidebar-logout" type="submit">
             Sair
           </button>
         </form>
