@@ -38,6 +38,17 @@ test('local compose override exposes Postgres only on localhost', async () => {
   assert.match(compose, /FORJA_PUBLIC_URL: http:\/\/127\.0\.0\.1:3000/)
 })
 
+test('nginx compose override exposes only the web service on the private VM address', async () => {
+  const compose = await readFile(join(DEPLOY_DIR, 'compose.nginx.yml'), 'utf8')
+
+  assert.match(compose, /FORJA_BIND_ADDRESS:\?set FORJA_BIND_ADDRESS/)
+  assert.match(compose, /FORJA_HTTP_PORT:-3000/)
+  assert.match(compose, /FORJA_REPO_DIR:-\/root\/projetos\/forja/)
+  assert.doesNotMatch(compose, /55432:5432/)
+  assert.doesNotMatch(compose, /traefik/)
+  assert.doesNotMatch(compose, /root_default/)
+})
+
 test('web Dockerfile builds a non-root Node 24 standalone image', async () => {
   const dockerfile = await readFile(join(ROOT, 'web', 'Dockerfile'), 'utf8')
 

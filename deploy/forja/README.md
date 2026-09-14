@@ -86,3 +86,37 @@ Production notes:
 - Future `forja.p3ralta.dev` routing stays disabled until DNS exists.
 - Generate secrets with `openssl rand -base64 48`; never commit real `.env` files.
 - Fix forward by committing, pulling on the VPS, rebuilding `forja-web:latest`, and redeploying the stack.
+
+## Nginx deployment on a separate Proxmox container
+
+Use `compose.nginx.yml` when TLS and public routing are handled by Nginx on
+another machine or container. On the Forja VM, create `deploy/forja/.env` from
+`.env.example` and set:
+
+```sh
+FORJA_BIND_ADDRESS=192.168.10.240
+FORJA_HTTP_PORT=3000
+FORJA_REPO_DIR=/root/projetos/forja
+```
+
+Build and start the stack from the repository root:
+
+```sh
+docker build -f web/Dockerfile -t forja-web:latest .
+docker compose --env-file deploy/forja/.env -f deploy/forja/compose.nginx.yml up -d
+curl -fsS http://192.168.10.240:3000/api/health
+```
+
+The Nginx container must be able to reach `192.168.10.240:3000`. Copy the
+relevant directives from `nginx/forja.conf.example` into the existing Nginx
+configuration, preserve its certificate management directives, test with
+`nginx -t`, and reload Nginx.
+
+Only the web port is published by this Compose file. PostgreSQL remains on the
+private `forja-internal` Docker network. Restrict TCP port 3000 at the Proxmox
+firewall to the Nginx container IP before switching public traffic.
+
+Before the final cutover, restore the old VPS database and uploads into the new
+named volumes, verify `/api/health` through Nginx, then update DNS or stop the old
+service. Keep the old VPS unchanged until application login, sync, uploads, and
+backup restoration have been verified.
