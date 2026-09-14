@@ -60,7 +60,7 @@ describe('POST /api/admin/auth/logout', () => {
     }
 
     const response = await POST(
-      new Request('https://forja.example.com/api/admin/auth/logout', {
+      new Request('http://0.0.0.0:3000/api/admin/auth/logout', {
         method: 'POST',
         headers: {
           accept: 'text/html',

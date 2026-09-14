@@ -25,7 +25,7 @@ export async function POST(request: Request): Promise<Response> {
   })
 
   const response = wantsHtmlResponse(request)
-    ? NextResponse.redirect(new URL('/admin/login', request.url), { status: 303 })
+    ? NextResponse.redirect(new URL('/admin/login', readServerEnv().FORJA_PUBLIC_URL), { status: 303 })
     : NextResponse.json({ ok: true })
   response.headers.set('x-request-id', id)
   response.cookies.set(ADMIN_SESSION_COOKIE, '', {
