@@ -22,7 +22,12 @@ import type { GoogleOAuthClient, GoogleProfile } from './google'
 import { signAccessToken, verifyAccessToken } from './accessToken'
 import { signOAuthState, verifyOAuthState } from './oauthState'
 
-const MOBILE_REDIRECT_URI = 'forja://auth/callback'
+/** RN app uses `forja://`, the KMP build uses `me.phperalta.forja://` (coexistence). */
+const MOBILE_REDIRECT_URIS = ['forja://auth/callback', 'forja-kmp://auth/callback'] as const
+
+function isMobileRedirectUri(redirectUri: string): boolean {
+  return (MOBILE_REDIRECT_URIS as readonly string[]).includes(redirectUri)
+}
 
 export type MobileAuthEnv = {
   FORJA_PUBLIC_URL: string
@@ -52,7 +57,7 @@ export type StartMobileGoogleOAuthResult = {
 export function startMobileGoogleOAuth(
   input: StartMobileGoogleOAuthInput,
 ): StartMobileGoogleOAuthResult {
-  if (input.redirectUri !== MOBILE_REDIRECT_URI) {
+  if (!isMobileRedirectUri(input.redirectUri)) {
     throw badRequest('Invalid mobile redirect URI')
   }
 
@@ -154,7 +159,7 @@ export function createMobileAuthService(input: CreateMobileAuthServiceInput): {
       user: { id: string; email: string; name: string }
       tokens: { accessToken: string; refreshToken: string; expiresAt: string }
     }> {
-      if (args.redirectUri !== MOBILE_REDIRECT_URI) {
+      if (!isMobileRedirectUri(args.redirectUri)) {
         throw badRequest('Invalid mobile redirect URI')
       }
 
