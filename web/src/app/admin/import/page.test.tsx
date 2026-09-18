@@ -8,7 +8,8 @@ describe('/admin/import', () => {
   it('declares the one-photo-one-ficha rule and skips the read-only review step', () => {
     const markup = renderToStaticMarkup(createElement(ImportWorkoutView))
 
-    expect(markup).toContain('IMPORTAR FICHA')
+    expect(markup).toContain('CONTEÚDO')
+    expect(markup).not.toContain('IMPORTAR FICHA')
     expect(markup).toContain('Foto vira ficha')
     expect(markup).toContain('Cada foto vira uma ficha separada')
     expect(markup).toContain('type="file"')

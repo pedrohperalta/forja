@@ -21,7 +21,7 @@ export function ImportWorkoutView({ error, notice }: ImportWorkoutViewProps = {}
   return (
     <AdminFrame
       active="plans"
-      eyebrow="IMPORTAR FICHA"
+      eyebrow="CONTEÚDO"
       title="Importar ficha"
       subtitle="Cada foto vira uma ficha separada. A IA extrai, cria o rascunho e você confere tudo no editor."
     >
