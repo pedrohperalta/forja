@@ -146,9 +146,10 @@ export async function createDraftPlan(
   input: CreateDraftPlanInput,
 ): Promise<PlanDraftRow> {
   const nowIso = input.now.toISOString()
+  const label = await uniquifyActiveLabel(db, input.userId, input.label)
   const data = PlanSchema.parse({
     id: input.planId,
-    label: input.label,
+    label,
     name: input.name,
     focus: input.focus,
     exercises: input.exercises.map((exercise) => ExerciseSchema.parse(exercise)),
@@ -160,7 +161,7 @@ export async function createDraftPlan(
   return createPlanDraft(db, {
     planId: input.planId,
     userId: input.userId,
-    label: input.label,
+    label,
     data,
     now: input.now,
   })
@@ -172,9 +173,10 @@ export async function updateDraftPlanDetails(
 ): Promise<PlanDraftRow> {
   const draft = await requireEditableDraft(db, input.userId, input.planId)
   const updatedAt = input.now.toISOString()
+  const label = await uniquifyActiveLabel(db, input.userId, input.label, input.planId)
   const data = PlanSchema.parse({
     ...draft.data,
-    label: input.label,
+    label,
     name: input.name,
     focus: input.focus,
     updatedAt,
@@ -184,7 +186,7 @@ export async function updateDraftPlanDetails(
     await updatePlanDraft(db, {
       planId: input.planId,
       userId: input.userId,
-      label: input.label,
+      label,
       data,
       now: input.now,
     }),
@@ -420,6 +422,32 @@ export async function restoreArchivedPlan(
   db: Database,
   input: RestoreArchivedPlanInput,
 ): Promise<PlanRow> {
+  const existingPlan = await findPlanById(db, input.userId, input.planId)
+
+  if (!existingPlan) {
+    throw notFound('Plan not found')
+  }
+
+  const label = await uniquifyActiveLabel(db, input.userId, existingPlan.label, input.planId)
+  const draft = await findPlanDraft(db, input.userId, input.planId)
+  const labelChanged = label !== existingPlan.label
+
+  if (draft && labelChanged) {
+    const data = PlanSchema.parse({
+      ...draft.data,
+      label,
+      updatedAt: input.now.toISOString(),
+    })
+
+    await updatePlanDraft(db, {
+      planId: input.planId,
+      userId: input.userId,
+      label,
+      data,
+      now: input.now,
+    })
+  }
+
   const plan = await restorePlanById(db, input.userId, input.planId, input.now)
 
   if (!plan) {
@@ -428,8 +456,7 @@ export async function restoreArchivedPlan(
 
   await deletePlanTombstone(db, input.userId, input.planId)
 
-  const draft = await findPlanDraft(db, input.userId, input.planId)
-  if (draft) {
+  if (draft && !labelChanged) {
     const data = PlanSchema.parse({
       ...draft.data,
       updatedAt: input.now.toISOString(),
@@ -438,7 +465,7 @@ export async function restoreArchivedPlan(
     await updatePlanDraft(db, {
       planId: input.planId,
       userId: input.userId,
-      label: draft.data.label,
+      label,
       data,
       now: input.now,
     })
@@ -557,6 +584,34 @@ async function requireEditableDraft(
   }
 
   return detail.draft
+}
+
+/**
+ * Active plans hold a unique label per user (A/B/C identity in the app).
+ * Derived labels collide easily, so the service adjusts them transparently:
+ * "Treino A" -> "Treino A 2", "Treino A 3", ...
+ */
+async function uniquifyActiveLabel(
+  db: Database,
+  userId: string,
+  desiredLabel: string,
+  excludingPlanId?: string,
+): Promise<string> {
+  const activePlans = await listPlansByUser(db, userId, false)
+  const takenLabels = new Set(
+    activePlans.filter((plan) => plan.id !== excludingPlanId).map((plan) => plan.label),
+  )
+
+  if (!takenLabels.has(desiredLabel)) {
+    return desiredLabel
+  }
+
+  let suffix = 2
+  while (takenLabels.has(`${desiredLabel} ${suffix}`)) {
+    suffix += 1
+  }
+
+  return `${desiredLabel} ${suffix}`
 }
 
 function requireUpdatedDraft(draft: PlanDraftRow | null): PlanDraftRow {

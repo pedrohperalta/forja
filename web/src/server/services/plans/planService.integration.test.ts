@@ -617,4 +617,156 @@ describe('plan service', () => {
       }),
     ).rejects.toThrow('Archived plans cannot be edited')
   })
+
+  it('uniquifies labels among active plans on creation', async () => {
+    await createDraftPlan(db, {
+      userId: USER_ID,
+      planId: 'plan_blank_1',
+      label: 'Plano sem título',
+      name: 'Plano sem título',
+      focus: 'A definir',
+      exercises: [],
+      now: NOW,
+    })
+
+    const second = await createDraftPlan(db, {
+      userId: USER_ID,
+      planId: 'plan_blank_2',
+      label: 'Plano sem título',
+      name: 'Plano sem título',
+      focus: 'A definir',
+      exercises: [],
+      now: LATER,
+    })
+    const third = await createDraftPlan(db, {
+      userId: USER_ID,
+      planId: 'plan_blank_3',
+      label: 'Plano sem título',
+      name: 'Plano sem título',
+      focus: 'A definir',
+      exercises: [],
+      now: LATER,
+    })
+
+    expect(second.data.label).toBe('Plano sem título 2')
+    expect(third.data.label).toBe('Plano sem título 3')
+  })
+
+  it('uniquifies a colliding rename instead of failing the save', async () => {
+    await createDraftPlan(db, {
+      userId: USER_ID,
+      planId: 'plan_one',
+      label: 'Treino 1',
+      name: 'Treino 1',
+      focus: 'Peito',
+      exercises: [],
+      now: NOW,
+    })
+    await createDraftPlan(db, {
+      userId: USER_ID,
+      planId: 'plan_two',
+      label: 'Treino 2',
+      name: 'Treino 2',
+      focus: 'Costas',
+      exercises: [],
+      now: NOW,
+    })
+
+    const updated = await updateDraftPlanDetails(db, {
+      userId: USER_ID,
+      planId: 'plan_one',
+      label: 'Treino 2',
+      name: 'Treino 2',
+      focus: 'Peito',
+      now: LATER,
+    })
+    const otherPlan = await getAdminPlan(db, { userId: USER_ID, planId: 'plan_two' })
+
+    expect(updated.data.label).toBe('Treino 2 2')
+    expect(otherPlan?.plan.label).toBe('Treino 2')
+  })
+
+  it('keeps the own label when saving a plan without collision', async () => {
+    await createDraftPlan(db, {
+      userId: USER_ID,
+      planId: 'plan_keep',
+      label: 'Treino Único',
+      name: 'Treino Único',
+      focus: 'Peito',
+      exercises: [],
+      now: NOW,
+    })
+
+    const updated = await updateDraftPlanDetails(db, {
+      userId: USER_ID,
+      planId: 'plan_keep',
+      label: 'Treino Único',
+      name: 'Treino Único v2',
+      focus: 'Peito',
+      now: LATER,
+    })
+
+    expect(updated.data.label).toBe('Treino Único')
+  })
+
+  it('ignores archived labels when uniquifying', async () => {
+    await createDraftPlan(db, {
+      userId: USER_ID,
+      planId: 'plan_old_label',
+      label: 'Treino Reciclado',
+      name: 'Treino Reciclado',
+      focus: 'Peito',
+      exercises: [],
+      now: NOW,
+    })
+    await archivePlan(db, { userId: USER_ID, planId: 'plan_old_label', now: LATER })
+
+    const recycled = await createDraftPlan(db, {
+      userId: USER_ID,
+      planId: 'plan_new_label',
+      label: 'Treino Reciclado',
+      name: 'Treino Reciclado',
+      focus: 'Costas',
+      exercises: [],
+      now: LATER,
+    })
+
+    expect(recycled.data.label).toBe('Treino Reciclado')
+  })
+
+  it('uniquifies the label when restoring an archived plan', async () => {
+    await createDraftPlan(db, {
+      userId: USER_ID,
+      planId: 'plan_restore_label',
+      label: 'Treino R',
+      name: 'Treino R',
+      focus: 'Peito',
+      exercises: [],
+      now: NOW,
+    })
+    await archivePlan(db, { userId: USER_ID, planId: 'plan_restore_label', now: LATER })
+    await createDraftPlan(db, {
+      userId: USER_ID,
+      planId: 'plan_took_label',
+      label: 'Treino R',
+      name: 'Treino R',
+      focus: 'Costas',
+      exercises: [],
+      now: LATER,
+    })
+
+    await restoreArchivedPlan(db, {
+      userId: USER_ID,
+      planId: 'plan_restore_label',
+      now: LATER,
+    })
+    const restored = await getAdminPlan(db, {
+      userId: USER_ID,
+      planId: 'plan_restore_label',
+    })
+
+    expect(restored?.archived).toBe(false)
+    expect(restored?.plan.label).toBe('Treino R 2')
+    expect(restored?.draft?.data.label).toBe('Treino R 2')
+  })
 })
