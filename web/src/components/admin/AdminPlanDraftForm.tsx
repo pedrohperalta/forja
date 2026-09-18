@@ -587,11 +587,7 @@ export function AdminPlanDraftForm({
                   Tentar de novo
                 </button>
               ) : null}
-              <Link
-                className="admin-secondary-button admin-compact-button"
-                href={previewHref}
-                target="_blank"
-              >
+              <Link className="admin-secondary-button admin-compact-button" href={previewHref}>
                 Pré-visualizar
               </Link>
               {status.canPublish ? (
