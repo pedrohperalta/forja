@@ -73,13 +73,13 @@ export function AdminShell({ plans = [] }: AdminShellProps): ReactElement {
           <div className="admin-focus-actions">
             {hasPendingPublication && primaryPending ? (
               <Link
-                className="admin-primary-button bg-accent"
+                className="admin-primary-button"
                 href={`/admin/plans/${primaryPending.plan.id}`}
               >
                 Revisar rascunho
               </Link>
             ) : (
-              <Link className="admin-primary-button bg-accent" href="/admin/plans/new">
+              <Link className="admin-primary-button" href="/admin/plans/new">
                 Novo plano
               </Link>
             )}

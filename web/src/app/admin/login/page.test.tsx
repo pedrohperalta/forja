@@ -16,6 +16,7 @@ describe('/admin/login', () => {
     expect(markup).not.toContain('admin-login-assurance')
     expect(markup).not.toContain('Acesso restrito')
     expect(markup).not.toContain('Publicação sempre manual')
-    expect(markup).toContain('bg-accent')
+    expect(markup).toContain('admin-login-cta')
+    expect(markup).not.toContain('bg-accent')
   })
 })

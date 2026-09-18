@@ -156,7 +156,7 @@ export function AdminImportWorkoutForm({ error, notice }: ImportWorkoutFormProps
               "Revisar".
             </p>
             <button
-              className="admin-primary-button bg-accent"
+              className="admin-primary-button"
               disabled={isWorking}
               type="submit"
             >

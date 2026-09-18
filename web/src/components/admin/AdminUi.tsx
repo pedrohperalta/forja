@@ -128,17 +128,3 @@ export function AdminField({ label, children }: FieldProps): ReactElement {
     </label>
   )
 }
-
-export function ChevronLeftIcon(): ReactElement {
-  return (
-    <svg aria-hidden="true" fill="none" height="20" viewBox="0 0 20 20" width="20">
-      <path
-        d="M12.5 15 7.5 10l5-5"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="2"
-      />
-    </svg>
-  )
-}

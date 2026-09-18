@@ -131,7 +131,7 @@ function BuildForm({
   return (
     <form action="/api/admin/mobile-builds" method="post">
       <input name="type" type="hidden" value={type} />
-      <button className="admin-primary-button bg-accent" disabled={disabled} type="submit">
+      <button className="admin-primary-button" disabled={disabled} type="submit">
         {label}
       </button>
     </form>

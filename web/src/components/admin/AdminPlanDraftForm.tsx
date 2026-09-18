@@ -551,7 +551,7 @@ export function AdminPlanDraftForm({
           {archived ? (
             restoreAction ? (
               <AdminSubmitButton
-                className="admin-primary-button bg-accent"
+                className="admin-primary-button"
                 formAction={restoreAction}
                 spinnerTone="light"
               >
@@ -591,7 +591,7 @@ export function AdminPlanDraftForm({
               </Link>
               {status.canPublish ? (
                 <AdminSubmitButton
-                  className="admin-primary-button bg-accent"
+                  className="admin-primary-button"
                   formAction={publishAction}
                 >
                   {status.publishLabel}

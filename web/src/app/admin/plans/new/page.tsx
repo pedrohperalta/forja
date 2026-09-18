@@ -53,7 +53,7 @@ export function NewPlanView({ error, plans = [] }: NewPlanViewProps): ReactEleme
             Abra o editor e monte do zero. Séries, descanso e equipamento têm padrões prontos.
           </p>
           <form action={createBlankPlanAction} className="admin-hubcard-form">
-            <button className="admin-primary-button bg-accent" type="submit">
+            <button className="admin-primary-button" type="submit">
               Criar e abrir editor
             </button>
           </form>

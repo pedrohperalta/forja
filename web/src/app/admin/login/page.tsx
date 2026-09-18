@@ -19,7 +19,7 @@ export default function AdminLoginPage(): ReactElement {
           Edite planos, publique revisões e mantenha o conteúdo do app no mesmo padrão da Forja.
         </p>
         <a
-          className="admin-primary-button bg-accent admin-button-lg admin-login-cta"
+          className="admin-primary-button admin-button-lg admin-login-cta"
           href="/api/admin/auth/google/start"
         >
           <span>Entrar com Google</span>

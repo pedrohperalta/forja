@@ -37,7 +37,7 @@ export function AdminAddExerciseForm({
           ))}
         </select>
       </AdminField>
-      <button className="admin-primary-button admin-compact-button bg-accent" type="submit">
+      <button className="admin-primary-button admin-compact-button" type="submit">
         {empty ? 'Adicionar exercício' : 'Adicionar'}
       </button>
       <p className="admin-muted">

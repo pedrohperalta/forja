@@ -77,14 +77,19 @@ Never hardcode hex colors or px radii in a component — reference a token.
   `--color-danger` (#ff453a), `--color-warning` (#f59e0b), each with a `-dim`.
   Text scale: `--color-text` / `-med` / `--color-muted` / `--color-dim`. This
   matches the mobile app's brand (lime accent, Bebas Neue) — keep them aligned.
+  **Translucency is tokenized too:** accent/danger/warning alphas only as
+  `--{brand}-alpha-{subtle,muted,border,strong}`, translucent surfaces as
+  `--color-surface-overlay`/`-solid`/`-sunken`. The `:root` block is the only
+  place brand rgba/hex literals may appear (enforced by `globals.test.ts`).
 - **Typography:** `'BebasNeue'` (display — titles, hero text, stat/KPI numbers);
   `'Syne'` (UI — body, labels, buttons). Section labels use `.admin-section-label`,
-  titles `.admin-section-title`.
+  titles `.admin-section-title`. Tracking/leading consume the `--tracking-*` and
+  `--leading-*` tokens.
 - **Shape:** buttons are pills — `--radius-pill: 100px`.
-- **Buttons:** `.admin-primary-button` (CTA; pair with the `.bg-accent` utility
-  for the lime fill), `.admin-compact-button` (smaller), `.admin-danger-button`
-  (destructive). `.bg-accent` (`background: var(--color-accent)`) is a real,
-  intentional utility — not a leftover Tailwind class.
+- **Buttons:** `.admin-primary-button` (lime CTA fill), `.admin-secondary-button`
+  (outline), `.admin-danger-button` (destructive), plus size modifiers
+  `.admin-button-lg`/`-sm` and `.admin-compact-button`. The primary button fills
+  itself — there is no `bg-accent` utility.
 - **Component vocabulary** (extend these; don't invent parallel styles):
   sections/cards (`.admin-section`, `.admin-card`, `.admin-panel`), KPIs
   (`.admin-kpi-*`), forms (`.admin-form-*`, `.admin-field-*`, `.admin-input`),

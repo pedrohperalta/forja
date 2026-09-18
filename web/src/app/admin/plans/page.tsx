@@ -39,7 +39,7 @@ export function PlanListView({ importedCount, plans }: PlanListViewProps): React
       title="Treinos"
       subtitle="Revise rascunhos e publique somente quando a ficha estiver pronta para aparecer no app."
       action={
-        <Link className="admin-primary-button bg-accent" href="/admin/plans/new">
+        <Link className="admin-primary-button" href="/admin/plans/new">
           Novo plano
         </Link>
       }
@@ -61,7 +61,7 @@ export function PlanListView({ importedCount, plans }: PlanListViewProps): React
               Crie a primeira ficha estruturada. Ela nasce como rascunho e só aparece no app depois
               da publicação.
             </p>
-            <Link className="admin-primary-button bg-accent" href="/admin/plans/new">
+            <Link className="admin-primary-button" href="/admin/plans/new">
               Criar primeiro plano
             </Link>
           </AdminCard>
@@ -161,7 +161,7 @@ function PlanCard({ item }: { item: PlanListItemViewModel }): ReactElement {
               <input name="planId" type="hidden" value={item.plan.id} />
               <button
                 aria-label="Restaurar para editar"
-                className="admin-primary-button admin-compact-button bg-accent"
+                className="admin-primary-button admin-compact-button"
                 type="submit"
               >
                 Restaurar

@@ -6,6 +6,55 @@ import { describe, expect, it } from 'vitest'
 const cssPath = fileURLToPath(new URL('./globals.css', import.meta.url))
 const css = readFileSync(cssPath, 'utf8')
 
+const rootStart = css.indexOf(':root {')
+const rootEnd = css.indexOf('\n}', rootStart)
+const cssOutsideTokens = css.slice(0, rootStart) + css.slice(rootEnd + 2)
+
+describe('admin design tokens', () => {
+  it('keeps brand-color rgba literals confined to the :root token block', () => {
+    const brandLiterals = cssOutsideTokens.match(
+      /rgba\((?:194, 240, 0|255, 69, 58|245, 158, 11)[^)]*\)/g,
+    )
+
+    expect(brandLiterals).toBeNull()
+  })
+
+  it('keeps hex color literals confined to the :root token block', () => {
+    const hexLiterals = cssOutsideTokens
+      .split('\n')
+      .filter((line) => !line.includes('url('))
+      .flatMap((line) => line.match(/#[0-9a-fA-F]{3,8}\b/g) ?? [])
+
+    expect(hexLiterals).toEqual([])
+  })
+
+  it('does not resurrect classes deleted with their screens', () => {
+    const deadClasses = [
+      'admin-kpi',
+      'admin-table-row',
+      'admin-table-head',
+      'admin-workflow',
+      'admin-health',
+      'admin-activity',
+      'admin-shortcut',
+      'admin-dashboard',
+      'admin-topbar',
+      'admin-stepper',
+      'admin-sticky-publish',
+      'admin-editor-next-step',
+      'admin-publication-banner',
+      'admin-unsaved-banner',
+      'admin-import-review',
+      'admin-simple-actions',
+      'bg-accent',
+    ]
+
+    for (const deadClass of deadClasses) {
+      expect(css).not.toContain(`.${deadClass}`)
+    }
+  })
+})
+
 describe('admin responsive CSS', () => {
   it('maps admin border radii to the radius token scale', () => {
     const literalRadiusDeclarations = Array.from(css.matchAll(/border-radius:\s*([^;]+);/g))
@@ -45,18 +94,8 @@ describe('admin responsive CSS', () => {
     expect(css).toContain('position: fixed;')
     expect(css).toContain('bottom: 0;')
     expect(css).toContain('env(safe-area-inset-bottom)')
-    expect(css).toContain('grid-template-columns: repeat(3, minmax(0, 1fr));')
     expect(css).toMatch(
-      /@media \(max-width:\s*860px\)\s*{[\s\S]*\.admin-stepper\s*{[\s\S]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\);/,
-    )
-    expect(css).toMatch(
-      /@media \(max-width:\s*860px\)\s*{[\s\S]*\.admin-stepper\s+li\s*{[\s\S]*min-width:\s*0;/,
-    )
-    expect(css).not.toMatch(
-      /@media \(max-width:\s*860px\)\s*{[\s\S]*\.admin-stepper\s*{[\s\S]*overflow-x:\s*auto;/,
-    )
-    expect(css).not.toMatch(
-      /@media \(max-width:\s*860px\)\s*{[\s\S]*\.admin-stepper\s*{[\s\S]*scroll-snap-type:/,
+      /@media \(max-width:\s*860px\)\s*{[\s\S]*\.admin-nav\s*{[\s\S]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\);/,
     )
   })
 
@@ -74,10 +113,10 @@ describe('admin responsive CSS', () => {
 
   it('keeps mobile copy and action controls on separate rows', () => {
     expect(css).toMatch(
-      /@media \(max-width:\s*860px\)\s*{[\s\S]*\.admin-header-row,[\s\S]*\.admin-topbar,[\s\S]*\.admin-panel-header,[\s\S]*\.admin-publication-banner,[\s\S]*\.admin-editor-next-step,[\s\S]*\.admin-form-heading,[\s\S]*\.admin-section-heading-row\s*{[\s\S]*grid-template-columns:\s*1fr;/,
+      /@media \(max-width:\s*860px\)\s*{[\s\S]*\.admin-header-row,[\s\S]*\.admin-panel-header,[\s\S]*\.admin-form-heading,[\s\S]*\.admin-section-heading-row\s*{[\s\S]*grid-template-columns:\s*1fr;/,
     )
     expect(css).toMatch(
-      /@media \(max-width:\s*860px\)\s*{[\s\S]*\.admin-build-header,[\s\S]*\.admin-log-toolbar,[\s\S]*\.admin-linear-footer,[\s\S]*\.admin-actions-row,[\s\S]*\.admin-danger-actions,[\s\S]*\.admin-focus-actions,[\s\S]*\.admin-simple-actions\s*{[\s\S]*grid-template-columns:\s*1fr;/,
+      /@media \(max-width:\s*860px\)\s*{[\s\S]*\.admin-build-header,[\s\S]*\.admin-log-toolbar,[\s\S]*\.admin-linear-footer,[\s\S]*\.admin-actions-row,[\s\S]*\.admin-danger-actions,[\s\S]*\.admin-focus-actions\s*{[\s\S]*grid-template-columns:\s*1fr;/,
     )
     expect(css).toMatch(
       /@media \(max-width:\s*860px\)\s*{[\s\S]*\.admin-header-row > \.admin-primary-button,[\s\S]*width:\s*100%;/,
