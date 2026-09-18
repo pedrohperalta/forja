@@ -9,7 +9,7 @@ import { listAdminPlans, type AdminPlanListItem } from '@/server/services/plans/
 
 type AdminDashboardPlan = Pick<
   AdminPlanListItem,
-  'draftName' | 'latestRevisionNumber' | 'archived'
+  'draftName' | 'latestRevisionNumber' | 'publicationState' | 'archived'
 > & {
   plan: {
     id: string
@@ -23,20 +23,25 @@ type AdminShellProps = {
 
 export function AdminShell({ plans = [] }: AdminShellProps): ReactElement {
   const activePlans = plans.filter((plan) => !plan.archived)
-  const draftOnlyPlans = plans.filter(
-    (plan) => !plan.archived && plan.latestRevisionNumber === null,
+  const pendingPlans = activePlans.filter(
+    (plan) =>
+      plan.publicationState === 'unpublished-draft' || plan.publicationState === 'pending-changes',
   )
-  const primaryDraft = draftOnlyPlans[0]
-  const hasPendingPublication = draftOnlyPlans.length > 0
+  const unpublishedPlan = pendingPlans.find(
+    (plan) => plan.publicationState === 'unpublished-draft',
+  )
+  const primaryPending = unpublishedPlan ?? pendingPlans[0]
+  const hasPendingPublication = pendingPlans.length > 0
   const hasPlans = activePlans.length > 0
   const focusTitle = getFocusTitle({
     hasPendingPublication,
+    hasUnpublishedDraft: Boolean(unpublishedPlan),
     hasPlans,
   })
   const focusCopy = getFocusCopy({
     hasPendingPublication,
+    primaryPending,
     hasPlans,
-    primaryDraft,
   })
 
   return (
@@ -49,10 +54,10 @@ export function AdminShell({ plans = [] }: AdminShellProps): ReactElement {
       <section className="admin-simple-dashboard" aria-label="Resumo do admin">
         <section className="admin-summary-strip" aria-label="Resumo dos treinos">
           <SummaryItem label="Planos de treino" value={String(activePlans.length)} />
-          <SummaryItem label="Publicação pendente" value={String(draftOnlyPlans.length)} />
+          <SummaryItem label="Aguardando publicação" value={String(pendingPlans.length)} />
           <SummaryItem
             label="Publicado no app"
-            value={String(activePlans.length - draftOnlyPlans.length)}
+            value={String(activePlans.length - pendingPlans.length)}
           />
         </section>
 
@@ -66,10 +71,10 @@ export function AdminShell({ plans = [] }: AdminShellProps): ReactElement {
           </div>
 
           <div className="admin-focus-actions">
-            {hasPendingPublication && primaryDraft ? (
+            {hasPendingPublication && primaryPending ? (
               <Link
                 className="admin-primary-button bg-accent"
-                href={`/admin/plans/${primaryDraft.plan.id}`}
+                href={`/admin/plans/${primaryPending.plan.id}`}
               >
                 Revisar rascunho
               </Link>
@@ -90,13 +95,15 @@ export function AdminShell({ plans = [] }: AdminShellProps): ReactElement {
 
 function getFocusTitle({
   hasPendingPublication,
+  hasUnpublishedDraft,
   hasPlans,
 }: {
   hasPendingPublication: boolean
+  hasUnpublishedDraft: boolean
   hasPlans: boolean
 }): string {
   if (hasPendingPublication) {
-    return 'Publicar rascunho'
+    return hasUnpublishedDraft ? 'Publicar rascunho' : 'Publicar alterações'
   }
 
   return hasPlans ? 'Treinos prontos' : 'Começar treinos'
@@ -104,15 +111,19 @@ function getFocusTitle({
 
 function getFocusCopy({
   hasPendingPublication,
+  primaryPending,
   hasPlans,
-  primaryDraft,
 }: {
   hasPendingPublication: boolean
+  primaryPending: AdminDashboardPlan | undefined
   hasPlans: boolean
-  primaryDraft: AdminDashboardPlan | undefined
 }): string {
-  if (hasPendingPublication) {
-    return `${primaryDraft?.draftName ?? primaryDraft?.plan.label ?? 'Um plano'} ainda não aparece no app. Revise e publique quando estiver pronto.`
+  if (hasPendingPublication && primaryPending) {
+    const planName = primaryPending.draftName ?? primaryPending.plan.label
+
+    return primaryPending.publicationState === 'pending-changes'
+      ? `${planName} tem edição que ainda não chegou ao app. Reveja e publique a nova revisão.`
+      : `${planName} ainda não aparece no app. Revise e publique quando estiver pronto.`
   }
 
   if (hasPlans) {

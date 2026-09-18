@@ -778,6 +778,11 @@ select:disabled {
   animation: admin-spin 0.8s linear infinite;
 }
 
+.admin-button-spinner-light {
+  border-color: rgba(255, 255, 255, 0.25);
+  border-top-color: var(--color-text-med);
+}
+
 @keyframes admin-spin {
   to {
     transform: rotate(360deg);
@@ -1882,6 +1887,118 @@ select:disabled {
   box-shadow: 0 0 24px rgba(0, 0, 0, 0.32);
 }
 
+/* Editor action bar — one home for state + Salvar + Publicar */
+.admin-editor-actionbar {
+  position: sticky;
+  bottom: var(--space-4);
+  z-index: var(--z-sticky);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-top: var(--space-5);
+  border: 1px solid rgba(194, 240, 0, 0.28);
+  border-radius: var(--radius-lg);
+  background: rgba(17, 17, 17, 0.96);
+  padding: var(--space-4);
+  box-shadow: 0 0 24px rgba(0, 0, 0, 0.32);
+}
+
+.admin-editor-actionbar-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+/* Manual exercise creation */
+.admin-add-exercise {
+  margin-top: var(--space-3);
+}
+
+.admin-add-exercise-reveal > summary {
+  display: flex;
+  min-height: 3rem;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  border: 1px dashed rgba(194, 240, 0, 0.36);
+  border-radius: var(--radius-md);
+  background: linear-gradient(180deg, rgba(194, 240, 0, 0.08), var(--color-surface-2));
+  color: var(--color-text);
+  cursor: pointer;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.09rem;
+  padding: 0 var(--space-4);
+  text-transform: uppercase;
+  list-style: none;
+}
+
+.admin-add-exercise-reveal > summary::-webkit-details-marker {
+  display: none;
+}
+
+.admin-add-exercise-reveal > summary:hover {
+  border-color: rgba(194, 240, 0, 0.72);
+}
+
+.admin-add-exercise-reveal[open] > summary {
+  margin-bottom: var(--space-4);
+  border-color: rgba(194, 240, 0, 0.38);
+  color: var(--color-accent);
+}
+
+.admin-add-exercise-fields {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  gap: var(--space-3);
+  align-items: end;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: rgba(28, 28, 28, 0.72);
+  padding: var(--space-4);
+}
+
+.admin-add-exercise-fields .admin-muted {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+/* Two-step exercise removal inside the draft card */
+.admin-exercise-remove {
+  margin-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--space-4);
+}
+
+.admin-exercise-remove > summary {
+  width: fit-content;
+  cursor: pointer;
+  color: var(--color-danger);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: 0.14rem;
+  list-style: none;
+  text-transform: uppercase;
+}
+
+.admin-exercise-remove > summary::-webkit-details-marker {
+  display: none;
+}
+
+.admin-exercise-remove > summary::before {
+  content: '−';
+  margin-right: var(--space-2);
+}
+
+.admin-exercise-remove[open] > summary {
+  margin-bottom: var(--space-3);
+}
+
+.admin-exercise-remove p {
+  max-width: 32rem;
+}
+
 .admin-publication-banner {
   display: flex;
   align-items: center;
@@ -2668,6 +2785,26 @@ select:disabled {
 
   .admin-sticky-publish {
     bottom: calc(5.75rem + env(safe-area-inset-bottom));
+  }
+
+  .admin-editor-actionbar {
+    bottom: calc(5.75rem + env(safe-area-inset-bottom));
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-3);
+  }
+
+  .admin-editor-actionbar .status-pill {
+    width: fit-content;
+  }
+
+  .admin-editor-actionbar-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-add-exercise-fields {
+    grid-template-columns: 1fr;
   }
 
   .admin-sticky-publish .admin-header-row {

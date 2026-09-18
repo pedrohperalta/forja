@@ -15,7 +15,7 @@ import {
 
 type PlanListItemViewModel = Pick<
   AdminPlanListItem,
-  'draftFocus' | 'draftName' | 'latestRevisionNumber' | 'archived'
+  'draftFocus' | 'draftName' | 'latestRevisionNumber' | 'publicationState' | 'archived'
 > & {
   plan: {
     id: string
@@ -48,8 +48,8 @@ export function PlanListView({ plans }: PlanListViewProps): ReactElement {
           <AdminCard accent className="admin-empty-state">
             <p className="admin-section-title">Nenhum plano cadastrado</p>
             <p className="admin-muted">
-              Crie a primeira ficha estruturada. Ela nasce como draft e só aparece no app depois da
-              publicação.
+              Crie a primeira ficha estruturada. Ela nasce como rascunho e só aparece no app depois
+              da publicação.
             </p>
             <Link className="admin-primary-button bg-accent" href="/admin/plans/new">
               Criar primeiro plano
@@ -119,10 +119,12 @@ function PlanCard({ item }: { item: PlanListItemViewModel }): ReactElement {
           </div>
           {item.archived ? (
             <StatusPill tone="danger">Arquivado</StatusPill>
-          ) : item.latestRevisionNumber ? (
+          ) : item.publicationState === 'published' ? (
             <StatusPill tone="accent">Publicado no app</StatusPill>
+          ) : item.publicationState === 'pending-changes' ? (
+            <StatusPill tone="warning">Publicado com alterações</StatusPill>
           ) : (
-            <StatusPill tone="warning">Rascunho não publicado</StatusPill>
+            <StatusPill tone="warning">Rascunho</StatusPill>
           )}
         </header>
 
@@ -183,11 +185,11 @@ function getPlanActionLabel(item: PlanListItemViewModel): string {
     return 'Ver arquivado'
   }
 
-  if (!item.latestRevisionNumber) {
-    return 'Revisar e publicar'
+  if (item.publicationState === 'published') {
+    return 'Editar plano'
   }
 
-  return 'Editar plano'
+  return 'Revisar e publicar'
 }
 
 export default async function AdminPlansPage(): Promise<ReactElement> {

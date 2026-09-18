@@ -5,23 +5,37 @@ import type { DragEvent, KeyboardEvent, ReactElement } from 'react'
 import { useState } from 'react'
 
 import { AdminCard, AdminField, StatusPill } from '@/components/admin/AdminUi'
+import { AdminSubmitButton } from '@/components/admin/AdminSubmitButton'
+import type { PublicationStatus } from '@/lib/publicationState'
 
 type ServerAction = (formData: FormData) => Promise<void>
 
 type AdminPlanDraftFormProps = {
+  addedExerciseId?: string | undefined
   archived: boolean
   categoryOptions: readonly MuscleCategory[]
   draft: Plan
+  latestRevisionNumber: number | null
   planId: string
+  publishAction: ServerAction
+  removeExerciseAction: ServerAction
+  restoreAction?: ServerAction | undefined
   saveDraftAction: ServerAction
+  status: PublicationStatus
 }
 
 export function AdminPlanDraftForm({
+  addedExerciseId,
   archived,
   categoryOptions,
   draft,
+  latestRevisionNumber,
   planId,
+  publishAction,
+  removeExerciseAction,
+  restoreAction,
   saveDraftAction,
+  status,
 }: AdminPlanDraftFormProps): ReactElement {
   const [exerciseIds, setExerciseIds] = useState(() =>
     draft.exercises.map((exercise) => exercise.id),
@@ -129,17 +143,14 @@ export function AdminPlanDraftForm({
           <div className="admin-form-heading">
             <div>
               <p className="admin-section-title">Rascunho estruturado</p>
-              <p className="admin-muted">
-                Edite dados e exercícios. Salve o rascunho antes de publicar no app.
-              </p>
+              <p className="admin-muted">{status.publishDescription}</p>
             </div>
-            <button
-              className="admin-primary-button admin-compact-button bg-accent"
-              disabled={archived}
-              type="submit"
-            >
-              Salvar rascunho
-            </button>
+            <div className="admin-publication-meta">
+              <span className="admin-tag">
+                {latestRevisionNumber ? `Rev. ${latestRevisionNumber}` : 'Sem revisão'}
+              </span>
+              <span className="admin-tag">{draft.exercises.length} exercícios</span>
+            </div>
           </div>
           {statusMessage ? (
             <p aria-live="polite" className="admin-save-status">
@@ -183,9 +194,19 @@ export function AdminPlanDraftForm({
           <h2 className="admin-section-title">Exercícios</h2>
           <p className="admin-drag-instructions">Arraste para reordenar</p>
         </div>
+        {orderedExercises.length === 0 ? (
+          <AdminCard className="admin-empty-state">
+            <p className="admin-section-title">Nenhum exercício ainda</p>
+            <p className="admin-muted">
+              Adicione o primeiro movimento abaixo. Séries, descanso e equipamento têm padrões
+              prontos — ajuste depois.
+            </p>
+          </AdminCard>
+        ) : null}
         {orderedExercises.map((exercise, index) => {
           const isDragging = draggingId === exercise.id
           const isDropTarget = dropTargetId === exercise.id
+          const wasJustAdded = exercise.id === addedExerciseId
 
           return (
             <AdminCard
@@ -198,6 +219,7 @@ export function AdminPlanDraftForm({
                 className="admin-exercise-editor"
                 onDragOver={(event) => handleDragOver(event, exercise.id)}
                 onDrop={(event) => handleDrop(event, exercise.id)}
+                open={wasJustAdded || undefined}
               >
                 <summary>
                   <button
@@ -245,6 +267,7 @@ export function AdminPlanDraftForm({
                 <div className="admin-form-grid">
                   <AdminField label="Nome">
                     <input
+                      autoFocus={wasJustAdded || undefined}
                       className="admin-input"
                       disabled={archived}
                       name="exerciseName"
@@ -325,11 +348,66 @@ export function AdminPlanDraftForm({
                     </AdminField>
                   </div>
                 </details>
+                {archived ? null : (
+                  <details className="admin-exercise-remove">
+                    <summary>Remover exercício</summary>
+                    <p className="admin-muted">
+                      O exercício sai do rascunho. A última revisão publicada permanece no app.
+                    </p>
+                    <AdminSubmitButton
+                      className="admin-danger-button admin-compact-button"
+                      formAction={removeExerciseAction}
+                      name="removeExerciseId"
+                      spinnerTone="light"
+                      value={exercise.id}
+                    >
+                      Confirmar remoção
+                    </AdminSubmitButton>
+                  </details>
+                )}
               </details>
             </AdminCard>
           )
         })}
       </section>
+
+      <div className="admin-editor-actionbar">
+        <StatusPill tone={status.tone}>{status.label}</StatusPill>
+        <div className="admin-editor-actionbar-actions">
+          {archived ? (
+            restoreAction ? (
+              <AdminSubmitButton
+                className="admin-primary-button bg-accent"
+                formAction={restoreAction}
+                spinnerTone="light"
+              >
+                Restaurar para editar
+              </AdminSubmitButton>
+            ) : null
+          ) : (
+            <>
+              <AdminSubmitButton
+                className="admin-secondary-button"
+                spinnerTone="light"
+              >
+                Salvar
+              </AdminSubmitButton>
+              {status.canPublish ? (
+                <AdminSubmitButton
+                  className="admin-primary-button bg-accent"
+                  formAction={publishAction}
+                >
+                  {status.publishLabel}
+                </AdminSubmitButton>
+              ) : (
+                <button className="admin-secondary-button" disabled type="button">
+                  {status.publishLabel}
+                </button>
+              )}
+            </>
+          )}
+        </div>
+      </div>
     </form>
   )
 }

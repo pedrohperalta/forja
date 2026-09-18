@@ -14,6 +14,7 @@ describe('/admin/plans', () => {
             draftName: 'Treino A',
             draftFocus: 'Peito / Ombros',
             latestRevisionNumber: 2,
+            publicationState: 'published',
             archived: false,
           },
         ],
@@ -38,15 +39,24 @@ describe('/admin/plans', () => {
     expect(markup).not.toContain('Arquivados</h2>')
   })
 
-  it('makes draft and archived states visually explicit', () => {
+  it('makes draft, pending-changes and archived states visually explicit', () => {
     const markup = renderToStaticMarkup(
       createElement(PlanListView, {
         plans: [
           {
             plan: { id: 'plan_draft', label: 'D' },
-            draftName: 'Treino Draft',
+            draftName: 'Treino Rascunho',
             draftFocus: 'Costas',
             latestRevisionNumber: null,
+            publicationState: 'unpublished-draft',
+            archived: false,
+          },
+          {
+            plan: { id: 'plan_edited', label: 'P' },
+            draftName: 'Treino com Pendências',
+            draftFocus: 'Ombros',
+            latestRevisionNumber: 3,
+            publicationState: 'pending-changes',
             archived: false,
           },
           {
@@ -54,15 +64,19 @@ describe('/admin/plans', () => {
             draftName: 'Treino Antigo',
             draftFocus: 'Arquivo',
             latestRevisionNumber: 3,
+            publicationState: 'archived',
             archived: true,
           },
         ],
       }),
     )
 
-    expect(markup).toContain('Rascunho não publicado')
-    expect(markup).toContain('Planos ativos')
+    expect(markup).toContain('Rascunho')
+    expect(markup).not.toContain('Rascunho não publicado')
+    expect(markup).toContain('Publicado com alterações')
     expect(markup).toContain('Revisar e publicar')
+    expect(markup.match(/Revisar e publicar/g)).toHaveLength(2)
+    expect(markup).toContain('Planos ativos')
     expect(markup).toContain('Arquivados')
     expect(markup).toContain('Arquivado')
     expect(markup).toContain('Não aparece no app')
@@ -77,6 +91,7 @@ describe('/admin/plans', () => {
     expect(markup).not.toContain('Publicar draft')
     expect(markup).not.toContain('Somente leitura')
     expect(markup).not.toContain('>Editar<')
+    expect(markup).not.toContain('nasce como draft')
     expect(markup.indexOf('Planos ativos')).toBeLessThan(markup.indexOf('Arquivados'))
   })
 

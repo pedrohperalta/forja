@@ -1,17 +1,23 @@
+import { randomUUID } from 'node:crypto'
+
 import { MuscleCategorySchema, type Plan } from '@forja/domain'
 import { revalidatePath } from 'next/cache'
 import { notFound, redirect } from 'next/navigation'
 import type { ReactElement } from 'react'
 
+import { AdminAddExerciseForm } from '@/components/admin/AdminAddExerciseForm'
 import { AdminPlanDraftForm } from '@/components/admin/AdminPlanDraftForm'
-import { AdminCard, AdminFrame, AdminTag, StatusPill } from '@/components/admin/AdminUi'
+import { AdminCard, AdminFrame } from '@/components/admin/AdminUi'
 import { getCurrentAdminUser } from '@/server/auth/currentAdmin'
 import { getDatabase } from '@/server/db/client'
+import { getPublicationState, getPublicationStatus } from '@/lib/publicationState'
 import {
+  addDraftExercise,
   archivePlan,
   deletePlanPermanently,
   getAdminPlan,
   publishDraftPlan,
+  removeDraftExercise,
   reorderDraftExercises,
   restoreArchivedPlan,
   updateDraftExercise,
@@ -20,6 +26,7 @@ import {
 import { getUploadsDir, uploadEquipmentPhoto } from '@/server/services/photos/equipmentPhotoService'
 
 type PlanEditorViewProps = {
+  addedExerciseId?: string | undefined
   plan: {
     plan: {
       id: string
@@ -38,15 +45,24 @@ type PlanEditorViewProps = {
       deletedAt: Date
     } | null
   }
+  publishedRevision?: number | undefined
 }
 
 type PlanPageProps = {
   params: Promise<{
     planId: string
   }>
+  searchParams: Promise<{
+    added?: string
+    published?: string
+  }>
 }
 
-export function PlanEditorView({ plan }: PlanEditorViewProps): ReactElement {
+export function PlanEditorView({
+  addedExerciseId,
+  plan,
+  publishedRevision,
+}: PlanEditorViewProps): ReactElement {
   const draft = plan.draft
 
   if (!draft) {
@@ -70,9 +86,6 @@ export function PlanEditorView({ plan }: PlanEditorViewProps): ReactElement {
     latestRevisionData: plan.latestRevision?.data ?? null,
   })
   const status = getPublicationStatus(publicationState)
-  const publishButtonLabel = getPublishButtonLabel(publicationState)
-  const canPublish =
-    publicationState === 'pending-changes' || publicationState === 'unpublished-draft'
 
   return (
     <AdminFrame
@@ -80,53 +93,36 @@ export function PlanEditorView({ plan }: PlanEditorViewProps): ReactElement {
       eyebrow="EDITOR DE PLANO"
       title={draft.data.name}
       subtitle={draft.data.focus}
-      action={<StatusPill tone={status.tone}>{status.label}</StatusPill>}
     >
-      <section className="admin-editor-next-step" aria-label="Próxima ação">
-        <div>
-          <p className="admin-section-label">Próxima ação</p>
-          <h2 className="admin-panel-title admin-display">{status.label}</h2>
-          <p className="admin-muted">{status.description}</p>
+      {publishedRevision ? (
+        <div className="admin-notice-banner" role="status">
+          <strong>Rev. {publishedRevision} publicada</strong>
+          <p>O app já pode sincronizar. Abra o Forja e puxe para atualizar.</p>
         </div>
-        <div>
-          <div className="admin-publication-meta">
-            <AdminTag>
-              {plan.latestRevisionNumber ? `Rev. ${plan.latestRevisionNumber}` : 'Sem revisão'}
-            </AdminTag>
-            <AdminTag>{draft.data.exercises.length} exercícios</AdminTag>
-          </div>
-          <p className="admin-muted admin-editor-next-copy">{status.publishDescription}</p>
-          <div className="admin-actions-row admin-actions-row-tight">
-            {canPublish ? (
-              <form action={publishPlanAction}>
-                <input name="planId" type="hidden" value={plan.plan.id} />
-                <button className="admin-primary-button bg-accent" type="submit">
-                  {publishButtonLabel}
-                </button>
-              </form>
-            ) : publicationState === 'archived' ? (
-              <form action={restorePlanAction}>
-                <input name="planId" type="hidden" value={plan.plan.id} />
-                <button className="admin-primary-button bg-accent" type="submit">
-                  Restaurar para editar
-                </button>
-              </form>
-            ) : (
-              <button className="admin-secondary-button" disabled type="button">
-                {publishButtonLabel}
-              </button>
-            )}
-          </div>
-        </div>
-      </section>
+      ) : null}
 
       <AdminPlanDraftForm
+        addedExerciseId={addedExerciseId}
         archived={plan.archived}
         categoryOptions={MuscleCategorySchema.options}
         draft={draft.data}
+        latestRevisionNumber={plan.latestRevisionNumber}
         planId={plan.plan.id}
+        publishAction={publishPlanAction}
+        removeExerciseAction={removeExerciseAction}
+        restoreAction={restorePlanAction}
         saveDraftAction={saveDraftAction}
+        status={status}
       />
+
+      {plan.archived ? null : (
+        <AdminAddExerciseForm
+          addExerciseAction={addExerciseAction}
+          categoryOptions={MuscleCategorySchema.options}
+          empty={draft.data.exercises.length === 0}
+          planId={plan.plan.id}
+        />
+      )}
 
       <section className="admin-section" aria-label="Zona de risco">
         <AdminCard>
@@ -166,106 +162,7 @@ export function PlanEditorView({ plan }: PlanEditorViewProps): ReactElement {
   )
 }
 
-type PublicationState = 'archived' | 'published' | 'pending-changes' | 'unpublished-draft'
-
-function getPublicationState(input: {
-  archived: boolean
-  draftData: Plan
-  latestRevisionData: Plan | null
-}): PublicationState {
-  if (input.archived) {
-    return 'archived'
-  }
-
-  if (!input.latestRevisionData) {
-    return 'unpublished-draft'
-  }
-
-  if (stableStringify(input.draftData) === stableStringify(input.latestRevisionData)) {
-    return 'published'
-  }
-
-  return 'pending-changes'
-}
-
-function getPublicationStatus(state: PublicationState): {
-  label: string
-  description: string
-  publishDescription: string
-  tone: 'accent' | 'warning' | 'danger'
-} {
-  if (state === 'archived') {
-    return {
-      label: 'Arquivado',
-      description: 'Não aparece no app.',
-      publishDescription: 'Plano arquivado. Não aparece no app e não pode ser editado.',
-      tone: 'danger',
-    }
-  }
-
-  if (state === 'published') {
-    return {
-      label: 'Publicado no app',
-      description: 'Esta versão já está publicada no app.',
-      publishDescription:
-        'Esta versão já está publicada no app. Edite algum campo para criar uma nova revisão.',
-      tone: 'accent',
-    }
-  }
-
-  if (state === 'pending-changes') {
-    return {
-      label: 'Alterações em rascunho',
-      description:
-        'Existe uma revisão publicada, mas este draft precisa ser publicado para chegar ao app.',
-      publishDescription:
-        'Publique a revisão para atualizar o app. Até lá, as alterações continuam salvas como draft.',
-      tone: 'warning',
-    }
-  }
-
-  return {
-    label: 'Rascunho não publicado',
-    description: 'Ainda não aparece no app.',
-    publishDescription:
-      'Publique para aparecer no app. Até lá, as alterações continuam salvas como draft.',
-    tone: 'warning',
-  }
-}
-
-function getPublishButtonLabel(state: PublicationState): string {
-  if (state === 'archived') {
-    return 'Plano arquivado'
-  }
-
-  if (state === 'published') {
-    return 'Publicado'
-  }
-
-  if (state === 'pending-changes') {
-    return 'Publicar revisão'
-  }
-
-  return 'Publicar no app'
-}
-
-function stableStringify(value: unknown): string {
-  if (Array.isArray(value)) {
-    return `[${value.map((item) => stableStringify(item)).join(',')}]`
-  }
-
-  if (value && typeof value === 'object') {
-    const record = value as Record<string, unknown>
-    return `{${Object.keys(record)
-      .sort()
-      .map((key) => `${JSON.stringify(key)}:${stableStringify(record[key])}`)
-      .join(',')}}`
-  }
-
-  return JSON.stringify(value)
-}
-
-export default async function PlanPage({ params }: PlanPageProps): Promise<ReactElement> {
+export default async function PlanPage({ params, searchParams }: PlanPageProps): Promise<ReactElement> {
   const user = await getCurrentAdminUser()
 
   if (!user) {
@@ -273,20 +170,31 @@ export default async function PlanPage({ params }: PlanPageProps): Promise<React
   }
 
   const { planId } = await params
+  const { added, published } = await searchParams
   const plan = await getAdminPlan(getDatabase(), { userId: user.id, planId })
 
   if (!plan) {
     notFound()
   }
 
-  return <PlanEditorView plan={plan} />
+  const publishedRevisionNumber = published ? Number.parseInt(published, 10) : Number.NaN
+
+  return (
+    <PlanEditorView
+      addedExerciseId={added?.trim() || undefined}
+      plan={plan}
+      publishedRevision={Number.isFinite(publishedRevisionNumber) ? publishedRevisionNumber : undefined}
+    />
+  )
 }
 
-async function saveDraftAction(formData: FormData): Promise<void> {
-  'use server'
-
-  const user = await requireAdmin()
-  const planId = getRequiredString(formData, 'planId')
+async function saveDraftFromFormData(
+  db: ReturnType<typeof getDatabase>,
+  userId: string,
+  planId: string,
+  formData: FormData,
+  now: Date,
+): Promise<void> {
   const exerciseIds = getStringValues(formData, 'exerciseId')
   const exerciseNames = getFormDataValues(formData, 'exerciseName')
   const exerciseCategories = getFormDataValues(formData, 'exerciseCategory')
@@ -294,11 +202,9 @@ async function saveDraftAction(formData: FormData): Promise<void> {
   const exerciseReps = getFormDataValues(formData, 'exerciseReps')
   const exerciseSets = getFormDataValues(formData, 'exerciseSets')
   const exerciseRestSeconds = getFormDataValues(formData, 'exerciseRestSeconds')
-  const now = new Date()
-  const db = getDatabase()
 
   await updateDraftPlanDetails(db, {
-    userId: user.id,
+    userId,
     planId,
     label: getRequiredString(formData, 'label'),
     name: getRequiredString(formData, 'name'),
@@ -308,7 +214,7 @@ async function saveDraftAction(formData: FormData): Promise<void> {
 
   for (const [index, exerciseId] of exerciseIds.entries()) {
     await updateDraftExercise(db, {
-      userId: user.id,
+      userId,
       planId,
       exerciseId,
       exercise: {
@@ -328,7 +234,7 @@ async function saveDraftAction(formData: FormData): Promise<void> {
     if (isUploadedFile(photo)) {
       await uploadEquipmentPhoto(db, {
         uploadsDir: getUploadsDir(),
-        userId: user.id,
+        userId,
         exerciseId,
         contentType: photo.type,
         bytes: new Uint8Array(await photo.arrayBuffer()),
@@ -338,11 +244,20 @@ async function saveDraftAction(formData: FormData): Promise<void> {
   }
 
   await reorderDraftExercises(db, {
-    userId: user.id,
+    userId,
     planId,
     exerciseIds,
     now,
   })
+}
+
+async function saveDraftAction(formData: FormData): Promise<void> {
+  'use server'
+
+  const user = await requireAdmin()
+  const planId = getRequiredString(formData, 'planId')
+
+  await saveDraftFromFormData(getDatabase(), user.id, planId, formData, new Date())
 
   revalidatePath(`/admin/plans/${planId}`)
 }
@@ -352,10 +267,65 @@ async function publishPlanAction(formData: FormData): Promise<void> {
 
   const user = await requireAdmin()
   const planId = getRequiredString(formData, 'planId')
+  const db = getDatabase()
+  const now = new Date()
 
-  await publishDraftPlan(getDatabase(), {
+  await saveDraftFromFormData(db, user.id, planId, formData, now)
+
+  const detail = await getAdminPlan(db, { userId: user.id, planId })
+  const publicationState = getPublicationState({
+    archived: detail?.archived ?? false,
+    draftData: detail?.draft?.data ?? null,
+    latestRevisionData: detail?.latestRevision?.data ?? null,
+  })
+
+  if (publicationState === 'published' && detail?.latestRevisionNumber) {
+    redirect(`/admin/plans/${planId}?published=${detail.latestRevisionNumber}`)
+  }
+
+  const revision = await publishDraftPlan(db, {
     userId: user.id,
     planId,
+    now,
+  })
+
+  revalidatePath(`/admin/plans/${planId}`)
+  revalidatePath('/admin/plans')
+  revalidatePath('/admin')
+  redirect(`/admin/plans/${planId}?published=${revision.revisionNumber}`)
+}
+
+async function addExerciseAction(formData: FormData): Promise<void> {
+  'use server'
+
+  const user = await requireAdmin()
+  const planId = getRequiredString(formData, 'planId')
+  const exerciseId = `exercise_${randomUUID()}`
+
+  await addDraftExercise(getDatabase(), {
+    userId: user.id,
+    planId,
+    exerciseId,
+    name: getRequiredString(formData, 'exerciseName'),
+    category: MuscleCategorySchema.parse(getRequiredString(formData, 'exerciseCategory')),
+    now: new Date(),
+  })
+
+  revalidatePath(`/admin/plans/${planId}`)
+  redirect(`/admin/plans/${planId}?added=${exerciseId}`)
+}
+
+async function removeExerciseAction(formData: FormData): Promise<void> {
+  'use server'
+
+  const user = await requireAdmin()
+  const planId = getRequiredString(formData, 'planId')
+  const exerciseId = getRequiredString(formData, 'removeExerciseId')
+
+  await removeDraftExercise(getDatabase(), {
+    userId: user.id,
+    planId,
+    exerciseId,
     now: new Date(),
   })
 

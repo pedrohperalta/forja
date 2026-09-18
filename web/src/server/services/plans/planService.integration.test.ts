@@ -8,6 +8,7 @@ import * as schema from '../../db/schema'
 import { assertTestDatabaseUrl, resetDatabase } from '../../db/testDatabase'
 import { createUser } from '../../repositories'
 import {
+  addDraftExercise,
   archivePlan,
   createDraftPlan,
   deletePlanPermanently,
@@ -15,6 +16,7 @@ import {
   getLatestPublishedPlanRevision,
   listAdminPlans,
   publishDraftPlan,
+  removeDraftExercise,
   reorderDraftExercises,
   restoreArchivedPlan,
   updateDraftExercise,
@@ -339,5 +341,159 @@ describe('plan service', () => {
         now: NOW,
       }),
     ).rejects.toThrow()
+  })
+
+  it('exposes the publication state of each listed plan', async () => {
+    await createDraftPlan(db, {
+      userId: USER_ID,
+      planId: 'plan_fresh',
+      label: 'F',
+      name: 'Treino Novo',
+      focus: 'Peito',
+      exercises: [],
+      now: NOW,
+    })
+    await createDraftPlan(db, {
+      userId: USER_ID,
+      planId: 'plan_synced',
+      label: 'S',
+      name: 'Treino Sincronizado',
+      focus: 'Costas',
+      exercises: [firstExercise],
+      now: NOW,
+    })
+    await createDraftPlan(db, {
+      userId: USER_ID,
+      planId: 'plan_edited',
+      label: 'E',
+      name: 'Treino Editado',
+      focus: 'Ombros',
+      exercises: [firstExercise],
+      now: NOW,
+    })
+
+    await publishDraftPlan(db, { userId: USER_ID, planId: 'plan_synced', now: NOW })
+    await publishDraftPlan(db, { userId: USER_ID, planId: 'plan_edited', now: NOW })
+    await updateDraftPlanDetails(db, {
+      userId: USER_ID,
+      planId: 'plan_edited',
+      label: 'E',
+      name: 'Treino Editado com Pendências',
+      focus: 'Ombros',
+      now: LATER,
+    })
+
+    const plans = await listAdminPlans(db, { userId: USER_ID, includeArchived: true })
+    const stateByPlanId = new Map(plans.map((plan) => [plan.plan.id, plan.publicationState]))
+
+    expect(stateByPlanId.get('plan_fresh')).toBe('unpublished-draft')
+    expect(stateByPlanId.get('plan_synced')).toBe('published')
+    expect(stateByPlanId.get('plan_edited')).toBe('pending-changes')
+  })
+
+  it('adds an exercise to a draft with ready-made defaults', async () => {
+    await createDraftPlan(db, {
+      userId: USER_ID,
+      planId: 'plan_add',
+      label: 'ADD',
+      name: 'Treino para adicionar',
+      focus: 'Peito',
+      exercises: [],
+      now: NOW,
+    })
+
+    const draft = await addDraftExercise(db, {
+      userId: USER_ID,
+      planId: 'plan_add',
+      exerciseId: 'exercise_new',
+      name: 'Remada Baixa',
+      category: 'Costas',
+      now: LATER,
+    })
+
+    expect(draft.data.exercises).toHaveLength(1)
+    expect(draft.data.exercises[0]).toMatchObject({
+      id: 'exercise_new',
+      name: 'Remada Baixa',
+      category: 'Costas',
+      equipment: 'A definir',
+      reps: '10-12',
+      sets: 3,
+      restSeconds: 60,
+    })
+  })
+
+  it('removes an exercise from a draft and keeps the remaining order', async () => {
+    await createDraftPlan(db, {
+      userId: USER_ID,
+      planId: 'plan_remove',
+      label: 'RM',
+      name: 'Treino para remover',
+      focus: 'Peito',
+      exercises: [firstExercise, secondExercise],
+      now: NOW,
+    })
+
+    const draft = await removeDraftExercise(db, {
+      userId: USER_ID,
+      planId: 'plan_remove',
+      exerciseId: 'supino-reto',
+      now: LATER,
+    })
+
+    expect(draft.data.exercises.map((exercise) => exercise.id)).toEqual(['desenvolvimento'])
+  })
+
+  it('rejects removing an unknown exercise', async () => {
+    await createDraftPlan(db, {
+      userId: USER_ID,
+      planId: 'plan_remove_missing',
+      label: 'RMM',
+      name: 'Treino para remover inexistente',
+      focus: 'Peito',
+      exercises: [firstExercise],
+      now: NOW,
+    })
+
+    await expect(
+      removeDraftExercise(db, {
+        userId: USER_ID,
+        planId: 'plan_remove_missing',
+        exerciseId: 'exercise_nao_existe',
+        now: LATER,
+      }),
+    ).rejects.toThrow('Exercise not found')
+  })
+
+  it('rejects exercise changes on archived plans', async () => {
+    await createDraftPlan(db, {
+      userId: USER_ID,
+      planId: 'plan_locked',
+      label: 'LK',
+      name: 'Treino travado',
+      focus: 'Peito',
+      exercises: [firstExercise],
+      now: NOW,
+    })
+    await archivePlan(db, { userId: USER_ID, planId: 'plan_locked', now: LATER })
+
+    await expect(
+      addDraftExercise(db, {
+        userId: USER_ID,
+        planId: 'plan_locked',
+        exerciseId: 'exercise_blocked',
+        name: 'Bloqueado',
+        category: 'Peito',
+        now: LATER,
+      }),
+    ).rejects.toThrow('Archived plans cannot be edited')
+    await expect(
+      removeDraftExercise(db, {
+        userId: USER_ID,
+        planId: 'plan_locked',
+        exerciseId: 'supino-reto',
+        now: LATER,
+      }),
+    ).rejects.toThrow('Archived plans cannot be edited')
   })
 })

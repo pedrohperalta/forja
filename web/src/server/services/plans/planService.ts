@@ -1,4 +1,5 @@
 import { ExerciseSchema, PlanSchema, type Exercise, type MuscleCategory } from '@forja/domain'
+import { getPublicationState, type PublicationState } from '@/lib/publicationState'
 import { forbidden, notFound, validation } from '@/server/http/appError'
 import {
   createPlanDraft,
@@ -63,6 +64,27 @@ export type ReorderDraftExercisesInput = {
   now: Date
 }
 
+export type AddDraftExerciseInput = {
+  userId: string
+  planId: string
+  exerciseId: string
+  name: string
+  category: MuscleCategory
+  now: Date
+}
+
+export type RemoveDraftExerciseInput = {
+  userId: string
+  planId: string
+  exerciseId: string
+  now: Date
+}
+
+export const DEFAULT_EXERCISE_EQUIPMENT = 'A definir'
+export const DEFAULT_EXERCISE_REPS = '10-12'
+export const DEFAULT_EXERCISE_SETS = 3
+export const DEFAULT_EXERCISE_REST_SECONDS = 60
+
 export type PublishDraftPlanInput = {
   userId: string
   planId: string
@@ -96,6 +118,7 @@ export type AdminPlanListItem = {
   draftName: string | null
   draftFocus: string | null
   latestRevisionNumber: number | null
+  publicationState: PublicationState
   archived: boolean
 }
 
@@ -229,6 +252,55 @@ export async function reorderDraftExercises(
   })
 }
 
+export async function addDraftExercise(
+  db: Database,
+  input: AddDraftExerciseInput,
+): Promise<PlanDraftRow> {
+  const draft = await requireEditableDraft(db, input.userId, input.planId)
+  const nowIso = input.now.toISOString()
+  const exercise = ExerciseSchema.parse({
+    id: input.exerciseId,
+    name: input.name,
+    category: input.category,
+    equipment: DEFAULT_EXERCISE_EQUIPMENT,
+    reps: DEFAULT_EXERCISE_REPS,
+    sets: DEFAULT_EXERCISE_SETS,
+    restSeconds: DEFAULT_EXERCISE_REST_SECONDS,
+    createdAt: nowIso,
+    updatedAt: nowIso,
+  })
+
+  return saveDraftData(db, {
+    draft,
+    userId: input.userId,
+    planId: input.planId,
+    label: draft.data.label,
+    exercises: [...draft.data.exercises, exercise],
+    now: input.now,
+  })
+}
+
+export async function removeDraftExercise(
+  db: Database,
+  input: RemoveDraftExerciseInput,
+): Promise<PlanDraftRow> {
+  const draft = await requireEditableDraft(db, input.userId, input.planId)
+  const exercises = draft.data.exercises.filter((exercise) => exercise.id !== input.exerciseId)
+
+  if (exercises.length === draft.data.exercises.length) {
+    throw notFound('Exercise not found')
+  }
+
+  return saveDraftData(db, {
+    draft,
+    userId: input.userId,
+    planId: input.planId,
+    label: draft.data.label,
+    exercises,
+    now: input.now,
+  })
+}
+
 export async function publishDraftPlan(
   db: Database,
   input: PublishDraftPlanInput,
@@ -314,13 +386,19 @@ export async function listAdminPlans(
     plans.map(async (plan) => {
       const draft = await findPlanDraft(db, input.userId, plan.id)
       const latestRevision = await findLatestPlanRevision(db, input.userId, plan.id)
+      const archived = plan.archivedAt !== null
 
       return {
         plan,
         draftName: draft?.data.name ?? null,
         draftFocus: draft?.data.focus ?? null,
         latestRevisionNumber: latestRevision?.revisionNumber ?? null,
-        archived: plan.archivedAt !== null,
+        publicationState: getPublicationState({
+          archived,
+          draftData: draft?.data ?? null,
+          latestRevisionData: latestRevision?.data ?? null,
+        }),
+        archived,
       }
     }),
   )

@@ -138,6 +138,18 @@ describe('admin responsive CSS', () => {
     expect(css).toContain('bottom: calc(5.75rem + env(safe-area-inset-bottom));')
   })
 
+  it('pins the editor action bar with state and actions in one place', () => {
+    expect(css).toMatch(/\.admin-editor-actionbar\s*{[\s\S]*position:\s*sticky;/)
+    expect(css).toMatch(/\.admin-editor-actionbar\s*{[\s\S]*z-index:\s*var\(--z-sticky\);/)
+    expect(css).toMatch(/\.admin-editor-actionbar-actions\s*{[\s\S]*display:\s*flex;/)
+    expect(css).toMatch(
+      /@media \(max-width:\s*860px\)\s*{[\s\S]*\.admin-editor-actionbar\s*{[\s\S]*bottom:\s*calc\(5\.75rem \+ env\(safe-area-inset-bottom\)\);/,
+    )
+    expect(css).toMatch(
+      /@media \(max-width:\s*860px\)\s*{[\s\S]*\.admin-editor-actionbar\s*{[\s\S]*flex-direction:\s*column;/,
+    )
+  })
+
   it('does not scale admin title typography with viewport width', () => {
     expect(css).not.toMatch(/font-size:\s*clamp\([^;]*vw/i)
   })
