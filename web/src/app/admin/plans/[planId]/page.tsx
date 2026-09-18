@@ -11,6 +11,7 @@ import { AdminCard, AdminFrame, StatusPill } from '@/components/admin/AdminUi'
 import { getCurrentAdminUser } from '@/server/auth/currentAdmin'
 import { getDatabase } from '@/server/db/client'
 import { getPublicationState, getPublicationStatus } from '@/lib/publicationState'
+import { diffPlans } from '@/lib/planDiff'
 import {
   addDraftExercise,
   archivePlan,
@@ -89,6 +90,10 @@ export function PlanEditorView({
     latestRevisionData: plan.latestRevision?.data ?? null,
   })
   const status = getPublicationStatus(publicationState)
+  const publicationDiff =
+    publicationState === 'pending-changes' && plan.latestRevision
+      ? diffPlans(draft.data, plan.latestRevision.data)
+      : []
 
   return (
     <AdminFrame
@@ -128,6 +133,8 @@ export function PlanEditorView({
         draft={draft.data}
         latestRevisionNumber={plan.latestRevisionNumber}
         planId={plan.plan.id}
+        previewHref={`/admin/plans/${plan.plan.id}/preview`}
+        publicationDiff={publicationDiff}
         publishAction={publishPlanAction}
         removeExerciseAction={removeExerciseAction}
         restoreAction={restorePlanAction}

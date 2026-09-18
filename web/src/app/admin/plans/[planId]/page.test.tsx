@@ -87,9 +87,16 @@ describe('/admin/plans/[planId]', () => {
     expect(markup.indexOf('admin-plan-draft-form')).toBeLessThan(
       markup.indexOf('admin-editor-actionbar'),
     )
-    expect(markup).toContain('Salvar')
+    expect(markup).toContain('salvam sozinhas')
+    expect(markup).toContain('admin-save-state')
+    expect(markup).toContain('Pré-visualizar')
+    expect(markup).toContain('href="/admin/plans/plan_a/preview"')
     expect(markup).toContain('Publicar revisão')
+    expect(markup).toContain('admin-publish-diff')
+    expect(markup).toContain('alterações desde a Rev. 1')
+    expect(markup).toContain('Adicionado: Supino Reto')
     expect(markup).not.toContain('Salvar rascunho')
+    expect(markup).not.toContain('Salvar agora')
     expect(markup).not.toContain('admin-editor-next-step')
     expect(markup).not.toContain('Próxima ação')
   })
