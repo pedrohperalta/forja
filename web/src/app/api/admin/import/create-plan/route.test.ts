@@ -44,21 +44,22 @@ describe('POST /api/admin/import/create-plan', () => {
       email: 'admin@example.com',
       name: 'Admin',
     })
-    createDraftPlan.mockResolvedValueOnce({ planId: 'plan_treino_3' })
+    createDraftPlan.mockResolvedValueOnce({ planId: 'plan_treino_3_stable-u' })
 
     const response = await POST(importCreatePlanRequest())
     const body = (await response.json()) as { planId: string }
 
     expect(response.status).toBe(200)
-    expect(body.planId).toBe('plan_treino_3')
+    expect(body.planId).toBe('plan_treino_3_stable-u')
     expect(createDraftPlan).toHaveBeenCalledWith(
       { db: true },
       expect.objectContaining({
         focus: 'Costas',
         label: 'Treino 3',
         name: 'Treino 3',
-        planId: 'plan_treino_3',
+        planId: 'plan_treino_3_stable-u',
         userId: 'admin-user-id',
+        importedAt: expect.any(Date),
         exercises: [
           expect.objectContaining({
             category: 'Costas',
@@ -74,6 +75,26 @@ describe('POST /api/admin/import/create-plan', () => {
     )
   })
 
+  it('flags low-confidence exercises for review on import', async () => {
+    getAdminUserFromSessionToken.mockResolvedValueOnce({
+      id: 'admin-user-id',
+      email: 'admin@example.com',
+      name: 'Admin',
+    })
+    createDraftPlan.mockResolvedValueOnce({ planId: 'plan_low_confidence_stable-u' })
+
+    const response = await POST(
+      importCreatePlanRequest({
+        confidence: 0.4,
+      }),
+    )
+
+    expect(response.status).toBe(200)
+    const serviceInput = createDraftPlan.mock.calls[0]?.[1]
+    expect(serviceInput?.importedAt).toBeInstanceOf(Date)
+    expect(serviceInput?.exercises[0]?.needsReview).toBe(true)
+  })
+
   it('rejects unauthenticated requests', async () => {
     getAdminUserFromSessionToken.mockResolvedValueOnce(null)
 
@@ -86,7 +107,9 @@ describe('POST /api/admin/import/create-plan', () => {
   })
 })
 
-function importCreatePlanRequest(options: { authenticated?: boolean } = {}): Request {
+function importCreatePlanRequest(
+  options: { authenticated?: boolean; confidence?: number } = {},
+): Request {
   const authenticated = options.authenticated ?? true
   const headers = new Headers({
     accept: 'application/json',
@@ -110,7 +133,7 @@ function importCreatePlanRequest(options: { authenticated?: boolean } = {}): Req
             reps: '6-10',
             restSeconds: 60,
             equipment: 'Barra',
-            confidence: 0.85,
+            confidence: options.confidence ?? 0.85,
           },
         ],
       },

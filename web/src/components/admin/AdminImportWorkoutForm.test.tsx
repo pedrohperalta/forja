@@ -18,258 +18,32 @@ describe('AdminImportWorkoutForm', () => {
     vi.unstubAllGlobals()
   })
 
-  it('shows extraction progress and renders the API response as a structured review', async () => {
-    const deferred = createDeferred<Response>()
-    const fetchMock = vi.fn(() => deferred.promise)
-    vi.stubGlobal('fetch', fetchMock)
-    render(<AdminImportWorkoutForm />)
-
-    const form = getRequiredElement<HTMLFormElement>('form')
-    const label = getRequiredElement<HTMLInputElement>('input[name="label"]')
-    label.value = 'Treino A'
-    setInputFiles(getRequiredElement<HTMLInputElement>('input[name="image"]'), [
-      new File(['image'], 'treino-a.jpg', { type: 'image/jpeg' }),
-    ])
-
-    await act(async () => {
-      form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }))
-    })
-
-    expect(fetchMock).toHaveBeenCalledWith(
-      '/api/admin/import/extract-workout',
-      expect.objectContaining({
-        headers: expect.objectContaining({ Accept: 'application/json' }),
-        method: 'POST',
-      }),
-    )
-    expect(container.textContent).toContain('Extraindo com IA')
-    expect(container.textContent).toContain('Enviando imagem para a IA')
-    expect(getRequiredElement<HTMLButtonElement>('button[type="submit"]').disabled).toBe(true)
-
-    await act(async () => {
-      deferred.resolve(
-        new Response(
-          JSON.stringify({
-            workout: {
-              name: 'Treino 1 - Hipertrofia',
-              exercises: [
-                {
-                  name: 'Supino Reto',
-                  category: 'Peito',
-                  sets: 3,
-                  reps: '8-12',
-                  restSeconds: 60,
-                  equipment: 'Barra',
-                  confidence: 0.95,
-                },
-              ],
-            },
-          }),
-          { headers: { 'content-type': 'application/json' }, status: 200 },
-        ),
-      )
-      await deferred.promise
-    })
-
-    expect(container.textContent).toContain('Extração concluída')
-    expect(container.textContent).toContain('Treino 1 - Hipertrofia')
-    expect(container.textContent).toContain('Supino Reto')
-    expect(container.textContent).toContain('3 séries')
-    expect(container.textContent).toContain('8-12 reps')
-    expect(container.textContent).toContain('Ainda não salvo')
-    expect(container.textContent).toContain('Salvar rascunho e revisar')
-    expect(container.textContent).toContain('Descartar extração')
-    expect(container.textContent).not.toContain('Extrair outra ficha')
-    expect(container.textContent).not.toContain('{"workout"')
-  })
-
-  it('requires an explicit confirmation before discarding an extracted workout', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValueOnce(
-        new Response(
-          JSON.stringify({
-            workout: {
-              name: 'Treino 3',
-              exercises: [
-                {
-                  name: 'Dead Hang',
-                  category: 'Costas',
-                  sets: 2,
-                  reps: '6-10',
-                  restSeconds: 60,
-                  equipment: 'Barra',
-                  confidence: 0.85,
-                },
-              ],
-            },
-          }),
-          { headers: { 'content-type': 'application/json' }, status: 200 },
-        ),
-      ),
-    )
-    render(<AdminImportWorkoutForm />)
-
-    getRequiredElement<HTMLInputElement>('input[name="label"]').value = 'Treino 3'
-    setInputFiles(getRequiredElement<HTMLInputElement>('input[name="image"]'), [
-      new File(['image'], 'treino-3.jpg', { type: 'image/jpeg' }),
-    ])
-    await act(async () => {
-      getRequiredElement<HTMLFormElement>('form').dispatchEvent(
-        new Event('submit', { bubbles: true, cancelable: true }),
-      )
-    })
-
-    await act(async () => {
-      getRequiredButton('Descartar extração').dispatchEvent(
-        new MouseEvent('click', { bubbles: true, cancelable: true }),
-      )
-    })
-
-    expect(container.textContent).toContain('Confirmar descarte')
-    expect(container.textContent).toContain('Treino 3')
-
-    await act(async () => {
-      getRequiredButton('Confirmar descarte').dispatchEvent(
-        new MouseEvent('click', { bubbles: true, cancelable: true }),
-      )
-    })
-
-    expect(container.textContent).toContain('Enviar imagens')
-    expect(container.textContent).not.toContain('Treino 3')
-  })
-
-  it('saves the extracted workout as a draft and sends the admin to the editor', async () => {
+  it('declares the one-photo-one-ficha rule and creates drafts straight from extraction', async () => {
     const fetchMock = vi
       .fn()
       .mockResolvedValueOnce(
-        new Response(
-          JSON.stringify({
-            workout: {
-              name: 'Treino 3',
-              exercises: [
-                {
-                  name: 'Dead Hang',
-                  category: 'Costas',
-                  sets: 2,
-                  reps: '6-10',
-                  restSeconds: 60,
-                  equipment: 'Barra',
-                  confidence: 0.85,
-                },
-              ],
-            },
-          }),
-          { headers: { 'content-type': 'application/json' }, status: 200 },
-        ),
+        new Response(JSON.stringify({ workout: createWorkout('Treino 3', 'Dead Hang') }), {
+          headers: { 'content-type': 'application/json' },
+          status: 200,
+        }),
       )
       .mockResolvedValueOnce(
-        new Response(JSON.stringify({ planId: 'plan_treino_3' }), {
+        new Response(JSON.stringify({ planId: 'plan_treino_3_a1b2c3d4' }), {
           headers: { 'content-type': 'application/json' },
           status: 200,
         }),
       )
     vi.stubGlobal('fetch', fetchMock)
-    const originalLocation = window.location
-    Object.defineProperty(window, 'location', {
-      configurable: true,
-      value: { assign: vi.fn() },
-    })
+    const locationAssign = vi.fn()
+    stubLocationAssign(locationAssign)
     render(<AdminImportWorkoutForm />)
 
-    getRequiredElement<HTMLInputElement>('input[name="label"]').value = 'Treino 3'
+    expect(container.textContent).toContain('Cada foto vira uma ficha separada')
+    expect(container.textContent).toContain('Extrair e criar rascunhos')
+    expect(container.textContent).not.toContain('Nome da ficha')
+
     setInputFiles(getRequiredElement<HTMLInputElement>('input[name="image"]'), [
       new File(['image'], 'treino-3.jpg', { type: 'image/jpeg' }),
-    ])
-    await act(async () => {
-      getRequiredElement<HTMLFormElement>('form').dispatchEvent(
-        new Event('submit', { bubbles: true, cancelable: true }),
-      )
-    })
-
-    const saveButton = getRequiredButton('Salvar rascunho e revisar')
-
-    await act(async () => {
-      saveButton.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }))
-    })
-
-    expect(fetchMock).toHaveBeenLastCalledWith(
-      '/api/admin/import/create-plan',
-      expect.objectContaining({
-        body: JSON.stringify({
-          workout: {
-            name: 'Treino 3',
-            exercises: [
-              {
-                name: 'Dead Hang',
-                category: 'Costas',
-                sets: 2,
-                reps: '6-10',
-                restSeconds: 60,
-                equipment: 'Barra',
-                confidence: 0.85,
-              },
-            ],
-          },
-        }),
-        headers: expect.objectContaining({
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-        }),
-        method: 'POST',
-      }),
-    )
-    expect(window.location.assign).toHaveBeenCalledWith('/admin/plans/plan_treino_3')
-
-    Object.defineProperty(window, 'location', {
-      configurable: true,
-      value: originalLocation,
-    })
-  })
-
-  it('extracts and saves multiple selected images in one batch', async () => {
-    const fetchMock = vi
-      .fn()
-      .mockResolvedValueOnce(
-        new Response(
-          JSON.stringify({
-            workout: createWorkout('Treino 1', 'Supino Reto'),
-          }),
-          { headers: { 'content-type': 'application/json' }, status: 200 },
-        ),
-      )
-      .mockResolvedValueOnce(
-        new Response(
-          JSON.stringify({
-            workout: createWorkout('Treino 2', 'Remada Baixa'),
-          }),
-          { headers: { 'content-type': 'application/json' }, status: 200 },
-        ),
-      )
-      .mockResolvedValueOnce(
-        new Response(JSON.stringify({ planId: 'plan_treino_1' }), {
-          headers: { 'content-type': 'application/json' },
-          status: 200,
-        }),
-      )
-      .mockResolvedValueOnce(
-        new Response(JSON.stringify({ planId: 'plan_treino_2' }), {
-          headers: { 'content-type': 'application/json' },
-          status: 200,
-        }),
-      )
-    vi.stubGlobal('fetch', fetchMock)
-    const originalLocation = window.location
-    Object.defineProperty(window, 'location', {
-      configurable: true,
-      value: { assign: vi.fn() },
-    })
-    render(<AdminImportWorkoutForm />)
-
-    getRequiredElement<HTMLInputElement>('input[name="label"]').value = 'Treino'
-    setInputFiles(getRequiredElement<HTMLInputElement>('input[name="image"]'), [
-      new File(['first'], 'treino-1.jpg', { type: 'image/jpeg' }),
-      new File(['second'], 'treino-2.jpg', { type: 'image/jpeg' }),
     ])
 
     await act(async () => {
@@ -285,40 +59,108 @@ describe('AdminImportWorkoutForm', () => {
     )
     expect(fetchMock).toHaveBeenNthCalledWith(
       2,
-      '/api/admin/import/extract-workout',
-      expect.objectContaining({ method: 'POST' }),
+      '/api/admin/import/create-plan',
+      expect.objectContaining({
+        body: JSON.stringify({ workout: createWorkout('Treino 3', 'Dead Hang') }),
+        method: 'POST',
+      }),
     )
-    expect(container.textContent).toContain('2 fichas extraídas')
-    expect(container.textContent).toContain('Treino 1')
-    expect(container.textContent).toContain('Treino 2')
-    expect(container.textContent).toContain('Salvar 2 rascunhos')
+    expect(locationAssign).toHaveBeenCalledWith('/admin/plans/plan_treino_3_a1b2c3d4')
+    restoreLocation()
+  })
+
+  it('shows per-image progress while working and blocks the submit button', async () => {
+    const firstExtract = createDeferred<Response>()
+    const secondExtract = createDeferred<Response>()
+    let callCount = 0
+    const fetchMock = vi.fn(() => {
+      callCount += 1
+      if (callCount === 1) {
+        return firstExtract.promise
+      }
+      if (callCount === 3) {
+        return secondExtract.promise
+      }
+      return Promise.resolve(createResponse(`plan_step_${callCount}`))
+    })
+    vi.stubGlobal('fetch', fetchMock)
+    render(<AdminImportWorkoutForm />)
+
+    setInputFiles(getRequiredElement<HTMLInputElement>('input[name="image"]'), [
+      new File(['image'], 'treino-a.jpg', { type: 'image/jpeg' }),
+      new File(['image'], 'treino-b.jpg', { type: 'image/jpeg' }),
+    ])
 
     await act(async () => {
-      getRequiredButton('Salvar 2 rascunhos').dispatchEvent(
-        new MouseEvent('click', { bubbles: true, cancelable: true }),
+      getRequiredElement<HTMLFormElement>('form').dispatchEvent(
+        new Event('submit', { bubbles: true, cancelable: true }),
       )
     })
 
-    expect(fetchMock).toHaveBeenNthCalledWith(
-      3,
-      '/api/admin/import/create-plan',
-      expect.objectContaining({
-        body: JSON.stringify({ workout: createWorkout('Treino 1', 'Supino Reto') }),
-      }),
-    )
-    expect(fetchMock).toHaveBeenNthCalledWith(
-      4,
-      '/api/admin/import/create-plan',
-      expect.objectContaining({
-        body: JSON.stringify({ workout: createWorkout('Treino 2', 'Remada Baixa') }),
-      }),
-    )
-    expect(window.location.assign).toHaveBeenCalledWith('/admin/plans')
+    expect(container.textContent).toContain('Extraindo imagem 1 de 2')
+    expect(getRequiredElement<HTMLButtonElement>('button[type="submit"]').disabled).toBe(true)
 
-    Object.defineProperty(window, 'location', {
-      configurable: true,
-      value: originalLocation,
+    await act(async () => {
+      firstExtract.resolve(extractResponse(createWorkout('Treino 1', 'Supino')))
+      await firstExtract.promise
     })
+
+    expect(container.textContent).toContain('Extraindo imagem 2 de 2')
+  })
+
+  it('imports a batch of photos and lands on the list with the batch count', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(extractResponse(createWorkout('Treino 1', 'Supino Reto')))
+      .mockResolvedValueOnce(createResponse('plan_treino_1_aaaa1111'))
+      .mockResolvedValueOnce(extractResponse(createWorkout('Treino 2', 'Remada Baixa')))
+      .mockResolvedValueOnce(createResponse('plan_treino_2_bbbb2222'))
+    vi.stubGlobal('fetch', fetchMock)
+    const locationAssign = vi.fn()
+    stubLocationAssign(locationAssign)
+    render(<AdminImportWorkoutForm />)
+
+    setInputFiles(getRequiredElement<HTMLInputElement>('input[name="image"]'), [
+      new File(['first'], 'treino-1.jpg', { type: 'image/jpeg' }),
+      new File(['second'], 'treino-2.jpg', { type: 'image/jpeg' }),
+    ])
+
+    await act(async () => {
+      getRequiredElement<HTMLFormElement>('form').dispatchEvent(
+        new Event('submit', { bubbles: true, cancelable: true }),
+      )
+    })
+
+    expect(fetchMock).toHaveBeenCalledTimes(4)
+    expect(locationAssign).toHaveBeenCalledWith('/admin/plans?imported=2')
+    restoreLocation()
+  })
+
+  it('surfaces extraction failures and lets the admin try again', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ error: { code: 'model_output_invalid', message: 'nope' } }),
+          { headers: { 'content-type': 'application/json' }, status: 422 },
+        ),
+      )
+    vi.stubGlobal('fetch', fetchMock)
+    render(<AdminImportWorkoutForm />)
+
+    setInputFiles(getRequiredElement<HTMLInputElement>('input[name="image"]'), [
+      new File(['image'], 'ruim.jpg', { type: 'image/jpeg' }),
+    ])
+
+    await act(async () => {
+      getRequiredElement<HTMLFormElement>('form').dispatchEvent(
+        new Event('submit', { bubbles: true, cancelable: true }),
+      )
+    })
+
+    expect(container.textContent).toContain('Não foi possível extrair')
+    expect(container.textContent).toContain('foto mais nítida')
+    expect(getRequiredElement<HTMLButtonElement>('button[type="submit"]').disabled).toBe(false)
   })
 
   function render(element: ReactElement): void {
@@ -341,17 +183,39 @@ describe('AdminImportWorkoutForm', () => {
     return element
   }
 
-  function getRequiredButton(name: string): HTMLButtonElement {
-    const buttons = Array.from(container.querySelectorAll('button'))
-    const button = buttons.find((candidate) => candidate.textContent?.includes(name))
+  let originalLocation: Location | undefined
 
-    if (!button) {
-      throw new Error(`Missing button: ${name}`)
+  function stubLocationAssign(assign: ReturnType<typeof vi.fn>): void {
+    originalLocation = window.location
+    Object.defineProperty(window, 'location', {
+      configurable: true,
+      value: { assign },
+    })
+  }
+
+  function restoreLocation(): void {
+    if (originalLocation) {
+      Object.defineProperty(window, 'location', {
+        configurable: true,
+        value: originalLocation,
+      })
     }
-
-    return button
   }
 })
+
+function extractResponse(workout: unknown): Response {
+  return new Response(JSON.stringify({ workout }), {
+    headers: { 'content-type': 'application/json' },
+    status: 200,
+  })
+}
+
+function createResponse(planId: string): Response {
+  return new Response(JSON.stringify({ planId }), {
+    headers: { 'content-type': 'application/json' },
+    status: 200,
+  })
+}
 
 function createWorkout(
   name: string,

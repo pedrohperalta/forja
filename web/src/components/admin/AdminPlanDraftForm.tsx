@@ -134,7 +134,12 @@ export function AdminPlanDraftForm({
   }
 
   return (
-    <form action={saveDraftAction} className="admin-plan-draft-form" encType="multipart/form-data">
+    <form
+      action={saveDraftAction}
+      className="admin-plan-draft-form"
+      encType="multipart/form-data"
+      id={`plan-draft-${planId}`}
+    >
       <input name="planId" type="hidden" value={planId} />
       <input name="exerciseOrder" type="hidden" value={exerciseIds.join(',')} />
 
@@ -165,15 +170,6 @@ export function AdminPlanDraftForm({
                 name="label"
                 required
                 defaultValue={draft.label}
-              />
-            </AdminField>
-            <AdminField label="Nome">
-              <input
-                className="admin-input"
-                disabled={archived}
-                name="name"
-                required
-                defaultValue={draft.name}
               />
             </AdminField>
             <AdminField label="Foco">
@@ -207,19 +203,22 @@ export function AdminPlanDraftForm({
           const isDragging = draggingId === exercise.id
           const isDropTarget = dropTargetId === exercise.id
           const wasJustAdded = exercise.id === addedExerciseId
+          const needsReview = exercise.needsReview === true
 
           return (
             <AdminCard
               key={exercise.id}
               className={`admin-exercise-card admin-draggable-exercise${
                 isDragging ? ' is-dragging' : ''
-              }${isDropTarget ? ' is-drop-target' : ''}`}
+              }${isDropTarget ? ' is-drop-target' : ''}${
+                needsReview ? ' admin-exercise-card-needs-review' : ''
+              }`}
             >
               <details
                 className="admin-exercise-editor"
                 onDragOver={(event) => handleDragOver(event, exercise.id)}
                 onDrop={(event) => handleDrop(event, exercise.id)}
-                open={wasJustAdded || undefined}
+                open={wasJustAdded || needsReview || undefined}
               >
                 <summary>
                   <button
@@ -259,6 +258,7 @@ export function AdminPlanDraftForm({
                     </small>
                   </span>
                   <span className="admin-exercise-summary-actions">
+                    {needsReview ? <StatusPill tone="warning">Revisar</StatusPill> : null}
                     <StatusPill>{exercise.category}</StatusPill>
                     <span className="admin-exercise-toggle" aria-hidden="true" />
                   </span>

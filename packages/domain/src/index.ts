@@ -27,6 +27,9 @@ export const ExerciseSchema = z.object({
   reps: z.string().min(1),
   sets: z.number().int().min(1),
   restSeconds: z.number().int().min(0),
+  // Admin-transient: AI extraction flagged this exercise for review.
+  // Optional and ignored by consumers; stripped when the plan is published.
+  needsReview: z.boolean().optional(),
   createdAt: IsoDateTimeSchema,
   updatedAt: IsoDateTimeSchema,
 })
@@ -38,6 +41,9 @@ export const PlanSchema = z.object({
   focus: z.string().min(1),
   exercises: z.array(ExerciseSchema),
   archived: z.boolean().optional(),
+  // Admin-transient: this draft was created from a ficha photo import.
+  // Optional and ignored by consumers; stripped when the plan is published.
+  importedAt: IsoDateTimeSchema.optional(),
   createdAt: IsoDateTimeSchema,
   updatedAt: IsoDateTimeSchema,
 })

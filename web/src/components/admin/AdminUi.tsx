@@ -2,9 +2,9 @@ import Link from 'next/link'
 import type { ReactElement, ReactNode } from 'react'
 
 type AdminFrameProps = {
-  active: 'overview' | 'plans' | 'import' | 'builds'
+  active: 'overview' | 'plans' | 'builds'
   eyebrow: string
-  title: string
+  title: ReactNode
   subtitle?: string
   action?: ReactNode
   children: ReactNode
@@ -35,7 +35,6 @@ type AdminTagProps = {
 const NAV_ITEMS = [
   { key: 'overview', href: '/admin', label: 'Painel' },
   { key: 'plans', href: '/admin/plans', label: 'Planos' },
-  { key: 'import', href: '/admin/import', label: 'Importar' },
   { key: 'builds', href: '/admin/mobile-builds', label: 'Builds' },
 ] satisfies Array<{
   key: AdminFrameProps['active']

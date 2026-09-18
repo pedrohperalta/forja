@@ -20,10 +20,10 @@ type AdminImportPageProps = {
 export function ImportWorkoutView({ error, notice }: ImportWorkoutViewProps = {}): ReactElement {
   return (
     <AdminFrame
-      active="import"
+      active="plans"
       eyebrow="IMPORTAR FICHA"
       title="Importar ficha"
-      subtitle="Siga um fluxo simples: envie a imagem, revise a extração e publique quando estiver pronto."
+      subtitle="Cada foto vira uma ficha separada. A IA extrai, cria o rascunho e você confere tudo no editor."
     >
       <AdminImportWorkoutForm error={error} notice={notice} />
     </AdminFrame>

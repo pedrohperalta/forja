@@ -12,6 +12,7 @@ import {
   archivePlan,
   createDraftPlan,
   deletePlanPermanently,
+  duplicatePlan,
   getAdminPlan,
   getLatestPublishedPlanRevision,
   listAdminPlans,
@@ -492,6 +493,126 @@ describe('plan service', () => {
         userId: USER_ID,
         planId: 'plan_locked',
         exerciseId: 'supino-reto',
+        now: LATER,
+      }),
+    ).rejects.toThrow('Archived plans cannot be edited')
+  })
+
+  it('keeps import metadata on the draft until publication', async () => {
+    await createDraftPlan(db, {
+      userId: USER_ID,
+      planId: 'plan_imported',
+      label: 'Ficha importada',
+      name: 'Ficha importada',
+      focus: 'Peito',
+      exercises: [
+        { ...firstExercise, needsReview: true },
+        secondExercise,
+      ],
+      importedAt: NOW,
+      now: NOW,
+    })
+
+    const detail = await getAdminPlan(db, { userId: USER_ID, planId: 'plan_imported' })
+    const plans = await listAdminPlans(db, { userId: USER_ID })
+
+    expect(detail?.draft?.data.importedAt).toBe(NOW.toISOString())
+    expect(detail?.draft?.data.exercises[0]?.needsReview).toBe(true)
+    expect(plans.find((plan) => plan.plan.id === 'plan_imported')?.draftImportedAt).toBe(
+      NOW.toISOString(),
+    )
+  })
+
+  it('strips import metadata from the draft and the revision on publish', async () => {
+    await createDraftPlan(db, {
+      userId: USER_ID,
+      planId: 'plan_strip',
+      label: 'Ficha para publicar',
+      name: 'Ficha para publicar',
+      focus: 'Peito',
+      exercises: [{ ...firstExercise, needsReview: true }],
+      importedAt: NOW,
+      now: NOW,
+    })
+
+    const revision = await publishDraftPlan(db, {
+      userId: USER_ID,
+      planId: 'plan_strip',
+      now: LATER,
+    })
+    const detail = await getAdminPlan(db, { userId: USER_ID, planId: 'plan_strip' })
+    const plans = await listAdminPlans(db, { userId: USER_ID })
+
+    expect(revision.data.importedAt).toBeUndefined()
+    expect(revision.data.exercises[0]?.needsReview).toBeUndefined()
+    expect(detail?.draft?.data.importedAt).toBeUndefined()
+    expect(detail?.draft?.data.exercises[0]?.needsReview).toBeUndefined()
+    expect(plans.find((plan) => plan.plan.id === 'plan_strip')?.draftImportedAt).toBeNull()
+  })
+
+  it('duplicates a plan as an independent editable copy', async () => {
+    await createDraftPlan(db, {
+      userId: USER_ID,
+      planId: 'plan_source',
+      label: 'Treino A',
+      name: 'Treino A',
+      focus: 'Peito',
+      exercises: [
+        { ...firstExercise, needsReview: true },
+        secondExercise,
+      ],
+      importedAt: NOW,
+      now: NOW,
+    })
+
+    const copy = await duplicatePlan(db, {
+      userId: USER_ID,
+      sourcePlanId: 'plan_source',
+      now: LATER,
+    })
+
+    expect(copy.data.id).not.toBe('plan_source')
+    expect(copy.data.name).toBe('Cópia de Treino A')
+    expect(copy.data.focus).toBe('Peito')
+    expect(copy.data.exercises).toHaveLength(2)
+    expect(copy.data.exercises.map((exercise) => exercise.id)).not.toContain('supino-reto')
+    expect(copy.data.exercises.every((exercise) => !exercise.needsReview)).toBe(true)
+    expect(copy.data.importedAt).toBeUndefined()
+
+    await updateDraftPlanDetails(db, {
+      userId: USER_ID,
+      planId: copy.data.id,
+      label: 'Cópia editada',
+      name: 'Cópia editada',
+      focus: 'Costas',
+      now: LATER,
+    })
+    const source = await getAdminPlan(db, { userId: USER_ID, planId: 'plan_source' })
+
+    expect(source?.draft?.data.name).toBe('Treino A')
+    expect(source?.draft?.data.exercises).toHaveLength(2)
+  })
+
+  it('rejects duplicating archived or missing plans', async () => {
+    await expect(
+      duplicatePlan(db, { userId: USER_ID, sourcePlanId: 'plan_nao_existe', now: NOW }),
+    ).rejects.toThrow('Plan draft not found')
+
+    await createDraftPlan(db, {
+      userId: USER_ID,
+      planId: 'plan_archived_copy',
+      label: 'AC',
+      name: 'Treino arquivado',
+      focus: 'Peito',
+      exercises: [],
+      now: NOW,
+    })
+    await archivePlan(db, { userId: USER_ID, planId: 'plan_archived_copy', now: LATER })
+
+    await expect(
+      duplicatePlan(db, {
+        userId: USER_ID,
+        sourcePlanId: 'plan_archived_copy',
         now: LATER,
       }),
     ).rejects.toThrow('Archived plans cannot be edited')

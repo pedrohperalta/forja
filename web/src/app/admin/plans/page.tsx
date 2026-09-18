@@ -15,7 +15,7 @@ import {
 
 type PlanListItemViewModel = Pick<
   AdminPlanListItem,
-  'draftFocus' | 'draftName' | 'latestRevisionNumber' | 'publicationState' | 'archived'
+  'draftFocus' | 'draftImportedAt' | 'draftName' | 'latestRevisionNumber' | 'publicationState' | 'archived'
 > & {
   plan: {
     id: string
@@ -24,10 +24,11 @@ type PlanListItemViewModel = Pick<
 }
 
 type PlanListViewProps = {
+  importedCount?: number | undefined
   plans: PlanListItemViewModel[]
 }
 
-export function PlanListView({ plans }: PlanListViewProps): ReactElement {
+export function PlanListView({ importedCount, plans }: PlanListViewProps): ReactElement {
   const activePlans = plans.filter((plan) => !plan.archived)
   const archivedPlans = plans.filter((plan) => plan.archived)
 
@@ -43,6 +44,15 @@ export function PlanListView({ plans }: PlanListViewProps): ReactElement {
         </Link>
       }
     >
+      {importedCount ? (
+        <div className="admin-notice-banner" role="status">
+          <strong>
+            {importedCount === 1 ? '1 ficha criada' : `${importedCount} fichas criadas`} como
+            rascunho
+          </strong>
+          <p>Abra cada uma para revisar e publicar.</p>
+        </div>
+      ) : null}
       <section className="admin-section" aria-label="Planos cadastrados">
         {plans.length === 0 ? (
           <AdminCard accent className="admin-empty-state">
@@ -119,6 +129,8 @@ function PlanCard({ item }: { item: PlanListItemViewModel }): ReactElement {
           </div>
           {item.archived ? (
             <StatusPill tone="danger">Arquivado</StatusPill>
+          ) : item.draftImportedAt && item.publicationState !== 'published' ? (
+            <StatusPill tone="warning">Importado — revise</StatusPill>
           ) : item.publicationState === 'published' ? (
             <StatusPill tone="accent">Publicado no app</StatusPill>
           ) : item.publicationState === 'pending-changes' ? (
@@ -192,16 +204,33 @@ function getPlanActionLabel(item: PlanListItemViewModel): string {
   return 'Revisar e publicar'
 }
 
-export default async function AdminPlansPage(): Promise<ReactElement> {
+type AdminPlansPageProps = {
+  searchParams: Promise<{
+    imported?: string
+  }>
+}
+
+export default async function AdminPlansPage({
+  searchParams,
+}: AdminPlansPageProps): Promise<ReactElement> {
   const user = await getCurrentAdminUser()
 
   if (!user) {
     redirect('/admin/login')
   }
 
-  const plans = await listAdminPlans(getDatabase(), { userId: user.id, includeArchived: true })
+  const [plans, { imported }] = await Promise.all([
+    listAdminPlans(getDatabase(), { userId: user.id, includeArchived: true }),
+    searchParams,
+  ])
+  const importedCount = Number.parseInt(imported ?? '', 10)
 
-  return <PlanListView plans={plans} />
+  return (
+    <PlanListView
+      importedCount={Number.isFinite(importedCount) ? importedCount : undefined}
+      plans={plans}
+    />
+  )
 }
 
 async function deletePlanAction(formData: FormData): Promise<void> {

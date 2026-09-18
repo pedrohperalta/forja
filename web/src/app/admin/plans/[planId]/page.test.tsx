@@ -58,6 +58,10 @@ describe('/admin/plans/[planId]', () => {
     expect(markup).toContain('Supino Reto')
     expect(markup).toContain('Publicado com alterações')
     expect(markup).toContain('Rev. 1')
+    expect(markup).toContain('admin-title-input')
+    expect(markup).toContain('name="name"')
+    expect(markup.match(/name="name"/g)).toHaveLength(1)
+    expect(markup).toContain('form="plan-draft-plan_a"')
     expect(markup).toContain('Arquivar')
     expect(markup).toContain('Excluir definitivamente')
     expect(markup).toContain('Confirmar exclusão')
@@ -148,6 +152,41 @@ describe('/admin/plans/[planId]', () => {
     expect(markup).toContain('Nenhum exercício ainda')
     expect(markup).toContain('Adicionar exercício')
     expect(markup).toContain('padrões prontos')
+  })
+
+  it('highlights imported exercises that need review', () => {
+    const markup = renderToStaticMarkup(
+      createElement(PlanEditorView, {
+        plan: {
+          plan: { id: 'plan_imported', label: 'FICHA' },
+          draft: {
+            data: {
+              id: 'plan_imported',
+              label: 'FICHA',
+              name: 'Ficha importada',
+              focus: 'Peito',
+              exercises: [
+                { ...exercise, id: 'flagged', needsReview: true },
+                { ...exercise, id: 'trusted' },
+              ],
+              importedAt: '2026-05-18T12:00:00.000Z',
+              createdAt: '2026-05-18T12:00:00.000Z',
+              updatedAt: '2026-05-18T12:00:00.000Z',
+            },
+          },
+          latestRevisionNumber: null,
+          latestRevision: null,
+          archived: false,
+          tombstone: null,
+        },
+      }),
+    )
+
+    expect(markup).toContain('Extraído da foto')
+    expect(markup).toContain('Confira os campos destacados')
+    expect(markup).toContain('admin-exercise-card-needs-review')
+    expect(markup).toContain('data-tone="warning">Revisar')
+    expect(markup).not.toContain('% confiança')
   })
 
   it('confirms publication with the revision number', () => {

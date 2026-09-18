@@ -7,7 +7,7 @@ import type { ReactElement } from 'react'
 
 import { AdminAddExerciseForm } from '@/components/admin/AdminAddExerciseForm'
 import { AdminPlanDraftForm } from '@/components/admin/AdminPlanDraftForm'
-import { AdminCard, AdminFrame } from '@/components/admin/AdminUi'
+import { AdminCard, AdminFrame, StatusPill } from '@/components/admin/AdminUi'
 import { getCurrentAdminUser } from '@/server/auth/currentAdmin'
 import { getDatabase } from '@/server/db/client'
 import { getPublicationState, getPublicationStatus } from '@/lib/publicationState'
@@ -46,6 +46,7 @@ type PlanEditorViewProps = {
     } | null
   }
   publishedRevision?: number | undefined
+  rename?: boolean
 }
 
 type PlanPageProps = {
@@ -55,6 +56,7 @@ type PlanPageProps = {
   searchParams: Promise<{
     added?: string
     published?: string
+    rename?: string
   }>
 }
 
@@ -62,6 +64,7 @@ export function PlanEditorView({
   addedExerciseId,
   plan,
   publishedRevision,
+  rename,
 }: PlanEditorViewProps): ReactElement {
   const draft = plan.draft
 
@@ -91,13 +94,30 @@ export function PlanEditorView({
     <AdminFrame
       active="plans"
       eyebrow="EDITOR DE PLANO"
-      title={draft.data.name}
+      title={
+        <input
+          aria-label="Nome do plano"
+          autoFocus={rename || undefined}
+          className="admin-title admin-title-input"
+          defaultValue={draft.data.name}
+          disabled={plan.archived}
+          form={`plan-draft-${plan.plan.id}`}
+          name="name"
+          required
+        />
+      }
       subtitle={draft.data.focus}
+      action={<StatusPill tone={status.tone}>{status.label}</StatusPill>}
     >
       {publishedRevision ? (
         <div className="admin-notice-banner" role="status">
           <strong>Rev. {publishedRevision} publicada</strong>
           <p>O app já pode sincronizar. Abra o Forja e puxe para atualizar.</p>
+        </div>
+      ) : draft.data.importedAt ? (
+        <div className="admin-notice-banner" role="status">
+          <strong>Extraído da foto</strong>
+          <p>Confira os campos destacados antes de publicar — o selo "Revisar" sai ao publicar.</p>
         </div>
       ) : null}
 
@@ -170,7 +190,7 @@ export default async function PlanPage({ params, searchParams }: PlanPageProps):
   }
 
   const { planId } = await params
-  const { added, published } = await searchParams
+  const { added, published, rename } = await searchParams
   const plan = await getAdminPlan(getDatabase(), { userId: user.id, planId })
 
   if (!plan) {
@@ -184,6 +204,7 @@ export default async function PlanPage({ params, searchParams }: PlanPageProps):
       addedExerciseId={added?.trim() || undefined}
       plan={plan}
       publishedRevision={Number.isFinite(publishedRevisionNumber) ? publishedRevisionNumber : undefined}
+      rename={rename === '1'}
     />
   )
 }

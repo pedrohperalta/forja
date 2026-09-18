@@ -65,6 +65,25 @@ describe('domain schemas', () => {
     expect(PlanSchema.safeParse(validPlan).success).toBe(true)
   })
 
+  it('accepts admin transient review metadata on plans and exercises', () => {
+    const result = PlanSchema.safeParse({
+      ...validPlan,
+      importedAt: NOW,
+      exercises: [{ ...validExercise, needsReview: true }],
+    })
+
+    expect(result.success).toBe(true)
+  })
+
+  it('rejects an invalid importedAt timestamp', () => {
+    const result = PlanSchema.safeParse({
+      ...validPlan,
+      importedAt: '18/05/2026',
+    })
+
+    expect(result.success).toBe(false)
+  })
+
   it('rejects a workout plan with an invalid category', () => {
     const result = PlanSchema.safeParse({
       ...validPlan,

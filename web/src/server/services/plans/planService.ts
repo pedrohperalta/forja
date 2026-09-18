@@ -1,4 +1,6 @@
-import { ExerciseSchema, PlanSchema, type Exercise, type MuscleCategory } from '@forja/domain'
+import { randomUUID } from 'node:crypto'
+
+import { ExerciseSchema, PlanSchema, type Exercise, type MuscleCategory, type Plan } from '@forja/domain'
 import { getPublicationState, type PublicationState } from '@/lib/publicationState'
 import { forbidden, notFound, validation } from '@/server/http/appError'
 import {
@@ -28,6 +30,7 @@ export type CreateDraftPlanInput = {
   name: string
   focus: string
   exercises: Exercise[]
+  importedAt?: Date
   now: Date
 }
 
@@ -91,6 +94,12 @@ export type PublishDraftPlanInput = {
   now: Date
 }
 
+export type DuplicatePlanInput = {
+  userId: string
+  sourcePlanId: string
+  now: Date
+}
+
 export type ArchivePlanInput = {
   userId: string
   planId: string
@@ -117,6 +126,7 @@ export type AdminPlanListItem = {
   plan: PlanRow
   draftName: string | null
   draftFocus: string | null
+  draftImportedAt: string | null
   latestRevisionNumber: number | null
   publicationState: PublicationState
   archived: boolean
@@ -142,6 +152,7 @@ export async function createDraftPlan(
     name: input.name,
     focus: input.focus,
     exercises: input.exercises.map((exercise) => ExerciseSchema.parse(exercise)),
+    ...(input.importedAt ? { importedAt: input.importedAt.toISOString() } : {}),
     createdAt: nowIso,
     updatedAt: nowIso,
   })
@@ -306,13 +317,73 @@ export async function publishDraftPlan(
   input: PublishDraftPlanInput,
 ): Promise<PlanRevisionRow> {
   const draft = await requireEditableDraft(db, input.userId, input.planId)
+  const data = PlanSchema.parse({
+    ...stripImportMetadata(draft.data),
+    updatedAt: input.now.toISOString(),
+  })
+
+  await updatePlanDraft(db, {
+    planId: input.planId,
+    userId: input.userId,
+    label: draft.data.label,
+    data,
+    now: input.now,
+  })
 
   return publishPlanRevision(db, {
     planId: input.planId,
     userId: input.userId,
-    data: PlanSchema.parse(draft.data),
+    data,
     now: input.now,
   })
+}
+
+export async function duplicatePlan(
+  db: Database,
+  input: DuplicatePlanInput,
+): Promise<PlanDraftRow> {
+  const source = await requireEditableDraft(db, input.userId, input.sourcePlanId)
+  const name = `Cópia de ${source.data.name}`
+  const nowIso = input.now.toISOString()
+  const data = PlanSchema.parse({
+    ...stripImportMetadata(source.data),
+    id: `plan_${randomUUID()}`,
+    name,
+    exercises: stripImportMetadata(source.data).exercises.map((exercise) => ({
+      ...exercise,
+      id: `exercise_${randomUUID()}`,
+      updatedAt: nowIso,
+    })),
+    createdAt: nowIso,
+    updatedAt: nowIso,
+  })
+
+  return createPlanDraft(db, {
+    planId: data.id,
+    userId: input.userId,
+    label: name,
+    data,
+    now: input.now,
+  })
+}
+
+function stripImportMetadata(plan: Plan): Omit<Plan, 'importedAt'> & {
+  exercises: Array<Omit<Exercise, 'needsReview'>>
+} {
+  return {
+    ...omitKey(plan, 'importedAt'),
+    exercises: plan.exercises.map((exercise) => omitKey(exercise, 'needsReview')),
+  }
+}
+
+function omitKey<Source extends Record<string, unknown>, Key extends keyof Source>(
+  source: Source,
+  key: Key,
+): Omit<Source, Key> {
+  const copy: Record<string, unknown> = { ...source }
+  delete copy[key as string]
+
+  return copy as Omit<Source, Key>
 }
 
 export async function archivePlan(
@@ -392,6 +463,7 @@ export async function listAdminPlans(
         plan,
         draftName: draft?.data.name ?? null,
         draftFocus: draft?.data.focus ?? null,
+        draftImportedAt: draft?.data.importedAt ?? null,
         latestRevisionNumber: latestRevision?.revisionNumber ?? null,
         publicationState: getPublicationState({
           archived,

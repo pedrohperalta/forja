@@ -52,9 +52,11 @@ export async function POST(request: Request): Promise<Response> {
         reps: exercise.reps,
         sets: exercise.sets,
         restSeconds: exercise.restSeconds,
+        ...(exercise.confidence < LOW_CONFIDENCE_THRESHOLD ? { needsReview: true } : {}),
         createdAt: now.toISOString(),
         updatedAt: now.toISOString(),
       })),
+      importedAt: now,
       now,
     })
 
@@ -64,10 +66,12 @@ export async function POST(request: Request): Promise<Response> {
   }
 }
 
+const LOW_CONFIDENCE_THRESHOLD = 0.7
+
 function createImportedPlanId(name: string): string {
   const slug = createSlug(name)
 
-  return slug ? `plan_${slug}` : `plan_${randomUUID()}`
+  return `plan_${slug ? `${slug}_` : ''}${randomUUID().slice(0, 8)}`
 }
 
 function createImportedPlanLabel(name: string): string {

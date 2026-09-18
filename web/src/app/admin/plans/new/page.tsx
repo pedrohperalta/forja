@@ -1,13 +1,26 @@
+import { randomUUID } from 'node:crypto'
+
+import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import type { ReactElement } from 'react'
+import Link from 'next/link'
 
-import { AdminCard, AdminField, AdminFrame, StatusPill } from '@/components/admin/AdminUi'
+import { AdminCard, AdminFrame, StatusPill } from '@/components/admin/AdminUi'
 import { getCurrentAdminUser } from '@/server/auth/currentAdmin'
 import { getDatabase } from '@/server/db/client'
-import { createDraftPlan } from '@/server/services/plans/planService'
+import { createDraftPlan, duplicatePlan, listAdminPlans } from '@/server/services/plans/planService'
+
+type HubPlanOption = {
+  plan: {
+    id: string
+    label: string
+  }
+  draftName: string | null
+}
 
 type NewPlanViewProps = {
   error?: string | undefined
+  plans?: HubPlanOption[]
 }
 
 type NewPlanPageProps = {
@@ -16,62 +29,113 @@ type NewPlanPageProps = {
   }>
 }
 
-const DEFAULT_PLAN_FOCUS = 'A definir'
-
-export function NewPlanView({ error }: NewPlanViewProps = {}): ReactElement {
+export function NewPlanView({ error, plans = [] }: NewPlanViewProps): ReactElement {
   return (
     <AdminFrame
       active="plans"
       eyebrow="NOVO PLANO"
-      title="Novo plano"
-      subtitle="Um nome basta. Os exercícios você monta no editor — e nada aparece no app até publicar."
-      action={<StatusPill tone="warning">Rascunho</StatusPill>}
+      title="Como você quer começar?"
+      subtitle="Todo plano nasce como rascunho — e nada aparece no app até publicar."
+      action={<StatusPill tone="warning">Abre como rascunho</StatusPill>}
     >
-      <form action={createPlanAction} className="admin-linear-flow">
-        <AdminCard accent className="admin-linear-panel">
-          {error ? (
-            <div className="admin-error-banner" role="alert">
-              <strong>Não foi possível criar o plano</strong>
-              <p>Revise os dados e tente novamente.</p>
-            </div>
-          ) : null}
+      {error ? (
+        <div className="admin-error-banner" role="alert">
+          <strong>Não foi possível criar o plano</strong>
+          <p>Revise os dados e tente novamente.</p>
+        </div>
+      ) : null}
 
-          <div className="admin-linear-section">
-            <p className="admin-section-title">Dados do plano</p>
-            <p className="admin-muted">
-              O rótulo (A, B, C…) é gerado a partir do nome. Foco e exercícios você define no
-              editor.
-            </p>
-          </div>
-
-          <div className="admin-linear-fields">
-            <AdminField label="Nome">
-              <input className="admin-input" name="name" placeholder="Treino A" required />
-            </AdminField>
-          </div>
-
-          <details className="admin-exercise-advanced">
-            <summary>Começar com foco definido</summary>
-            <div className="admin-linear-fields">
-              <AdminField label="Foco">
-                <input
-                  className="admin-input"
-                  name="focus"
-                  placeholder="Peito / Ombros / Tríceps"
-                />
-              </AdminField>
-            </div>
-          </details>
-
-          <div className="admin-linear-footer">
-            <p>Criar abre o editor com o plano em branco. Nada aparece no app até publicar.</p>
+      <div className="admin-hub-cards">
+        <AdminCard className="admin-hubcard">
+          <BlankPlanIcon />
+          <h2 className="admin-hubcard-title admin-display">Em branco</h2>
+          <p className="admin-muted">
+            Abra o editor e monte do zero. Séries, descanso e equipamento têm padrões prontos.
+          </p>
+          <form action={createBlankPlanAction} className="admin-hubcard-form">
             <button className="admin-primary-button bg-accent" type="submit">
               Criar e abrir editor
             </button>
+          </form>
+        </AdminCard>
+
+        <AdminCard accent className="admin-hubcard">
+          <PhotoPlanIcon />
+          <h2 className="admin-hubcard-title admin-display">Da foto da ficha</h2>
+          <p className="admin-muted">
+            Cada foto vira uma ficha separada. A IA extrai e você confere no editor.
+          </p>
+          <div className="admin-hubcard-form">
+            <Link className="admin-secondary-button" href="/admin/import">
+              Enviar fotos
+            </Link>
           </div>
         </AdminCard>
-      </form>
+
+        <AdminCard className="admin-hubcard">
+          <DuplicatePlanIcon />
+          <h2 className="admin-hubcard-title admin-display">Duplicar plano</h2>
+          <p className="admin-muted">Copie um plano ativo como ponto de partida e ajuste a variação.</p>
+          {plans.length === 0 ? (
+            <p className="admin-muted admin-hubcard-empty">Nenhum plano ativo para duplicar ainda.</p>
+          ) : (
+            <form action={duplicatePlanAction} className="admin-hubcard-form">
+              <select aria-label="Plano para duplicar" className="admin-input" name="sourcePlanId" required>
+                {plans.map((item) => (
+                  <option key={item.plan.id} value={item.plan.id}>
+                    {item.draftName ?? item.plan.label}
+                  </option>
+                ))}
+              </select>
+              <button className="admin-secondary-button" type="submit">
+                Duplicar e abrir editor
+              </button>
+            </form>
+          )}
+        </AdminCard>
+      </div>
     </AdminFrame>
+  )
+}
+
+function BlankPlanIcon(): ReactElement {
+  return (
+    <svg aria-hidden="true" className="admin-hubcard-icon" fill="none" viewBox="0 0 24 24">
+      <path
+        d="M12 5v14M5 12h14"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeWidth="2"
+      />
+    </svg>
+  )
+}
+
+function PhotoPlanIcon(): ReactElement {
+  return (
+    <svg aria-hidden="true" className="admin-hubcard-icon" fill="none" viewBox="0 0 24 24">
+      <path
+        d="M4 8h3l2-3h6l2 3h3v11H4zM12 16.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+      />
+    </svg>
+  )
+}
+
+function DuplicatePlanIcon(): ReactElement {
+  return (
+    <svg aria-hidden="true" className="admin-hubcard-icon" fill="none" viewBox="0 0 24 24">
+      <path
+        d="M9 9h10v10H9zM5 15V5h10"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+      />
+    </svg>
   )
 }
 
@@ -85,11 +149,17 @@ export default async function NewPlanPage({
   }
 
   const { error } = await searchParams
+  const plans = await listAdminPlans(getDatabase(), { userId: user.id })
 
-  return <NewPlanView error={error} />
+  return (
+    <NewPlanView
+      error={error}
+      plans={plans.map((item) => ({ plan: item.plan, draftName: item.draftName }))}
+    />
+  )
 }
 
-async function createPlanAction(formData: FormData): Promise<void> {
+async function createBlankPlanAction(): Promise<void> {
   'use server'
 
   const user = await getCurrentAdminUser()
@@ -98,17 +168,15 @@ async function createPlanAction(formData: FormData): Promise<void> {
     redirect('/admin/login')
   }
 
-  const name = getRequiredString(formData, 'name')
-  const focus = getOptionalString(formData, 'focus') ?? DEFAULT_PLAN_FOCUS
-  const planId = createPlanId(name)
+  const planId = `plan_${randomUUID()}`
 
   try {
     await createDraftPlan(getDatabase(), {
       userId: user.id,
       planId,
-      label: name,
-      name,
-      focus,
+      label: 'Plano sem título',
+      name: 'Plano sem título',
+      focus: 'A definir',
       exercises: [],
       now: new Date(),
     })
@@ -116,18 +184,36 @@ async function createPlanAction(formData: FormData): Promise<void> {
     redirect('/admin/plans/new?error=create_failed')
   }
 
-  redirect(`/admin/plans/${planId}`)
+  revalidatePath('/admin/plans')
+
+  redirect(`/admin/plans/${planId}?rename=1`)
 }
 
-function createPlanId(label: string): string {
-  const slug = label
-    .normalize('NFKD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '_')
-    .replace(/^_+|_+$/g, '')
+async function duplicatePlanAction(formData: FormData): Promise<void> {
+  'use server'
 
-  return slug ? `plan_${slug}` : `plan_${crypto.randomUUID()}`
+  const user = await getCurrentAdminUser()
+
+  if (!user) {
+    redirect('/admin/login')
+  }
+
+  const sourcePlanId = getRequiredString(formData, 'sourcePlanId')
+  let copyPlanId: string
+
+  try {
+    copyPlanId = (await duplicatePlan(getDatabase(), {
+      userId: user.id,
+      sourcePlanId,
+      now: new Date(),
+    })).data.id
+  } catch {
+    redirect('/admin/plans/new?error=create_failed')
+  }
+
+  revalidatePath('/admin/plans')
+
+  redirect(`/admin/plans/${copyPlanId}?rename=1`)
 }
 
 function getRequiredString(formData: FormData, key: string): string {
@@ -135,16 +221,6 @@ function getRequiredString(formData: FormData, key: string): string {
 
   if (typeof value !== 'string' || value.trim().length === 0) {
     throw new Error(`${key} is required`)
-  }
-
-  return value.trim()
-}
-
-function getOptionalString(formData: FormData, key: string): string | null {
-  const value = formData.get(key)
-
-  if (typeof value !== 'string' || value.trim().length === 0) {
-    return null
   }
 
   return value.trim()

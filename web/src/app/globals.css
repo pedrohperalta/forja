@@ -474,6 +474,35 @@ select:disabled {
   line-height: 0.95;
 }
 
+/* Inline plan rename — the editor title is the name field */
+.admin-title-input {
+  width: 100%;
+  margin: 0;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--color-text);
+  font-family: 'BebasNeue', Impact, sans-serif;
+  font-size: var(--display-lg);
+  font-weight: 400;
+  letter-spacing: 1px;
+  line-height: 0.95;
+}
+
+.admin-title-input:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 6px;
+}
+
+.admin-title-input:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
+.admin-title-input::placeholder {
+  color: var(--color-dim);
+}
+
 .admin-subtitle {
   max-width: 42rem;
   margin: var(--space-3) 0 0;
@@ -1170,6 +1199,11 @@ select:disabled {
 .admin-exercise-card {
   margin-top: var(--space-3);
   border-radius: var(--radius-sm);
+}
+
+/* Imported exercise flagged by low AI confidence */
+.admin-exercise-card-needs-review {
+  border-color: rgba(245, 158, 11, 0.5);
 }
 
 .admin-draggable-exercise {
@@ -1887,6 +1921,58 @@ select:disabled {
   box-shadow: 0 0 24px rgba(0, 0, 0, 0.32);
 }
 
+/* Creation hub — three one-click paths, no form */
+.admin-hub-cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-4);
+  margin-top: var(--space-5);
+}
+
+.admin-hubcard .admin-card-body {
+  display: grid;
+  gap: var(--space-3);
+  align-content: start;
+  justify-items: center;
+  min-height: 16rem;
+  text-align: center;
+}
+
+.admin-hubcard-icon {
+  width: 2.25rem;
+  height: 2.25rem;
+  margin-top: var(--space-2);
+  color: var(--color-accent);
+}
+
+.admin-hubcard-title {
+  margin: 0;
+  color: var(--color-text);
+  font-size: var(--display-md);
+  letter-spacing: 1px;
+  line-height: 1;
+}
+
+.admin-hubcard .admin-muted {
+  max-width: 22rem;
+  margin: 0;
+}
+
+.admin-hubcard-form {
+  display: grid;
+  gap: var(--space-3);
+  width: 100%;
+  align-self: end;
+}
+
+.admin-hubcard-form .admin-input {
+  width: 100%;
+}
+
+.admin-hubcard-empty {
+  align-self: end;
+}
+
 /* Editor action bar — one home for state + Salvar + Publicar */
 .admin-editor-actionbar {
   position: sticky;
@@ -2511,7 +2597,7 @@ select:disabled {
   }
 
   .admin-nav {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: var(--space-2);
   }
 
@@ -2539,7 +2625,8 @@ select:disabled {
   .admin-dashboard-grid,
   .admin-workflow-steps,
   .admin-summary-strip,
-  .admin-editor-next-step {
+  .admin-editor-next-step,
+  .admin-hub-cards {
     grid-template-columns: 1fr;
   }
 
