@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import type { DragEvent, KeyboardEvent, ReactElement } from 'react'
 import { useEffect, useRef, useState } from 'react'
 
+import { ChevronDownIcon } from '@/components/admin/AdminIcons'
 import { AdminCard, AdminField, StatusPill } from '@/components/admin/AdminUi'
 import { AdminSubmitButton } from '@/components/admin/AdminSubmitButton'
 import type { PublicationStatus } from '@/lib/publicationState'
@@ -388,7 +389,7 @@ export function AdminPlanDraftForm({
                       <circle cx="11" cy="12" r="1.35" />
                     </svg>
                   </button>
-                  <span className="admin-chip">#{index + 1}</span>
+                  <span className="admin-tag">#{index + 1}</span>
                   <span className="admin-exercise-summary-copy">
                     <strong>{exercise.name}</strong>
                     <small>
@@ -397,8 +398,9 @@ export function AdminPlanDraftForm({
                   </span>
                   <span className="admin-exercise-summary-actions">
                     {needsReview ? <StatusPill tone="warning">Revisar</StatusPill> : null}
-                    <StatusPill>{exercise.category}</StatusPill>
-                    <span className="admin-exercise-toggle" aria-hidden="true" />
+                    <span className="admin-exercise-toggle" aria-hidden="true">
+                      <ChevronDownIcon size={16} />
+                    </span>
                   </span>
                 </summary>
                 <input name="exerciseId" type="hidden" value={exercise.id} />
@@ -442,7 +444,10 @@ export function AdminPlanDraftForm({
                   />
                 </div>
                 <details className="admin-exercise-advanced">
-                  <summary>Ajustes avançados</summary>
+                  <summary>
+                    Ajustes avançados
+                    <ChevronDownIcon size={14} />
+                  </summary>
                   <div className="admin-form-grid">
                     <AdminField label="Equipamento">
                       <input

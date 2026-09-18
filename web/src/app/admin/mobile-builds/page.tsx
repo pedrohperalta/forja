@@ -74,7 +74,11 @@ export default async function AdminMobileBuildsPage({
               <p className="admin-section-label">Histórico</p>
               <h2 className="admin-panel-title admin-display">Artefatos</h2>
             </div>
-            {runningBuild ? <StatusPill tone="warning">Build em andamento</StatusPill> : null}
+            {runningBuild ? (
+              <span aria-live="polite" role="status">
+                <StatusPill tone="warning">Build em andamento</StatusPill>
+              </span>
+            ) : null}
           </div>
 
           {builds.length > 0 ? (

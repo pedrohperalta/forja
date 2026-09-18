@@ -6,6 +6,7 @@ import { notFound, redirect } from 'next/navigation'
 import type { ReactElement } from 'react'
 
 import { AdminAddExerciseForm } from '@/components/admin/AdminAddExerciseForm'
+import { AdminSubmitButton } from '@/components/admin/AdminSubmitButton'
 import { AdminPlanDraftForm } from '@/components/admin/AdminPlanDraftForm'
 import { AdminCard, AdminFrame, StatusPill } from '@/components/admin/AdminUi'
 import { getCurrentAdminUser } from '@/server/auth/currentAdmin'
@@ -163,9 +164,13 @@ export function PlanEditorView({
               </div>
               <form action={archivePlanAction}>
                 <input name="planId" type="hidden" value={plan.plan.id} />
-                <button className="admin-danger-button" disabled={plan.archived} type="submit">
+                <AdminSubmitButton
+                  className="admin-danger-button"
+                  disabled={plan.archived}
+                  spinnerTone="light"
+                >
                   Arquivar
-                </button>
+                </AdminSubmitButton>
               </form>
             </div>
             <details className="admin-permanent-delete admin-delete-confirmation">
@@ -176,9 +181,12 @@ export function PlanEditorView({
                 </p>
                 <form action={deletePlanAction}>
                   <input name="planId" type="hidden" value={plan.plan.id} />
-                  <button className="admin-danger-button admin-compact-button" type="submit">
+                  <AdminSubmitButton
+                    className="admin-danger-button admin-compact-button"
+                    spinnerTone="light"
+                  >
                     Confirmar exclusão
-                  </button>
+                  </AdminSubmitButton>
                 </form>
               </div>
             </details>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, type ChangeEvent, type ReactElement } from 'react'
+import { UploadIcon } from '@/components/admin/AdminIcons'
 
 export const SUPPORTED_IMAGE_ACCEPT = 'image/jpeg,image/png,image/webp,image/gif,.heic,.heif'
 
@@ -144,7 +145,7 @@ export function AdminFileUpload({
     <>
       <label className="admin-file-upload" htmlFor={id} data-invalid={error ? true : undefined}>
         <span className="admin-file-upload-icon" aria-hidden="true">
-          +
+          <UploadIcon size={16} />
         </span>
         <span className="admin-file-upload-copy">
           <strong>{multiple ? 'Selecionar imagens' : 'Selecionar imagem'}</strong>

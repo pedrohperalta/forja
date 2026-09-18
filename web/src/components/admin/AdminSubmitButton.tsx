@@ -4,6 +4,7 @@ import type { ReactElement, ReactNode } from 'react'
 import { useFormStatus } from 'react-dom'
 
 type AdminSubmitButtonProps = {
+  'aria-label'?: string
   children: ReactNode
   className: string
   disabled?: boolean
@@ -14,6 +15,7 @@ type AdminSubmitButtonProps = {
 }
 
 export function AdminSubmitButton({
+  'aria-label': ariaLabel,
   children,
   className,
   disabled = false,
@@ -26,6 +28,7 @@ export function AdminSubmitButton({
 
   return (
     <button
+      aria-label={ariaLabel}
       className={className}
       disabled={disabled || pending}
       formAction={formAction}

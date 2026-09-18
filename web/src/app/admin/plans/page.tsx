@@ -3,6 +3,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import type { ReactElement } from 'react'
 
+import { AdminSubmitButton } from '@/components/admin/AdminSubmitButton'
 import { AdminCard, AdminFrame, StatusPill } from '@/components/admin/AdminUi'
 import { getCurrentAdminUser } from '@/server/auth/currentAdmin'
 import { getDatabase } from '@/server/db/client'
@@ -91,7 +92,7 @@ function PlanSection({
     <section className="admin-plan-section" aria-label={title}>
       <div className="admin-panel-header">
         <h2 className="admin-section-title">{title}</h2>
-        <span className="admin-chip">{items.length} planos</span>
+        <span className="admin-tag">{items.length} planos</span>
       </div>
       {items.length === 0 ? (
         <AdminCard className="admin-empty-state">
@@ -121,7 +122,7 @@ function PlanCard({ item }: { item: PlanListItemViewModel }): ReactElement {
       <div className="admin-plan-card-shell">
         <header className="admin-plan-card-header">
           <div className="admin-plan-title-block">
-            <span className="admin-chip admin-plan-label">{item.plan.label}</span>
+            <span className="admin-tag admin-plan-label">{item.plan.label}</span>
             <h2 className="admin-plan-title">
               <Link href={`/admin/plans/${item.plan.id}`}>{item.draftName ?? item.plan.label}</Link>
             </h2>
@@ -159,13 +160,12 @@ function PlanCard({ item }: { item: PlanListItemViewModel }): ReactElement {
           {item.archived ? (
             <form action={restorePlanAction}>
               <input name="planId" type="hidden" value={item.plan.id} />
-              <button
+              <AdminSubmitButton
                 aria-label="Restaurar para editar"
                 className="admin-primary-button admin-compact-button"
-                type="submit"
               >
                 Restaurar
-              </button>
+              </AdminSubmitButton>
             </form>
           ) : null}
           {item.archived ? <PermanentDeleteForm planId={item.plan.id} /> : null}
@@ -184,9 +184,9 @@ function PermanentDeleteForm({ planId }: { planId: string }): ReactElement {
       </p>
       <form action={deletePlanAction}>
         <input name="planId" type="hidden" value={planId} />
-        <button className="admin-danger-button" type="submit">
+        <AdminSubmitButton className="admin-danger-button" spinnerTone="light">
           Confirmar exclusão
-        </button>
+        </AdminSubmitButton>
       </form>
     </details>
   )

@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation'
 import type { ReactElement } from 'react'
 import Link from 'next/link'
 
+import { AdminSubmitButton } from '@/components/admin/AdminSubmitButton'
 import { AdminCard, AdminFrame, StatusPill } from '@/components/admin/AdminUi'
 import { getCurrentAdminUser } from '@/server/auth/currentAdmin'
 import { getDatabase } from '@/server/db/client'
@@ -87,9 +88,12 @@ export function NewPlanView({ error, plans = [] }: NewPlanViewProps): ReactEleme
                   </option>
                 ))}
               </select>
-              <button className="admin-secondary-button" type="submit">
+              <AdminSubmitButton
+                className="admin-secondary-button"
+                spinnerTone="light"
+              >
                 Duplicar e abrir editor
-              </button>
+              </AdminSubmitButton>
             </form>
           )}
         </AdminCard>

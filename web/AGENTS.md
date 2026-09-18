@@ -96,6 +96,11 @@ Never hardcode hex colors or px radii in a component — reference a token.
   file upload (`.admin-file-*`), build pipeline (`.admin-build-*`,
   `.admin-log-*`), plans/imports/workflows (`.admin-plan-*`, `.admin-import-*`,
   `.admin-workflow-*`), login (`.admin-login-*`).
+- **Pills vs tags:** `.status-pill` (via the `StatusPill` component) is for
+  **state only** — publication/build/review status with a `tone`. Static
+  metadata (counts, labels, `#n` indices, categories) uses `.admin-tag`
+  (square-ish, low-emphasis). Never duplicate the same information as both
+  text and pill.
 - **States:** loading/empty/error/feedback have dedicated classes — reuse them:
   `.admin-empty-state`, `.admin-error-banner`, `.admin-notice-banner`,
   `.admin-field-error`, `.admin-save-status`, `.admin-live-status`,

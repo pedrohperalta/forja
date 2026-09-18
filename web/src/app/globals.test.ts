@@ -46,12 +46,17 @@ describe('admin design tokens', () => {
       'admin-unsaved-banner',
       'admin-import-review',
       'admin-simple-actions',
+      'admin-chip',
       'bg-accent',
     ]
 
     for (const deadClass of deadClasses) {
       expect(css).not.toContain(`.${deadClass}`)
     }
+  })
+
+  it('gives the visible file upload affordance a keyboard focus ring', () => {
+    expect(css).toMatch(/\.admin-file-upload:focus-within\s*{[\s\S]*outline:\s*2px solid var\(--accent-alpha-subtle\);/)
   })
 })
 

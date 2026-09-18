@@ -687,7 +687,7 @@ NOT a pill (pills are interactive only) */
   border-radius: var(--radius-pill);
   background: var(--color-dim);
 }
-.status-pill, .admin-chip {
+.status-pill {
   display: inline-flex;
   align-items: center;
   border-radius: var(--radius-pill);
@@ -715,12 +715,7 @@ NOT a pill (pills are interactive only) */
   border-color: var(--danger-alpha-border);
   background: var(--color-danger-dim);
   color: var(--color-danger);
-}
-.admin-chip {
-  background: var(--color-surface-2);
-  color: var(--color-text-med);
-}
-.admin-field {
+}.admin-field {
   display: grid;
   gap: var(--space-2);
   color: var(--color-text-med);
@@ -769,6 +764,10 @@ NOT a pill (pills are interactive only) */
 }
 .admin-file-upload:hover {
   border-color: var(--accent-alpha-strong);
+}
+
+.admin-file-upload:focus-within {
+  border-color: var(--accent-alpha-strong);
   outline: 2px solid var(--accent-alpha-subtle);
 }
 .admin-file-upload[data-invalid='true'] {
@@ -783,9 +782,6 @@ NOT a pill (pills are interactive only) */
   border-radius: var(--radius-pill);
   background: var(--color-accent);
   color: var(--color-background);
-  font-family: 'BebasNeue', Impact, sans-serif;
-  font-size: var(--display-sm);
-  line-height: var(--leading-tight);
 }
 .admin-file-upload-copy {
   display: grid;
@@ -963,14 +959,6 @@ NOT a pill (pills are interactive only) */
 }
 .admin-permanent-delete summary::-webkit-details-marker {
   display: none;
-}
-.admin-permanent-delete summary::before {
-  content: '+';
-  margin-right: var(--space-2);
-  color: var(--color-danger);
-}
-.admin-permanent-delete[open] summary::before {
-  content: '-';
 }
 .admin-permanent-delete p {
   max-width: 32rem;
@@ -1527,10 +1515,6 @@ no form */
 .admin-exercise-remove > summary::-webkit-details-marker {
   display: none;
 }
-.admin-exercise-remove > summary::before {
-  content: '−';
-  margin-right: var(--space-2);
-}
 .admin-exercise-remove[open] > summary {
   margin-bottom: var(--space-3);
 }
@@ -1660,12 +1644,13 @@ no form */
   border-radius: var(--radius-pill);
   color: var(--color-accent);
 }
-.admin-exercise-toggle::before {
-  content: '+';
-  font-weight: 700;
+
+.admin-exercise-toggle svg {
+  transition: transform var(--duration-fast) var(--ease-standard);
 }
-.admin-exercise-editor[open] .admin-exercise-toggle::before {
-  content: '-';
+
+.admin-exercise-editor[open] .admin-exercise-toggle svg {
+  transform: rotate(180deg);
 }
 .admin-exercise-summary-copy {
   display: grid;
@@ -1682,6 +1667,9 @@ no form */
   font-size: var(--text-sm);
 }
 .admin-exercise-advanced summary {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
   width: fit-content;
   min-height: 2.5rem;
   border: 1px solid var(--color-border-med);
@@ -1695,20 +1683,21 @@ no form */
   padding: var(--space-3) var(--space-4);
   text-transform: uppercase;
 }
+
+.admin-exercise-advanced summary svg {
+  color: var(--color-accent);
+}
+
+.admin-exercise-advanced[open] summary svg {
+  transform: rotate(180deg);
+}
 .admin-exercise-advanced summary::-webkit-details-marker {
   display: none;
-}
-.admin-exercise-advanced summary::after {
-  color: var(--color-accent);
-  content: ' +';
 }
 .admin-exercise-advanced[open] summary {
   margin-bottom: var(--space-4);
   border-color: var(--accent-alpha-border);
   color: var(--color-accent);
-}
-.admin-exercise-advanced[open] summary::after {
-  content: ' -';
 }
 .admin-login-page {
   position: relative;
@@ -2196,7 +2185,7 @@ softer aurora glow for balance */
   .admin-exercise-editor > summary {
     grid-template-columns: 1fr;
   }
-  .admin-exercise-editor > summary > .admin-chip {
+  .admin-exercise-editor > summary > .admin-tag {
     width: fit-content;
   }
   .admin-exercise-summary-copy {

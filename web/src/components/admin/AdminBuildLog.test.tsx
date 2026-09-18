@@ -2,22 +2,13 @@
 
 import { act, type ReactElement } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it } from 'vitest'
 
 import { AdminBuildLog } from './AdminBuildLog'
 
 describe('AdminBuildLog', () => {
   let container: HTMLDivElement
   let root: Root
-  const scrollIntoView = vi.fn()
-
-  beforeEach(() => {
-    scrollIntoView.mockClear()
-    Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
-      configurable: true,
-      value: scrollIntoView,
-    })
-  })
 
   afterEach(() => {
     act(() => {
@@ -26,16 +17,48 @@ describe('AdminBuildLog', () => {
     container?.remove()
   })
 
-  it('scrolls to the newest log line when log content changes', () => {
-    render(<AdminBuildLog log="Linha 1" />)
-    expect(scrollIntoView).toHaveBeenCalledTimes(1)
+  it('renders the log without hijacking page scroll or re-announcing to screen readers', () => {
+    render(<AdminBuildLog log="linha 1" />)
 
-    act(() => {
-      root.render(<AdminBuildLog log={'Linha 1\nLinha 2'} />)
-    })
+    const pre = getRequiredElement('pre.admin-build-log')
 
-    expect(scrollIntoView).toHaveBeenCalledTimes(2)
-    expect(container.textContent).toContain('Linha 2')
+    expect(pre.textContent).toContain('linha 1')
+    expect(pre.getAttribute('aria-live')).toBeNull()
+    expect(pre.getAttribute('role')).toBeNull()
+  })
+
+  it('keeps the container pinned to the bottom while the reader follows the log', () => {
+    render(<AdminBuildLog log="linha 1" />)
+
+    const pre = getRequiredElement<HTMLPreElement>('pre.admin-build-log')
+    Object.defineProperty(pre, 'scrollHeight', { configurable: true, value: 1000 })
+    Object.defineProperty(pre, 'clientHeight', { configurable: true, value: 300 })
+    pre.scrollTop = 700
+
+    rerender(<AdminBuildLog log={'linha 1\nlinha 2'} />)
+
+    expect(pre.scrollTop).toBe(1000)
+  })
+
+  it('stops autoscrolling once the reader scrolls up', () => {
+    render(<AdminBuildLog log="linha 1" />)
+
+    const pre = getRequiredElement<HTMLPreElement>('pre.admin-build-log')
+    Object.defineProperty(pre, 'scrollHeight', { configurable: true, value: 1000 })
+    Object.defineProperty(pre, 'clientHeight', { configurable: true, value: 300 })
+    pre.scrollTop = 200
+
+    rerender(<AdminBuildLog log={'linha 1\nlinha 2\nlinha 3'} />)
+
+    expect(pre.scrollTop).toBe(200)
+  })
+
+  it('shows a waiting message before any output exists', () => {
+    render(<AdminBuildLog log="" />)
+
+    expect(getRequiredElement('pre.admin-build-log').textContent).toContain(
+      'Aguardando saída do processo',
+    )
   })
 
   function render(element: ReactElement): void {
@@ -46,5 +69,21 @@ describe('AdminBuildLog', () => {
     act(() => {
       root.render(element)
     })
+  }
+
+  function rerender(element: ReactElement): void {
+    act(() => {
+      root.render(element)
+    })
+  }
+
+  function getRequiredElement<ElementType extends Element>(selector: string): ElementType {
+    const element = container.querySelector<ElementType>(selector)
+
+    if (!element) {
+      throw new Error(`Missing element for selector: ${selector}`)
+    }
+
+    return element
   }
 })
