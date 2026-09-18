@@ -88,7 +88,12 @@ export default async function AdminMobileBuildsPage({
               ))}
             </div>
           ) : (
-            <p className="admin-muted">Nenhuma build foi criada ainda.</p>
+            <AdminCard className="admin-empty-state">
+              <p className="admin-section-title">Nenhuma build ainda</p>
+              <p className="admin-muted">
+                Gere o primeiro APK ou AAB com os botões acima — o log acompanha em tempo real.
+              </p>
+            </AdminCard>
           )}
         </AdminCard>
 
