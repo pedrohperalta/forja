@@ -96,8 +96,8 @@ describe('getPublicationStatus', () => {
     expect(getPublicationStatus('archived').canPublish).toBe(false)
   })
 
-  it('keeps warning tone for pending work and accent for synced plans', () => {
-    expect(getPublicationStatus('unpublished-draft').tone).toBe('warning')
+  it('keeps the draft calm, pending work in warning and synced plans in accent', () => {
+    expect(getPublicationStatus('unpublished-draft').tone).toBe('neutral')
     expect(getPublicationStatus('pending-changes').tone).toBe('warning')
     expect(getPublicationStatus('published').tone).toBe('accent')
     expect(getPublicationStatus('archived').tone).toBe('danger')

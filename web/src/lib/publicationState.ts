@@ -8,7 +8,7 @@ export type PublicationStatus = {
   publishDescription: string
   publishLabel: string
   canPublish: boolean
-  tone: 'accent' | 'warning' | 'danger'
+  tone: 'neutral' | 'accent' | 'warning' | 'danger'
 }
 
 export function getPublicationState(input: {
@@ -78,7 +78,7 @@ export function getPublicationStatus(state: PublicationState): PublicationStatus
       'Publique para o plano aparecer no app. Até lá, tudo fica salvo no rascunho.',
     publishLabel: 'Publicar no app',
     canPublish: true,
-    tone: 'warning',
+    tone: 'neutral',
   }
 }
 

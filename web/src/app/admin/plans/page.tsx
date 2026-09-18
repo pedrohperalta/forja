@@ -137,7 +137,7 @@ function PlanCard({ item }: { item: PlanListItemViewModel }): ReactElement {
           ) : item.publicationState === 'pending-changes' ? (
             <StatusPill tone="warning">Publicado com alterações</StatusPill>
           ) : (
-            <StatusPill tone="warning">Rascunho</StatusPill>
+            <StatusPill>Rascunho</StatusPill>
           )}
         </header>
 

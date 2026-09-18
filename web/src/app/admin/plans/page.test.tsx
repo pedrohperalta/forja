@@ -75,9 +75,10 @@ describe('/admin/plans', () => {
       }),
     )
 
-    expect(markup).toContain('Rascunho')
+    expect(markup).toContain('class="status-pill">Rascunho')
+    expect(markup).not.toContain('data-tone="warning">Rascunho')
     expect(markup).not.toContain('Rascunho não publicado')
-    expect(markup).toContain('Publicado com alterações')
+    expect(markup).toContain('data-tone="warning">Publicado com alterações')
     expect(markup).toContain('Revisar e publicar')
     expect(markup.match(/Revisar e publicar/g)).toHaveLength(2)
     expect(markup).toContain('Planos ativos')
