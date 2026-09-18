@@ -1,0 +1,1545 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PRD — Admin Sem Atrito | Forja</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Bebas+Neue&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --accent: #C2F000;
+    --accent-dim: rgba(194, 240, 0, 0.12);
+    --danger: #ef4444;
+    --warning: #f59e0b;
+    --p0: #ef4444;
+    --p1: #f59e0b;
+    --p2: #3b82f6;
+    --bg: #0e0e0e;
+    --surface: #1a1a1a;
+    --surface-2: #252525;
+    --border: #2a2a2a;
+    --text: #f5f5f4;
+    --text-med: #a8a29e;
+    --text-dim: #57534e;
+    /* admin mockup palette (fiel ao admin real) */
+    --adm-bg: #080808;
+    --adm-surface: #111111;
+    --adm-surface-2: #1c1c1c;
+    --adm-border: #222222;
+    --adm-border-med: #333333;
+    --adm-text: #ffffff;
+    --adm-med: #aaaaaa;
+    --adm-muted: #888888;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    padding: 0;
+  }
+
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 32px 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-inner {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .header h1 {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--accent);
+    letter-spacing: -0.5px;
+  }
+  .header .meta {
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+  .review-toggle {
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    padding: 8px 20px;
+    border-radius: 100px;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .review-toggle:hover { opacity: 0.85; }
+  .review-toggle.active {
+    background: var(--danger);
+    color: white;
+  }
+
+  .content {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 32px 120px;
+  }
+
+  section { margin-bottom: 48px; }
+  .section-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+  h2 {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: var(--text);
+  }
+  h3 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: var(--text);
+  }
+  p, li {
+    font-size: 14px;
+    color: var(--text-med);
+    line-height: 1.7;
+  }
+  ul, ol {
+    padding-left: 20px;
+    margin-bottom: 16px;
+  }
+  li { margin-bottom: 6px; }
+  li strong { color: var(--text); }
+  code { color: var(--accent); font-size: 12px; font-family: 'SF Mono', 'Fira Code', monospace; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 16px;
+  }
+  .card h3 { margin-bottom: 8px; }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  .badge-p0 { background: rgba(239,68,68,0.15); color: var(--p0); }
+  .badge-p1 { background: rgba(245,158,11,0.15); color: var(--p1); }
+  .badge-p2 { background: rgba(59,130,246,0.15); color: var(--p2); }
+
+  .feature-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  @media (max-width: 640px) {
+    .feature-grid { grid-template-columns: 1fr; }
+  }
+
+  .metric-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 640px) {
+    .metric-grid { grid-template-columns: 1fr; }
+  }
+  .metric-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+  }
+  .metric-value {
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--accent);
+    line-height: 1;
+  }
+  .metric-value .old { color: var(--danger); text-decoration: line-through; font-size: 20px; font-weight: 600; }
+  .metric-label {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-top: 6px;
+  }
+
+  .story {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 12px 12px 0;
+    padding: 20px 24px;
+    margin-bottom: 12px;
+  }
+  .story .role {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+  .story p { color: var(--text); font-size: 14px; }
+  .story .story-badges {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+  .story-id {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .criteria {
+    background: var(--surface-2);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-top: 10px;
+    font-size: 13px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    color: var(--text-med);
+  }
+  .criteria strong { color: var(--accent); font-weight: 600; }
+
+  .flow-diagram {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 24px 0;
+  }
+  .flow-step {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    text-align: center;
+    min-width: 130px;
+  }
+  .flow-step-icon { font-size: 24px; margin-bottom: 4px; }
+  .flow-step-label { font-size: 13px; font-weight: 600; color: var(--text); }
+  .flow-step-desc { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+  .flow-arrow { font-size: 18px; color: var(--text-dim); padding: 0 8px; }
+  .flow-step.is-bad { border-color: rgba(239,68,68,0.4); }
+  .flow-step.is-bad .flow-step-label { color: var(--danger); }
+
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 48px 0;
+  }
+
+  .arch-diagram {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 32px 24px;
+    margin: 16px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .arch-box {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    text-align: center;
+    min-width: 140px;
+  }
+  .arch-box-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: var(--accent); margin-bottom: 4px; }
+  .arch-box-title { font-size: 14px; font-weight: 700; color: var(--text); }
+  .arch-box-desc { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+  .arch-arrow { font-size: 20px; color: var(--text-dim); }
+
+  table.steps {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin: 12px 0 20px;
+  }
+  table.steps th {
+    text-align: left;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  table.steps td {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-med);
+    vertical-align: top;
+  }
+  table.steps td:first-child { color: var(--text); font-weight: 600; white-space: nowrap; }
+  table.steps .cut { color: var(--danger); }
+  table.steps .kept { color: var(--accent); }
+
+  /* ============ Mockups — desktop admin (fiel ao design system real) ============ */
+  .mockup-label {
+    font-size: 11px;
+    color: var(--text-dim);
+    text-align: center;
+    margin-top: 8px;
+    font-style: italic;
+  }
+  .duo {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin: 20px 0;
+  }
+  @media (max-width: 760px) { .duo { grid-template-columns: 1fr; } }
+
+  .browser {
+    border: 1px solid var(--adm-border-med);
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--adm-bg);
+    box-shadow: 0 20px 50px -30px rgba(0,0,0,0.9);
+  }
+  .browser-bar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 12px;
+    background: #161616;
+    border-bottom: 1px solid var(--adm-border);
+  }
+  .browser-dot { width: 9px; height: 9px; border-radius: 50%; background: #333; }
+  .browser-url {
+    font-size: 10px;
+    color: #777;
+    background: #0d0d0d;
+    border: 1px solid var(--adm-border);
+    border-radius: 6px;
+    padding: 2px 10px;
+    margin-left: 8px;
+    font-family: 'Inter', sans-serif;
+  }
+  .screen {
+    padding: 18px;
+    font-family: 'Syne', sans-serif;
+    color: var(--adm-text);
+    display: grid;
+    gap: 12px;
+  }
+
+  .a-eyebrow {
+    font-size: 8px; font-weight: 700; letter-spacing: 2.5px;
+    text-transform: uppercase; color: var(--accent);
+    font-family: 'Syne', sans-serif;
+  }
+  .a-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 26px; letter-spacing: 1px; line-height: 0.95;
+    color: var(--adm-text); font-weight: 400;
+  }
+  .a-card {
+    background: var(--adm-surface);
+    border: 1px solid var(--adm-border);
+    border-radius: 12px;
+    padding: 12px;
+  }
+  .a-card.accent { border-color: rgba(194,240,0,0.35); background: linear-gradient(180deg, rgba(194,240,0,0.08), var(--adm-surface)); }
+  .a-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 100px; font-family: 'Syne', sans-serif;
+    font-size: 9px; font-weight: 700; letter-spacing: 1.2px;
+    text-transform: uppercase; padding: 0 14px; min-height: 28px;
+  }
+  .a-btn-primary { background: var(--accent); color: var(--adm-bg); }
+  .a-btn-secondary { border: 1px solid var(--adm-border-med); background: transparent; color: var(--adm-med); }
+  .a-btn-ghost { border: 1px solid var(--adm-border); background: var(--adm-surface); color: var(--adm-med); width: 100%; }
+  .a-pill {
+    display: inline-flex; align-items: center;
+    border-radius: 100px; font-family: 'Syne', sans-serif;
+    font-size: 8px; font-weight: 700; letter-spacing: 1px;
+    text-transform: uppercase; padding: 3px 10px;
+  }
+  .a-pill-accent { border: 1px solid rgba(194,240,0,0.35); background: rgba(194,240,0,0.1); color: var(--accent); }
+  .a-pill-warning { border: 1px solid rgba(245,158,11,0.35); background: rgba(245,158,11,0.12); color: var(--warning); }
+  .a-pill-neutral { border: 1px solid var(--adm-border-med); background: transparent; color: var(--adm-med); }
+  .a-input {
+    background: var(--adm-surface-2); border: 1px solid var(--adm-border-med);
+    border-radius: 8px; color: var(--adm-text);
+    font-family: 'Syne', sans-serif; font-size: 10px;
+    padding: 7px 10px; width: 100%;
+  }
+  .a-input.fake-focus { border-color: rgba(194,240,0,0.72); outline: 2px solid rgba(194,240,0,0.16); }
+  .a-input.warn { border-color: rgba(245,158,11,0.6); background: rgba(245,158,11,0.06); }
+  .a-label {
+    font-size: 8px; font-weight: 600; letter-spacing: 1px;
+    text-transform: uppercase; color: var(--adm-muted);
+    font-family: 'Syne', sans-serif;
+  }
+  .a-muted { color: var(--adm-muted); font-size: 10px; font-family: 'Syne', sans-serif; line-height: 1.5; }
+  .a-row { display: flex; align-items: center; gap: 8px; }
+  .a-row.between { justify-content: space-between; }
+  .a-statusline { font-size: 9px; font-family: 'Syne', sans-serif; color: var(--adm-muted); }
+  .a-statusline.saved { color: var(--accent); }
+  .a-notice {
+    border: 1px solid rgba(194,240,0,0.3); border-radius: 10px;
+    background: rgba(194,240,0,0.08); padding: 10px 12px;
+    font-family: 'Syne', sans-serif; font-size: 10px; color: var(--adm-text);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .a-notice .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+  .a-exrow {
+    display: grid; grid-template-columns: auto 1fr auto; gap: 8px;
+    align-items: center; padding: 9px 10px;
+    background: var(--adm-surface-2); border: 1px solid var(--adm-border);
+    border-radius: 8px;
+  }
+  .a-exrow.warn { border-color: rgba(245,158,11,0.5); }
+  .a-exnum {
+    width: 18px; height: 18px; border-radius: 50%;
+    background: var(--accent); color: var(--adm-bg);
+    font-family: 'Bebas Neue', sans-serif; font-size: 11px;
+    display: grid; place-items: center;
+  }
+  .a-exname { font-size: 10px; font-weight: 700; font-family: 'Syne', sans-serif; color: var(--adm-text); }
+  .a-exmeta { font-size: 8.5px; color: var(--adm-muted); font-family: 'Syne', sans-serif; }
+  .a-actionbar {
+    position: sticky; bottom: 0;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 8px; padding: 10px 12px;
+    background: rgba(8,8,8,0.96);
+    border-top: 1px solid var(--adm-border);
+    border-radius: 0 0 11px 11px;
+    margin: 0 -18px -18px;
+    backdrop-filter: blur(8px);
+  }
+  .a-hubcards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  @media (max-width: 760px) { .a-hubcards { grid-template-columns: 1fr; } }
+  .a-hubcard {
+    background: var(--adm-surface); border: 1px solid var(--adm-border);
+    border-radius: 12px; padding: 14px 12px; text-align: center;
+    display: grid; gap: 6px; justify-items: center;
+  }
+  .a-hubcard .ic { font-size: 20px; }
+  .a-hubcard .t { font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 1px; }
+  .a-hubcard .d { font-size: 8.5px; color: var(--adm-muted); font-family: 'Syne', sans-serif; line-height: 1.4; }
+  .a-drop {
+    border: 1.5px dashed rgba(194,240,0,0.4); border-radius: 10px;
+    background: linear-gradient(180deg, rgba(194,240,0,0.07), var(--adm-surface-2));
+    padding: 16px; text-align: center; display: grid; gap: 6px; justify-items: center;
+  }
+  .a-drop .big { font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 1px; color: var(--adm-text); }
+  .a-badge-rev {
+    font-size: 8px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+    font-family: 'Syne', sans-serif; color: var(--warning);
+  }
+  .a-kpi { display: grid; gap: 2px; }
+  .a-kpi .n { font-family: 'Bebas Neue', sans-serif; font-size: 22px; color: var(--accent); line-height: 1; }
+  .a-kpi .l { font-size: 7.5px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--adm-muted); font-family: 'Syne', sans-serif; }
+  .a-nav { display: flex; gap: 6px; }
+  .a-nav-item {
+    font-size: 8px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+    font-family: 'Syne', sans-serif; color: var(--adm-muted);
+    border: 1px solid var(--adm-border); border-radius: 100px; padding: 5px 12px;
+  }
+  .a-nav-item.active { border-color: rgba(194,240,0,0.4); background: rgba(194,240,0,0.1); color: var(--accent); }
+
+  /* Commenting system */
+  [data-c].commentable {
+    cursor: pointer;
+    position: relative;
+    transition: outline 0.15s, background 0.15s;
+    outline: 2px solid transparent;
+    border-radius: 4px;
+  }
+  [data-c].commentable:hover {
+    outline: 2px solid var(--accent);
+    background: rgba(194, 240, 0, 0.04);
+  }
+  [data-c].commentable.has-comment {
+    outline: 2px solid var(--warning);
+    background: rgba(245, 158, 11, 0.06);
+  }
+
+  .comment-panel {
+    display: none;
+    position: fixed;
+    right: 0;
+    top: 0;
+    width: 360px;
+    height: 100vh;
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    z-index: 200;
+    flex-direction: column;
+  }
+  .comment-panel.open { display: flex; }
+  .comment-panel-header {
+    padding: 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .comment-panel-header h3 { font-size: 14px; font-weight: 700; margin: 0; }
+  .comment-panel-body { flex: 1; overflow-y: auto; padding: 20px; }
+  .comment-panel-footer { padding: 16px 20px; border-top: 1px solid var(--border); }
+  .comment-input {
+    width: 100%;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 13px;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    resize: vertical;
+    min-height: 60px;
+  }
+  .comment-input:focus { outline: none; border-color: var(--accent); }
+  .comment-submit {
+    margin-top: 8px;
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    padding: 8px 16px;
+    border-radius: 100px;
+    font-weight: 700;
+    font-size: 12px;
+    cursor: pointer;
+    width: 100%;
+  }
+  .comment-item {
+    background: var(--surface-2);
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 8px;
+  }
+  .comment-item-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 6px;
+  }
+  .comment-item-section { font-size: 11px; font-weight: 700; color: var(--accent); }
+  .comment-item-time { font-size: 11px; color: var(--text-dim); }
+  .comment-item-text { font-size: 13px; color: var(--text-med); }
+  .comment-item-delete {
+    font-size: 11px; color: var(--danger); cursor: pointer;
+    margin-top: 6px; background: none; border: none; padding: 0;
+  }
+  .comment-count {
+    background: var(--warning); color: var(--bg);
+    font-size: 10px; font-weight: 700;
+    padding: 1px 6px; border-radius: 100px; margin-left: 6px;
+  }
+  .export-btn {
+    background: var(--surface-2); color: var(--text-med);
+    border: 1px solid var(--border); padding: 6px 14px;
+    border-radius: 100px; font-size: 12px; font-weight: 600; cursor: pointer;
+  }
+  .export-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .close-btn { background: none; border: none; color: var(--text-dim); font-size: 20px; cursor: pointer; }
+  .no-comments { text-align: center; color: var(--text-dim); font-size: 13px; padding: 40px 0; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-inner">
+    <div>
+      <h1>FORJA — Admin Sem Atrito</h1>
+      <div class="meta">PRD v1 &middot; 18 Set 2026 &middot; Feature</div>
+    </div>
+    <div style="display: flex; gap: 8px; align-items: center;">
+      <button class="export-btn" id="exportBtn" style="display:none;" onclick="exportComments()">Exportar Comentários</button>
+      <button class="review-toggle" id="reviewToggle" onclick="toggleReviewMode()">Review Mode</button>
+    </div>
+  </div>
+</div>
+
+<!-- Comment Panel -->
+<div class="comment-panel" id="commentPanel">
+  <div class="comment-panel-header">
+    <h3>Comentários <span class="comment-count" id="commentCount" style="display:none">0</span></h3>
+    <button class="close-btn" onclick="closePanel()">&times;</button>
+  </div>
+  <div class="comment-panel-body" id="commentList">
+    <div class="no-comments">Nenhum comentário ainda. Clique em elementos destacados para comentar.</div>
+  </div>
+  <div class="comment-panel-footer" id="commentForm" style="display:none">
+    <div style="font-size:11px;color:var(--accent);font-weight:700;margin-bottom:6px" id="commentTarget"></div>
+    <textarea class="comment-input" id="commentInput" placeholder="Deixe seu comentário..."></textarea>
+    <button class="comment-submit" onclick="submitComment()">Adicionar Comentário</button>
+  </div>
+</div>
+
+<!-- Content -->
+<div class="content">
+
+  <!-- 1. Overview -->
+  <section>
+    <div class="section-label" data-c="sec-overview">Visão Geral</div>
+    <h2 data-c="title-overview">Criar um plano não pode dar preguiça</h2>
+    <p data-c="desc-overview">O admin web é a fábrica de planos do Forja: é lá que fichas viram treinos que o app sincroniza. Hoje, porém, a experiência de criação trava o próprio dono — o form de novo plano assusta com 9 campos, a importação de fichas esconde se aceita 1 ou várias, e o caminho "rascunho → publicado no app" espalha 4 gestos por 3 lugares diferentes da tela. A auditoria de código encontrou o motivo: <strong style="color:var(--text)">não existe botão "Adicionar exercício" no editor</strong> — montar um plano manual pela UI é literalmente impossível hoje.</p>
+    <p data-c="desc-proposal" style="margin-top:12px">Este PRD redesenha a experiência core do admin em torno de uma ideia: <strong style="color:var(--text)">criar plano = abrir o editor</strong>. Um hub de criação substitui o form assustador (em branco, da foto, ou duplicando um plano); a foto da ficha vira rascunho direto no editor; salvar fica barato (autosave) e <strong style="color:var(--text)">publicar é o único gesto que afeta o app</strong> — e nunca é silencioso. Inspirado no modelo Vercel/Webflow: rascunho é workspace, publicar é promoção de revisão.</p>
+  </section>
+
+  <!-- 2. Metrics -->
+  <section>
+    <div class="section-label" data-c="sec-metrics">Impacto Esperado</div>
+    <h2 data-c="title-metrics">Números</h2>
+    <div class="metric-grid">
+      <div class="metric-card" data-c="metric-new-plan">
+        <div class="metric-value"><span class="old">8 ações</span> → 1</div>
+        <div class="metric-label">Para começar um plano novo (form de 9 campos → 1 clique no hub)</div>
+      </div>
+      <div class="metric-card" data-c="metric-import">
+        <div class="metric-value"><span class="old">11</span> → 7</div>
+        <div class="metric-label">Passos para importar 1 ficha com uma correção (revisão editável na hora)</div>
+      </div>
+      <div class="metric-card" data-c="metric-publish">
+        <div class="metric-value"><span class="old">4 gestos</span> → 2</div>
+        <div class="metric-label">De editar a publicado no app (publicar inclui salvar, numa barra só)</div>
+      </div>
+    </div>
+    <div class="metric-grid">
+      <div class="metric-card" data-c="metric-manual">
+        <div class="metric-value"><span class="old">0</span> → Possível</div>
+        <div class="metric-label">Criar um plano multi-exercício manualmente (botão "+ Adicionar exercício")</div>
+      </div>
+      <div class="metric-card" data-c="metric-vocab">
+        <div class="metric-value">3 → 1</div>
+        <div class="metric-label">Vocabulários de estado ("Publicação pendente" / "Rascunho não publicado" / "Alterações em rascunho")</div>
+      </div>
+      <div class="metric-card" data-c="metric-kpi">
+        <div class="metric-value">100%</div>
+        <div class="metric-label">Planos com alterações pendentes visíveis no KPI do painel (hoje: ocultos)</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. Problem -->
+  <section>
+    <div class="section-label" data-c="sec-problem">Problema</div>
+    <h2 data-c="title-problem">Por que dá preguiça</h2>
+
+    <div class="card" data-c="problem-deadend">
+      <h3>Beco sem saída: não dá para montar plano manual</h3>
+      <p>O editor só lista exercícios existentes — o service layer não tem <code>addDraftExercise</code> e nenhum botão de adicionar existe. As únicas portas de entrada de exercícios são o 1º exercício <em>obrigatório</em> do form de novo plano e a importação por IA. Resultado: todo plano real nasce de foto, e o import carrega sozinho o peso de ser o único caminho.</p>
+    </div>
+
+    <div class="card" data-c="problem-scary-form">
+      <h3>O form de novo plano assusta</h3>
+      <p>9 campos (5 obrigatórios + 4 escondidos num disclosure) para gerar um plano de <strong style="color:var(--text)">um único exercício</strong>. "Rótulo" vs "Nome" sem diferença explicada (o rótulo é um slug de implementação que vazou para a UI). O domínio, no entanto, aceita plano com zero exercícios — toda essa fricção é imposta pela UI, não pelo schema.</p>
+    </div>
+
+    <div class="card" data-c="problem-publish-stale">
+      <h3>Publicar pode publicar conteúdo velho</h3>
+      <p>"Salvar rascunho" e "Publicar no app" são forms independentes em lugares diferentes da tela. Publicar usa o draft persistido no banco — se você editou e não salvou, <strong style="color:var(--text)">a versão antiga é publicada em silêncio</strong>. Sem guard, sem aviso, sem confirmação do que foi publicado.</p>
+    </div>
+
+    <div class="card" data-c="problem-import-mystery">
+      <h3>Importar: 1 ou várias fichas?</h3>
+      <p>O campo diz "Nome da ficha" (singular), mas o input aceita N imagens e cada uma vira uma ficha com numeração-surpresa ("Treino A 1, 2, 3…") que só aparece depois da extração. A revisão é read-only — corrigir um erro da IA exige salvar, abrir o editor, editar e salvar de novo. E o stepper promete uma etapa "Publicar" que não existe naquela tela.</p>
+    </div>
+
+    <div class="card" data-c="problem-vocab">
+      <h3>Três nomes para o mesmo estado — e um KPI que mente</h3>
+      <p>Painel, lista e editor batizam a pendência de três jeitos. O KPI "Publicação pendente" conta apenas planos nunca publicados: um plano publicado com edições não publicadas fica <strong style="color:var(--text)">invisível</strong> no painel. Para um produto de um único admin, estado invisível é estado que não existe.</p>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 4. Current flows -->
+  <section>
+    <div class="section-label" data-c="sec-flows">Estado Atual</div>
+    <h2 data-c="title-flows">Os três fluxos, mapeados</h2>
+
+    <h3 data-c="flow-a-title">A. Novo plano — hoje</h3>
+    <div class="flow-diagram" data-c="flow-a-diagram">
+      <div class="flow-step is-bad">
+        <div class="flow-step-icon">📄</div>
+        <div class="flow-step-label">Form de 9 campos</div>
+        <div class="flow-step-desc">5 obrigatórios + disclosure</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="flow-step-icon">✏️</div>
+        <div class="flow-step-label">Editor (1 exercício)</div>
+        <div class="flow-step-desc">sem como adicionar mais</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="flow-step-icon">💾</div>
+        <div class="flow-step-label">Salvar</div>
+        <div class="flow-step-desc">botão no topo do card</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="flow-step-icon">🚀</div>
+        <div class="flow-step-label">Publicar</div>
+        <div class="flow-step-desc">botão no hero, acima</div>
+      </div>
+    </div>
+
+    <h3 data-c="flow-c-title">C. Rascunho → app — hoje vs depois</h3>
+    <table class="steps" data-c="flow-c-table">
+      <tr><th>Hoje</th><th>Depois</th></tr>
+      <tr><td>Editar campos</td><td class="kept">Editar campos</td></tr>
+      <tr><td>Rolar até "Salvar rascunho" (topo)</td><td class="cut">— autosave / incluso no publicar —</td></tr>
+      <tr><td>Rolar de volta ao hero</td><td class="cut">— uma barra fixa só —</td></tr>
+      <tr><td>Clicar "Publicar no app"</td><td class="kept">Clicar "Publicar no app"</td></tr>
+      <tr><td>(sem confirmação do que mudou)</td><td class="kept">Notice: "Rev. N publicada — sincronize o app"</td></tr>
+    </table>
+
+    <p data-c="flows-evidence" style="font-size:12px;color:var(--text-dim)">Evidências: <code>AdminPlanDraftForm.tsx</code> (sem add/remove de exercício; salvar no topo), <code>plans/[planId]/page.tsx:100-106,350-363</code> (publicar usa draft persistido), <code>AdminImportWorkoutForm.tsx:264,456-458</code> (input multiple + numeração em lote), <code>admin/page.tsx:26-31,52</code> vs <code>plans/page.tsx:125</code> vs <code>[planId]/page.tsx:218</code> (3 vocabulários; KPI só conta nunca-publicados).</p>
+  </section>
+
+  <!-- 5. Principles -->
+  <section>
+    <div class="section-label" data-c="sec-principles">Princípios</div>
+    <h2 data-c="title-principles">As regras do admin daqui em diante</h2>
+    <div class="card" data-c="principles-list">
+      <ol>
+        <li><strong>O editor é a única tela de autoria.</strong> Criar plano = abrir o editor. Nenhum form intermediário entre a intenção e a lista de exercícios.</li>
+        <li><strong>Publicar é o único gesto que afeta o app — e nunca é silencioso.</strong> Salvar é barato; publicar é explícito e sempre responde "o que o app está treinando agora".</li>
+        <li><strong>Nenhum dado velho se publica.</strong> Publicar sempre inclui as edições correntes; formulário sujo não existe como estado publicável.</li>
+        <li><strong>Defaults em vez de campos obrigatórios.</strong> "A definir" é um valor válido. O form pede só o que só o humano sabe.</li>
+        <li><strong>Uma imagem = uma ficha — regra visível antes de agir.</strong> Batch declarado na entrada, nunca descoberto depois.</li>
+        <li><strong>A revisão editável acontece na hora.</strong> O momento mais barato de corrigir a IA é durante a revisão; confiança baixa vira destaque com ação, não percentual decorativo.</li>
+        <li><strong>Vocabulário único de estado:</strong> Rascunho · Publicado · Publicado com alterações · Arquivado. "Draft" é proibido em copy pt-BR.</li>
+        <li><strong>Toda lista tem um CTA que diz a próxima ação</strong> ("Revisar e publicar"), não o nome da tela.</li>
+      </ol>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 6. IA -->
+  <section>
+    <div class="section-label" data-c="sec-ia">Arquitetura de Informação</div>
+    <h2 data-c="title-ia">Menos lugares, um caminho</h2>
+    <p data-c="desc-ia" style="margin-bottom:16px">"Importar" não é um lugar, é um meio. A nav cai de 4 para 3 itens e a criação de plano converge para um hub único.</p>
+
+    <div class="arch-diagram" data-c="ia-diagram">
+      <div class="arch-box">
+        <div class="arch-box-label">Nav</div>
+        <div class="arch-box-title">Painel · Planos · Builds</div>
+        <div class="arch-box-desc">Importar deixa de ser item</div>
+      </div>
+      <div style="text-align:center">
+        <div class="arch-arrow">→</div>
+        <div style="font-size:10px;color:var(--text-dim);margin-top:2px">CTA "Novo plano"</div>
+      </div>
+      <div class="arch-box">
+        <div class="arch-box-label">Hub de criação</div>
+        <div class="arch-box-title">Como começar?</div>
+        <div class="arch-box-desc">Em branco · Da foto · Duplicar</div>
+      </div>
+      <div style="text-align:center">
+        <div class="arch-arrow">→</div>
+        <div style="font-size:10px;color:var(--text-dim);margin-top:2px">sempre</div>
+      </div>
+      <div class="arch-box">
+        <div class="arch-box-label">Autoria</div>
+        <div class="arch-box-title">Editor</div>
+        <div class="arch-box-desc">+ exercícios · autosave<br>barra: Salvar / Publicar</div>
+      </div>
+      <div style="text-align:center">
+        <div class="arch-arrow">→</div>
+        <div style="font-size:10px;color:var(--text-dim);margin-top:2px">promoção</div>
+      </div>
+      <div class="arch-box">
+        <div class="arch-box-label">App</div>
+        <div class="arch-box-title">Rev. N publicada</div>
+        <div class="arch-box-desc">sync pull-based<br>rascunho nunca vaza</div>
+      </div>
+    </div>
+
+    <div class="card" data-c="ia-safety">
+      <h3>Por que isso é seguro</h3>
+      <p>O app móvel só enxerga a última revisão <strong style="color:var(--text)">publicada</strong> de cada plano ativo (<code>planPullService</code>, pull cursor-based; arquitectura vira tombstone). Rascunho é 100% invisível para o consumidor — criar rascunhos "de teste" ou "da IA" tem custo zero no app. O modelo já era certo; a comunicação é que falhava.</p>
+    </div>
+  </section>
+
+  <!-- 7. Feature 1: Hub -->
+  <section>
+    <div class="section-label" data-c="sec-hub">Feature 1 — Criação</div>
+    <h2 data-c="title-hub">Hub de criação <span class="badge badge-p0">P0</span></h2>
+    <p data-c="desc-hub" style="margin-bottom:16px">A rota <code>/admin/plans/new</code> deixa de ser form e vira hub: três caminhos, um clique cada. "Em branco" cria o rascunho server-side com defaults ("Plano sem título", foco "A definir", 0 exercícios) e abre o editor — modelo Google Docs. O título é renomeado inline no editor.</p>
+
+    <div class="story" data-c="story-hub-blank">
+      <div class="story-badges">
+        <span class="story-id">US-01</span>
+        <span class="badge badge-p0">P0</span>
+      </div>
+      <div class="role">Como dono do Forja (admin único)</div>
+      <p>Quero começar um plano em branco com um único clique, sem enfrentar um form, para capturar a intenção no momento em que ela existe.</p>
+      <div class="criteria">
+        <strong>Dado</strong> que estou no hub de criação<br>
+        <strong>Quando</strong> escolho "Em branco"<br>
+        <strong>Então</strong> um rascunho "Plano sem título" é criado com defaults e o editor abre imediatamente, com o título selecionado para renomear inline
+      </div>
+    </div>
+
+    <div class="story" data-c="story-hub-duplicate">
+      <div class="story-badges">
+        <span class="story-id">US-02</span>
+        <span class="badge badge-p1">P1</span>
+      </div>
+      <div class="role">Como dono do Forja (admin único)</div>
+      <p>Quero duplicar um plano existente como ponto de partida, para criar variações (Treino A → A′) sem refazer do zero.</p>
+      <div class="criteria">
+        <strong>Dado</strong> que escolho "Duplicar um plano" e seleciono um plano ativo<br>
+        <strong>Quando</strong> confirmo<br>
+        <strong>Então</strong> nasce um rascunho com nome "Cópia de {nome}" e os exercícios copiados, e o editor abre
+      </div>
+    </div>
+
+    <!-- Mockup: Hub -->
+    <div class="browser" data-c="mockup-hub" style="margin-top:20px">
+      <div class="browser-bar">
+        <div class="browser-dot"></div><div class="browser-dot"></div><div class="browser-dot"></div>
+        <div class="browser-url">forja.admin/plans/new</div>
+      </div>
+      <div class="screen">
+        <div class="a-nav">
+          <div class="a-nav-item">Painel</div>
+          <div class="a-nav-item active">Planos</div>
+          <div class="a-nav-item">Builds</div>
+        </div>
+        <div>
+          <div class="a-eyebrow">Planos</div>
+          <div class="a-title">Como você quer começar?</div>
+        </div>
+        <div class="a-hubcards">
+          <div class="a-hubcard">
+            <div class="ic">📝</div>
+            <div class="t">EM BRANCO</div>
+            <div class="d">Abra o editor e monte do zero. Um nome basta — o resto tem padrão pronto.</div>
+            <div class="a-btn a-btn-primary" style="margin-top:4px">Criar e abrir editor</div>
+          </div>
+          <div class="a-hubcard accent">
+            <div class="ic">📷</div>
+            <div class="t">DA FOTO DA FICHA</div>
+            <div class="d">Cada foto vira uma ficha. A IA extrai e você confere no editor.</div>
+            <div class="a-btn a-btn-secondary" style="margin-top:4px">Enviar fotos</div>
+          </div>
+          <div class="a-hubcard">
+            <div class="ic">📋</div>
+            <div class="t">DUPLICAR PLANO</div>
+            <div class="d">Copie um plano ativo como ponto de partida e ajuste a variação.</div>
+            <div class="a-btn a-btn-secondary" style="margin-top:4px">Escolher plano…</div>
+          </div>
+        </div>
+        <div class="a-muted">Nada disso aparece no app até você publicar. Rascunho é invisível para o app.</div>
+      </div>
+    </div>
+    <div class="mockup-label">Hub de criação — o form de 9 campos vira 3 caminhos de 1 clique</div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 8. Feature 2: Editor -->
+  <section>
+    <div class="section-label" data-c="sec-editor">Feature 2 — Autoria</div>
+    <h2 data-c="title-editor">O editor como única tela de autoria <span class="badge badge-p0">P0</span></h2>
+
+    <div class="story" data-c="story-add-exercise">
+      <div class="story-badges">
+        <span class="story-id">US-03</span>
+        <span class="badge badge-p0">P0</span>
+      </div>
+      <div class="role">Como dono do Forja (admin único)</div>
+      <p>Quero adicionar exercícios direto no editor, com padrões prontos, para montar qualquer plano manualmente.</p>
+      <div class="criteria">
+        <strong>Dado</strong> que estou no editor de um plano<br>
+        <strong>Quando</strong> clico em "+ Adicionar exercício" no fim da lista<br>
+        <strong>Então</strong> uma nova linha entra em edição com defaults (3 séries, "10-12" reps, descanso 60s, equipamento "A definir") e o foco no campo nome<br>
+        <strong>E</strong> o domínio já aceita: <code>PlanSchema.exercises</code> não exige mínimo — só falta o service <code>addDraftExercise</code> + server action
+      </div>
+    </div>
+
+    <div class="story" data-c="story-remove-exercise">
+      <div class="story-badges">
+        <span class="story-id">US-04</span>
+        <span class="badge badge-p0">P0</span>
+      </div>
+      <div class="role">Como dono do Forja (admin único)</div>
+      <p>Quero remover um exercício do rascunho, para corrigir a estrutura sem recorrer ao import.</p>
+      <div class="criteria">
+        <strong>Dado</strong> que um plano tem 2+ exercícios<br>
+        <strong>Quando</strong> removo um (ação com confirmação em dois passos)<br>
+        <strong>Então</strong> ele sai do rascunho e a numeração reordena; o plano continua válido até a última publicação
+      </div>
+    </div>
+
+    <div class="story" data-c="story-actionbar">
+      <div class="story-badges">
+        <span class="story-id">US-05</span>
+        <span class="badge badge-p0">P0</span>
+      </div>
+      <div class="role">Como dono do Forja (admin único)</div>
+      <p>Quero salvar e publicar num lugar só, sempre visível, para não caçar botões pela página.</p>
+      <div class="criteria">
+        <strong>Dado</strong> que estou editando um plano<br>
+        <strong>Quando</strong> olho o rodapé do editor<br>
+        <strong>Então</strong> vejo uma barra fixa com: pill de estado à esquerda (Rascunho / Publicado / Publicado com alterações), botões "Salvar" (secundário) e "Publicar no app" (primário) à direita<br>
+        <strong>E</strong> os botões de salvar/publicar espalhados pelo hero e pelo topo do card desaparecem
+      </div>
+    </div>
+
+    <div class="story" data-c="story-publish-includes-save">
+      <div class="story-badges">
+        <span class="story-id">US-06</span>
+        <span class="badge badge-p0">P0</span>
+      </div>
+      <div class="role">Como dono do Forja (admin único)</div>
+      <p>Quero que publicar inclua as edições da tela, para nunca publicar conteúdo velho por acidente.</p>
+      <div class="criteria">
+        <strong>Dado</strong> que editei campos e não salvei<br>
+        <strong>Quando</strong> clico "Publicar no app"<br>
+        <strong>Então</strong> as edições correntes são persistidas e a nova revisão contém exatamente o que está na tela (action composta: update + publish na mesma transação)<br>
+        <strong>E</strong> um notice confirma: "Rev. N publicada — o app já pode sincronizar"
+      </div>
+    </div>
+
+    <!-- Mockup: Editor -->
+    <div class="browser" data-c="mockup-editor" style="margin-top:20px">
+      <div class="browser-bar">
+        <div class="browser-dot"></div><div class="browser-dot"></div><div class="browser-dot"></div>
+        <div class="browser-url">forja.admin/plans/treino-a</div>
+      </div>
+      <div class="screen">
+        <div>
+          <div class="a-eyebrow">Editor · Plano A</div>
+          <div class="a-title">Treino A — Peito e Tríceps</div>
+        </div>
+        <div class="a-exrow">
+          <div class="a-exnum">1</div>
+          <div>
+            <div class="a-exname">Supino Reto</div>
+            <div class="a-exmeta">Peito · Barra · 4×8-10 · 90s</div>
+          </div>
+          <div class="a-pill a-pill-accent">Publicado c/ alterações</div>
+        </div>
+        <div class="a-exrow warn">
+          <div class="a-exnum">2</div>
+          <div>
+            <div class="a-exname">Crucifixo Inclinado</div>
+            <div class="a-exmeta">Peito · Halter · 3×10-12 · 60s</div>
+          </div>
+          <div class="a-badge-rev">Revisar — extraído da foto</div>
+        </div>
+        <button class="a-btn a-btn-ghost">+ Adicionar exercício</button>
+        <div class="a-actionbar">
+          <div class="a-pill a-pill-warning">Rascunho · não está no app</div>
+          <div class="a-row">
+            <div class="a-btn a-btn-secondary">Salvar</div>
+            <div class="a-btn a-btn-primary">Publicar no app</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="mockup-label">Editor — lista viva (+ adicionar, revisar importados), barra fixa com estado + Salvar/Publicar</div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 9. Feature 3: Foto → rascunho -->
+  <section>
+    <div class="section-label" data-c="sec-import">Feature 3 — Importação</div>
+    <h2 data-c="title-import">Foto vira rascunho, revisão vira edição <span class="badge badge-p1">P1</span></h2>
+    <p data-c="desc-import" style="margin-bottom:16px">A importação deixa de ter estado próprio de revisão read-only. A foto cria o rascunho imediatamente e a conferência acontece <strong style="color:var(--text)">no editor</strong> — que já edita de verdade. A regra de batch fica explícita antes de agir: "3 imagens → 3 fichas".</p>
+
+    <div class="story" data-c="story-import-direct">
+      <div class="story-badges">
+        <span class="story-id">US-07</span>
+        <span class="badge badge-p1">P1</span>
+      </div>
+      <div class="role">Como dono do Forja (admin único)</div>
+      <p>Quero enviar a foto da ficha e cair direto no editor com a extração pronta, para conferir e ajustar num lugar só.</p>
+      <div class="criteria">
+        <strong>Dado</strong> que escolho "Da foto da ficha" no hub (ou "Importar" em Planos)<br>
+        <strong>Quando</strong> envio 1 imagem e a extração termina<br>
+        <strong>Então</strong> o rascunho é criado e o editor abre com notice "Extraído da foto — confira os campos destacados"<br>
+        <strong>E</strong> exercícios com confiança &lt; 0.7 chegam destacados com o selo "Revisar" (warning), editáveis na hora
+      </div>
+    </div>
+
+    <div class="story" data-c="story-import-batch">
+      <div class="story-badges">
+        <span class="story-id">US-08</span>
+        <span class="badge badge-p1">P1</span>
+      </div>
+      <div class="role">Como dono do Forja (admin único)</div>
+      <p>Quero importar várias fichas de uma vez sabendo exatamente o que vai acontecer, para planejar o lote sem surpresas.</p>
+      <div class="criteria">
+        <strong>Dado</strong> que seleciono N imagens<br>
+        <strong>Quando</strong> reviso antes de enviar<br>
+        <strong>Então</strong> a UI declara o resultado: "3 imagens → 3 fichas: Treino A 1, Treino A 2, Treino A 3" (numeração visível antes, não depois)<br>
+        <strong>E</strong> após a criação, caio na lista com badge "Importado — revise" em cada ficha e notice "3 fichas criadas como rascunho"
+      </div>
+    </div>
+
+    <!-- Mockup: Import -->
+    <div class="duo" data-c="mockup-import">
+      <div>
+        <div class="browser">
+          <div class="browser-bar">
+            <div class="browser-dot"></div><div class="browser-dot"></div><div class="browser-dot"></div>
+            <div class="browser-url">hub → enviar fotos</div>
+          </div>
+          <div class="screen">
+            <div class="a-drop">
+              <div class="big">SOLTE AS FOTOS AQUI</div>
+              <div class="a-muted">ou clique para selecionar · ou cole com ⌘V</div>
+            </div>
+            <div class="a-notice">
+              <div class="dot"></div>
+              <div>3 imagens → <strong>3 fichas</strong>: Treino A 1, Treino A 2, Treino A 3</div>
+            </div>
+            <div class="a-statusline">Extraindo imagem 2 de 3…</div>
+            <div class="a-btn a-btn-primary">Criar 3 rascunhos e revisar</div>
+          </div>
+        </div>
+        <div class="mockup-label">Regra de batch declarada antes de agir</div>
+      </div>
+
+      <div>
+        <div class="browser">
+          <div class="browser-bar">
+            <div class="browser-dot"></div><div class="browser-dot"></div><div class="browser-dot"></div>
+            <div class="browser-url">forja.admin/plans/treino-a-2</div>
+          </div>
+          <div class="screen">
+            <div class="a-notice">
+              <div class="dot"></div>
+              <div>Extraído da foto <strong>ficha-2.jpg</strong> — confira os campos destacados antes de publicar</div>
+            </div>
+            <div class="a-exrow warn">
+              <div class="a-exnum">1</div>
+              <div>
+                <div class="a-exname">Crucifixo Máquina</div>
+                <div class="a-exmeta">Peito · Máquina · 3×12 · 60s</div>
+              </div>
+              <div class="a-badge-rev">Revisar</div>
+            </div>
+            <div class="a-exrow">
+              <div class="a-exnum">2</div>
+              <div>
+                <div class="a-exname">Tríceps Corda</div>
+                <div class="a-exmeta">Tríceps · Cabo · 3×12-15 · 45s</div>
+              </div>
+              <div class="a-statusline">✓ confiado</div>
+            </div>
+            <div class="a-actionbar">
+              <div class="a-pill a-pill-warning">Importado — revise</div>
+              <div class="a-row">
+                <div class="a-btn a-btn-secondary">Salvar</div>
+                <div class="a-btn a-btn-primary">Publicar no app</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="mockup-label">A revisão acontece no editor — editável, com baixa confiança destacada</div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 10. Feature 4: Autosave -->
+  <section>
+    <div class="section-label" data-c="sec-autosave">Feature 4 — Publicação</div>
+    <h2 data-c="title-autosave">Autosave + publicar como promoção <span class="badge badge-p1">P1</span></h2>
+    <p data-c="desc-autosave" style="margin-bottom:16px">Modelo Vercel/Webflow: o rascunho salva sozinho (debounce ~1,5s por campo; as actions granulares <code>updateDraftExercise</code> / <code>updateDraftPlanDetails</code> já existem) e <strong style="color:var(--text)">Publicar é o único botão primário do produto que muda o app</strong> — uma promoção de revisão, que não reprocessa conteúdo.</p>
+
+    <div class="story" data-c="story-autosave">
+      <div class="story-badges">
+        <span class="story-id">US-09</span>
+        <span class="badge badge-p1">P1</span>
+      </div>
+      <div class="role">Como dono do Forja (admin único)</div>
+      <p>Quero que o rascunho salve sozinho enquanto edito, para nunca perder trabalho nem pensar em "salvar".</p>
+      <div class="criteria">
+        <strong>Dado</strong> que estou no editor com alterações não salvas<br>
+        <strong>Quando</strong> paro de digitar por ~1,5s<br>
+        <strong>Então</strong> a barra mostra "Salvando…" → "Salvo há Xs"; em falha, "Falhou — tentar de novo" com retry manual<br>
+        <strong>E</strong> o botão "Salvar" desaparece (a barra fica: estado + Publicar +, quando aplicável, "Salvar agora")
+      </div>
+    </div>
+
+    <div class="story" data-c="story-publish-feedback">
+      <div class="story-badges">
+        <span class="story-id">US-10</span>
+        <span class="badge badge-p0">P0</span>
+      </div>
+      <div class="role">Como dono do Forja (admin único)</div>
+      <p>Quero saber o que o app está treinando depois de publicar, para fechar o loop com confiança.</p>
+      <div class="criteria">
+        <strong>Dado</strong> que cliquei "Publicar no app"<br>
+        <strong>Quando</strong> a revisão é criada<br>
+        <strong>Então</strong> vejo "Rev. N publicada — o app já pode sincronizar. Abra o Forja e puxe para atualizar" e o pill vira "Publicado" (accent)<br>
+        <strong>E</strong> o KPI do painel e o estado na lista refletem "Publicado" imediatamente
+      </div>
+    </div>
+
+    <div class="story" data-c="story-diff">
+      <div class="story-badges">
+        <span class="story-id">US-11</span>
+        <span class="badge badge-p2">P2</span>
+      </div>
+      <div class="role">Como dono do Forja (admin único)</div>
+      <p>Quero ver o que mudou desde a última revisão publicada, para decidir publicar com informação.</p>
+      <div class="criteria">
+        <strong>Dado</strong> que um plano está "Publicado com alterações"<br>
+        <strong>Quando</strong> abro o diff (na barra ou no editor)<br>
+        <strong>Então</strong> vejo campo-a-campo: exercícios adicionados/removidos/editados desde a Rev. N (service de diff sobre os dois JSONs já persistidos em <code>plan_revisions</code>)
+      </div>
+    </div>
+
+    <div class="story" data-c="story-preview">
+      <div class="story-badges">
+        <span class="story-id">US-12</span>
+        <span class="badge badge-p2">P2</span>
+      </div>
+      <div class="role">Como dono do Forja (admin único)</div>
+      <p>Quero pré-visualizar o plano como o app mostra, para publicar sem abrir o celular.</p>
+      <div class="criteria">
+        <strong>Dado</strong> que estou no editor<br>
+        <strong>Quando</strong> clico "Pré-visualizar"<br>
+        <strong>Então</strong> uma rota read-only renderiza o plano no formato do card mobile (server component), sem sair do admin
+      </div>
+    </div>
+
+    <!-- Mockup: Actionbar states -->
+    <div class="browser" data-c="mockup-actionbar" style="margin-top:20px">
+      <div class="browser-bar">
+        <div class="browser-dot"></div><div class="browser-dot"></div><div class="browser-dot"></div>
+        <div class="browser-url">barra do editor — estados</div>
+      </div>
+      <div class="screen">
+        <div class="a-actionbar" style="position:static;margin:0;border-radius:8px;border:1px solid var(--adm-border)">
+          <div class="a-statusline">Salvando…</div>
+          <div class="a-btn a-btn-primary">Publicar no app</div>
+        </div>
+        <div class="a-actionbar" style="position:static;margin:0;border-radius:8px;border:1px solid var(--adm-border)">
+          <div class="a-row">
+            <div class="a-pill a-pill-warning">Rascunho</div>
+            <div class="a-statusline saved">✓ Salvo há 5s</div>
+          </div>
+          <div class="a-btn a-btn-primary">Publicar no app</div>
+        </div>
+        <div class="a-actionbar" style="position:static;margin:0;border-radius:8px;border:1px solid rgba(194,240,0,0.4)">
+          <div class="a-pill a-pill-accent">Publicado no app · Rev. 3</div>
+          <div class="a-row">
+            <div class="a-btn a-btn-secondary">Pré-visualizar</div>
+            <div class="a-btn a-btn-secondary">Ver diff (4)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="mockup-label">A mesma barra nos 3 momentos: editando · salvo · publicado</div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 11. Vocabulário -->
+  <section>
+    <div class="section-label" data-c="sec-vocab">Estado</div>
+    <h2 data-c="title-vocab">Vocabulário único de estado <span class="badge badge-p0">P0</span></h2>
+    <p data-c="desc-vocab" style="margin-bottom:16px">Os mesmos 4 estados, com as mesmas palavras, no painel, na lista e no editor — e o KPI do painel passa a contar <strong style="color:var(--text)">toda</strong> pendência (nunca-publicados + publicados com alterações).</p>
+
+    <table class="steps" data-c="vocab-table">
+      <tr><th>Estado</th><th>Onde aparece</th><th>Significado para o app</th></tr>
+      <tr><td>Rascunho</td><td>pill warning</td><td>Invisível — nunca sincronizado</td></tr>
+      <tr><td>Publicado</td><td>pill accent</td><td>O app treina nesta revisão</td></tr>
+      <tr><td>Publicado com alterações</td><td>pill warning + contagem de mudanças</td><td>O app treina a Rev. N; há edições não publicadas</td></tr>
+      <tr><td>Arquivado</td><td>lista (seção arquivados)</td><td>Removido do app no próximo sync (tombstone)</td></tr>
+    </table>
+
+    <div class="story" data-c="story-kpi">
+      <div class="story-badges">
+        <span class="story-id">US-13</span>
+        <span class="badge badge-p0">P0</span>
+      </div>
+      <div class="role">Como dono do Forja (admin único)</div>
+      <p>Quero que o painel reflita toda pendência de publicação, para confiar no número.</p>
+      <div class="criteria">
+        <strong>Dado</strong> que tenho 2 planos nunca publicados e 1 publicado com alterações<br>
+        <strong>Quando</strong> abro o painel<br>
+        <strong>Então</strong> o KPI "Aguardando publicação" mostra 3, clicável, filtrando a lista pelos 3 planos
+      </div>
+    </div>
+  </section>
+
+  <!-- 12. Success metrics -->
+  <section>
+    <div class="section-label" data-c="sec-success">Métricas de Sucesso</div>
+    <h2 data-c="title-success">Como sabemos que funcionou</h2>
+
+    <div class="feature-grid">
+      <div class="card" data-c="success-manual-plans">
+        <h3>Planos criados manualmente</h3>
+        <p><strong style="color:var(--danger)">Antes:</strong> 0 possíveis pela UI</p>
+        <p><strong style="color:var(--accent)">Depois:</strong> criação manual se torna caminho comum; import deixa de ser rota obrigatória</p>
+      </div>
+      <div class="card" data-c="success-time-to-plan">
+        <h3>Tempo ideia → publicado</h3>
+        <p><strong style="color:var(--danger)">Antes:</strong> ~8 ações + becos sem saída</p>
+        <p><strong style="color:var(--accent)">Depois:</strong> 1 clique + edição + publicar (meta: &lt; 2 min para um plano de 5 exercícios)</p>
+      </div>
+      <div class="card" data-c="success-trust">
+        <h3>Confiança no estado</h3>
+        <p><strong style="color:var(--danger)">Antes:</strong> 3 vocabulários, KPI incompleto, publicação silenciosa</p>
+        <p><strong style="color:var(--accent)">Depois:</strong> 0 casos de "publiquei sem querer / publiquei versão velha" (auto-relato)</p>
+      </div>
+      <div class="card" data-c="success-import">
+        <h3>Import sem fricção</h3>
+        <p><strong style="color:var(--danger)">Antes:</strong> ~20 interações para 4 fichas, revisão read-only</p>
+        <p><strong style="color:var(--accent)">Depois:</strong> lote declarado, correção na hora, editor como sala de revisão</p>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 13. Risks -->
+  <section>
+    <div class="section-label" data-c="sec-risks">Riscos</div>
+    <h2 data-c="title-risks">O que pode dar errado</h2>
+
+    <div class="card" data-c="risk-draft-pollution">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <h3 style="margin:0">Poluição da lista com rascunhos da IA</h3>
+        <span class="badge badge-p1">Médio</span>
+      </div>
+      <p>Foto → rascunho imediato pode encher a lista de fichas descartáveis se a extração for ruim.</p>
+      <p style="margin-top:8px"><strong style="color:var(--text)">Mitigação:</strong> badge "Importado — revise" com filtro próprio na lista; arquivar em 1 clique por card; rascunhos não publicados nunca tocam o app. Se virar problema real: limpeza em lote (backlog).</p>
+    </div>
+
+    <div class="card" data-c="risk-autosave">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <h3 style="margin:0">Autosave com falha parcial</h3>
+        <span class="badge badge-p1">Médio</span>
+      </div>
+      <p>Salvar campo-a-campo com debounce pode deixar estados intermediários (um exercício salvo, outro não) se a rede falhar no meio.</p>
+      <p style="margin-top:8px"><strong style="color:var(--text)">Mitigação:</strong> estado de save por grupo (plano vs exercício), retry manual na barra, e "Salvar agora" como escape. Admin único elimina conflito de concorrência. Publicar continua sendo transação composta atômica.</p>
+    </div>
+
+    <div class="card" data-c="risk-no-gate">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <h3 style="margin:0">Perder o gate de revisão pré-criação do import</h3>
+        <span class="badge badge-p2">Baixo</span>
+      </div>
+      <p>Hoje a revisão acontece antes de criar qualquer coisa; na proposta, cria-se primeiro e revisa depois.</p>
+      <p style="margin-top:8px"><strong style="color:var(--text)">Mitigação:</strong> decisão consciente (reversibilidade &gt; gate para um admin dono do dado): rascunho é invisível ao app, descarte continua em dois passos, e a edição no editor é mais barata que na tela de review atual.</p>
+    </div>
+
+    <div class="card" data-c="risk-scope">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <h3 style="margin:0">Escopo crescer para redesign visual</h3>
+        <span class="badge badge-p1">Médio</span>
+      </div>
+      <p>Redesign de fluxo pode virar redesign de design system (tokens, componentes) e nunca sair.</p>
+      <p style="margin-top:8px"><strong style="color:var(--text)">Mitigação:</strong> este PRD muda fluxos e copy usando o vocabulário visual existente (<code>.admin-*</code>); o polish de design system é trilha paralela (tokens, ícones, feedback async) já mapeada em relatório próprio.</p>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 14. Technical -->
+  <section>
+    <div class="section-label" data-c="sec-tech">Considerações Técnicas</div>
+    <h2 data-c="title-tech">O que já existe vs o que falta</h2>
+
+    <div class="card" data-c="tech-exists">
+      <h3>Já existe (só UI em cima)</h3>
+      <ul>
+        <li><strong>Criação server-side de draft:</strong> <code>createDraftPlan</code> no planService</li>
+        <li><strong>Updates granulares:</strong> <code>updateDraftExercise</code>, <code>updateDraftPlanDetails</code>, <code>reorderDraftExercises</code></li>
+        <li><strong>Revisões:</strong> <code>publishDraftPlan</code> cria linha em <code>plan_revisions</code> — publicar como promoção é o modelo atual</li>
+        <li><strong>Domínio permissivo:</strong> <code>PlanSchema</code> sem mínimo de exercícios; <code>equipment</code> aceita vazio</li>
+        <li><strong>Isolamento do app:</strong> sync pull-based só serve última revisão publicada; rascunho nunca vaza</li>
+        <li><strong>Extração por IA:</strong> endpoint de extract + criação de planos a partir da extração (batch com <code>createBatchLabel</code>)</li>
+      </ul>
+    </div>
+
+    <div class="card" data-c="tech-new">
+      <h3>Novo (TDD)</h3>
+      <ul>
+        <li><strong>Service:</strong> <code>addDraftExercise</code>, <code>removeDraftExercise</code>, <code>duplicatePlan</code>, diff de revisões, contagem correta de pendências na listagem</li>
+        <li><strong>Actions:</strong> publicar composto (update + publish atômico), criar-em-branco (1 clique), importar→rascunho com marcação de confiança</li>
+        <li><strong>UI:</strong> hub de criação, barra fixa do editor, "+ Adicionar exercício", estados de autosave, badges de import, notice pós-publish</li>
+        <li><strong>Sem migração de schema</strong> — tudo cabe no modelo atual (marcação de confiança da IA pode viver no draft como metadado transitório ou ser só visual na sessão)</li>
+      </ul>
+    </div>
+
+    <div class="card" data-c="tech-guardrails">
+      <h3>Guardrails de UX (testes)</h3>
+      <ul>
+        <li>Teste de contrato: publicar com form sujo publica o que está na tela (nunca o draft velho)</li>
+        <li>Teste de copy: vocabulário de estado idêntico nas 3 superfícies; zero "draft" em pt-BR</li>
+        <li>Teste de KPI: pendência conta nunca-publicados + com-alterações</li>
+        <li>Teste de import: N imagens declara N fichas antes do envio</li>
+      </ul>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 15. Out of scope -->
+  <section>
+    <div class="section-label" data-c="sec-oos">Fora do Escopo (v1)</div>
+    <h2 data-c="title-oos">O que NÃO está incluído</h2>
+
+    <div class="card" data-c="oos-items">
+      <ul>
+        <li><strong>Undo de publicação</strong> ("republish Rev. N−1") — os dados existem em <code>plan_revisions</code>; fica para v2</li>
+        <li><strong>Templates de plano</strong> — "Duplicar" cobre o caso de uso de um admin único</li>
+        <li><strong>Biblioteca de exercícios com busca</strong> — v1 mantém campo livre + categoria; biblioteca quando o volume doer</li>
+        <li><strong>Edição colaborativa / multi-usuário</strong> — admin é único por design</li>
+        <li><strong>Cmd-K, toasts globais, skeletons de rota</strong> — rejeitados no benchmark para um admin de 3 telas e DB local</li>
+        <li><strong>Redesign visual / design system</strong> — trilha paralela (tokens, ícones, feedback async), fora deste PRD</li>
+      </ul>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- 16. Phases -->
+  <section>
+    <div class="section-label" data-c="sec-phases">Fases</div>
+    <h2 data-c="title-phases">Plano de implementação</h2>
+
+    <div class="card" data-c="phase-1">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <h3 style="margin:0">Fase 1 — Fundação de confiança</h3>
+        <span class="badge badge-p0">P0</span>
+      </div>
+      <p>Matar a confusão de estado e destravar a criação manual. Tudo cabe no que existe.</p>
+      <ul style="margin-top:8px">
+        <li>Vocabulário único de estado nas 3 superfícies + KPI de pendência corrigido</li>
+        <li>Publicar composto (inclui salvar) + notice pós-publish "Rev. N publicada"</li>
+        <li>Barra fixa do editor: estado + Salvar + Publicar</li>
+        <li><code>addDraftExercise</code> / <code>removeDraftExercise</code> + "+ Adicionar exercício" + empty state</li>
+        <li>Form de novo plano colapsa para 1 campo (nome; rótulo derivado) enquanto o hub não existe</li>
+      </ul>
+    </div>
+
+    <div class="card" data-c="phase-2">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <h3 style="margin:0">Fase 2 — Hub e import direto</h3>
+        <span class="badge badge-p1">P1</span>
+      </div>
+      <p>A informação architecture nova: criação converge para o editor.</p>
+      <ul style="margin-top:8px">
+        <li>Hub de criação (em branco / da foto / duplicar) + rename inline do título</li>
+        <li>Foto → rascunho imediato → editor com destaque "Revisar" em baixa confiança</li>
+        <li>Batch declarado na entrada ("N imagens → N fichas") + badge "Importado — revise" na lista</li>
+        <li>Nav 4 → 3 itens; "Importar" vira caminho, não lugar</li>
+      </ul>
+    </div>
+
+    <div class="card" data-c="phase-3">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <h3 style="margin:0">Fase 3 — Autosave e promoção consciente</h3>
+        <span class="badge badge-p2">P2</span>
+      </div>
+      <p>O modelo Vercel completo: salvar desaparece, publicar fica conscious.</p>
+      <ul style="margin-top:8px">
+        <li>Autosave com estados "Salvando… / Salvo há Xs / Falhou — tentar de novo"</li>
+        <li>Diff de publicação campo-a-campo desde a Rev. N</li>
+        <li>Pré-visualização "como o app mostra" (rota read-only)</li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<!-- Commenting System JS -->
+<script>
+const STORAGE_KEY = 'prd-comments-admin_ux_redesign-v1';
+let reviewMode = false;
+let activeTarget = null;
+let comments = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+
+function toggleReviewMode() {
+  reviewMode = !reviewMode;
+  const btn = document.getElementById('reviewToggle');
+  const exportBtn = document.getElementById('exportBtn');
+  const panel = document.getElementById('commentPanel');
+
+  if (reviewMode) {
+    btn.textContent = 'Exit Review';
+    btn.classList.add('active');
+    exportBtn.style.display = 'inline-block';
+    panel.classList.add('open');
+    document.querySelectorAll('[data-c]').forEach(el => {
+      el.classList.add('commentable');
+      el.addEventListener('click', onElementClick);
+    });
+  } else {
+    btn.textContent = 'Review Mode';
+    btn.classList.remove('active');
+    exportBtn.style.display = 'none';
+    panel.classList.remove('open');
+    document.querySelectorAll('[data-c]').forEach(el => {
+      el.classList.remove('commentable');
+      el.removeEventListener('click', onElementClick);
+    });
+  }
+  updateCommentHighlights();
+}
+
+function onElementClick(e) {
+  e.stopPropagation();
+  const target = e.currentTarget.getAttribute('data-c');
+  activeTarget = target;
+  document.getElementById('commentTarget').textContent = '#' + target;
+  document.getElementById('commentForm').style.display = 'block';
+  document.getElementById('commentInput').value = '';
+  document.getElementById('commentInput').focus();
+  renderComments();
+}
+
+function submitComment() {
+  const input = document.getElementById('commentInput');
+  const text = input.value.trim();
+  if (!text || !activeTarget) return;
+
+  comments.push({
+    id: Date.now(),
+    target: activeTarget,
+    text: text,
+    timestamp: new Date().toISOString()
+  });
+
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(comments));
+  input.value = '';
+  renderComments();
+  updateCommentHighlights();
+}
+
+function deleteComment(id) {
+  comments = comments.filter(c => c.id !== id);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(comments));
+  renderComments();
+  updateCommentHighlights();
+}
+
+function renderComments() {
+  const list = document.getElementById('commentList');
+  const countEl = document.getElementById('commentCount');
+
+  if (comments.length === 0) {
+    list.innerHTML = '<div class="no-comments">Nenhum comentário ainda. Clique em elementos destacados para comentar.</div>';
+    countEl.style.display = 'none';
+    return;
+  }
+
+  countEl.style.display = 'inline';
+  countEl.textContent = comments.length;
+
+  const filtered = activeTarget
+    ? [
+        ...comments.filter(c => c.target === activeTarget),
+        ...comments.filter(c => c.target !== activeTarget)
+      ]
+    : comments;
+
+  list.innerHTML = filtered.map(c => `
+    <div class="comment-item" ${c.target === activeTarget ? 'style="border-left:2px solid var(--accent)"' : ''}>
+      <div class="comment-item-header">
+        <span class="comment-item-section">#${c.target}</span>
+        <span class="comment-item-time">${new Date(c.timestamp).toLocaleString('pt-BR')}</span>
+      </div>
+      <div class="comment-item-text">${c.text}</div>
+      <button class="comment-item-delete" onclick="deleteComment(${c.id})">Remover</button>
+    </div>
+  `).join('');
+}
+
+function updateCommentHighlights() {
+  const targets = new Set(comments.map(c => c.target));
+  document.querySelectorAll('[data-c]').forEach(el => {
+    if (targets.has(el.getAttribute('data-c'))) {
+      el.classList.add('has-comment');
+    } else {
+      el.classList.remove('has-comment');
+    }
+  });
+}
+
+function closePanel() {
+  document.getElementById('commentPanel').classList.remove('open');
+  activeTarget = null;
+  document.getElementById('commentForm').style.display = 'none';
+}
+
+function exportComments() {
+  if (comments.length === 0) {
+    alert('Nenhum comentário para exportar.');
+    return;
+  }
+
+  let output = '# PRD Review Comments\n\n';
+  comments.forEach((c, i) => {
+    output += `## #${i + 1} — ${c.target}\n`;
+    output += `${c.text}\n\n`;
+  });
+
+  navigator.clipboard.writeText(output).then(() => {
+    alert('Comentários copiados para o clipboard! Cole de volta no Claude para revisões.');
+  }).catch(() => {
+    const textarea = document.createElement('textarea');
+    textarea.value = output;
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textarea);
+    alert('Comentários copiados para o clipboard!');
+  });
+}
+
+updateCommentHighlights();
+
+document.getElementById('commentInput')?.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    submitComment();
+  }
+});
+</script>
+
+</body>
+</html>
