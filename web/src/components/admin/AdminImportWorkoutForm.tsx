@@ -46,13 +46,16 @@ type ImportErrorMessage = {
 
 export function AdminImportWorkoutForm({ error, notice }: ImportWorkoutFormProps): ReactElement {
   const formRef = useRef<HTMLFormElement>(null)
+  const abortControllerRef = useRef<AbortController | null>(null)
   const [isWorking, setIsWorking] = useState(false)
-  const [clientError, setClientError] = useState<string | null>(null)
+  const [clientError, setClientError] = useState<ImportErrorMessage | null>(null)
   const [progress, setProgress] = useState<{ current: number; total: number } | null>(null)
-  const message = clientError
-    ? { title: 'Não foi possível extrair', description: clientError }
-    : getImportErrorMessage(error)
+  const message = clientError ?? getImportErrorMessage(error)
   const noticeMessage = getImportNoticeMessage(notice)
+
+  const handleCancel = (): void => {
+    abortControllerRef.current?.abort()
+  }
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>): Promise<void> => {
     event.preventDefault()
@@ -60,24 +63,33 @@ export function AdminImportWorkoutForm({ error, notice }: ImportWorkoutFormProps
     const files = getSelectedImageFiles(form)
 
     if (files.length === 0) {
-      setClientError('Escolha pelo menos uma imagem para continuar.')
+      setClientError({
+        title: 'Nenhuma imagem selecionada',
+        description: 'Escolha pelo menos uma imagem para continuar.',
+      })
       return
     }
 
+    const controller = new AbortController()
+    abortControllerRef.current = controller
+    const createdPlanIds: string[] = []
     setIsWorking(true)
     setClientError(null)
     setProgress({ current: 0, total: files.length })
 
     try {
-      const createdPlanIds: string[] = []
-
       for (const [index, file] of files.entries()) {
         setProgress({ current: index + 1, total: files.length })
 
-        const workout = await extractWorkout(file)
-        const planId = await createDraftFromWorkout(workout)
+        const workout = await extractWorkout(file, controller.signal)
+
+        assertNotAborted(controller)
+
+        const planId = await createDraftFromWorkout(workout, controller.signal)
 
         createdPlanIds.push(planId)
+
+        assertNotAborted(controller)
       }
 
       window.location.assign(
@@ -88,11 +100,27 @@ export function AdminImportWorkoutForm({ error, notice }: ImportWorkoutFormProps
     } catch (caught) {
       setIsWorking(false)
       setProgress(null)
-      setClientError(
-        caught instanceof Error
-          ? caught.message
-          : 'A conexão caiu durante a extração. Tente novamente em alguns segundos.',
-      )
+      abortControllerRef.current = null
+
+      const createdCount = createdPlanIds.length
+
+      if (controller.signal.aborted) {
+        setClientError(getCancelledMessage(createdCount, files.length))
+        return
+      }
+
+      if (createdCount > 0) {
+        setClientError(getPartialFailureMessage(createdCount, files.length, caught))
+        return
+      }
+
+      setClientError({
+        title: 'Não foi possível extrair',
+        description:
+          caught instanceof Error
+            ? caught.message
+            : 'A conexão caiu durante a extração. Tente novamente em alguns segundos.',
+      })
     }
   }
 
@@ -155,20 +183,27 @@ export function AdminImportWorkoutForm({ error, notice }: ImportWorkoutFormProps
               Rascunhos não aparecem no app. Exercícios com extração incerta chegam marcados com
               "Revisar".
             </p>
-            <button
-              className="admin-primary-button"
-              disabled={isWorking}
-              type="submit"
-            >
+            <div className="admin-actions-row admin-actions-row-tight">
               {isWorking ? (
-                <>
-                  <span className="admin-button-spinner" aria-hidden="true" />
-                  Extraindo com IA...
-                </>
-              ) : (
-                'Extrair e criar rascunhos'
-              )}
-            </button>
+                <button className="admin-secondary-button" onClick={handleCancel} type="button">
+                  Cancelar
+                </button>
+              ) : null}
+              <button
+                className="admin-primary-button"
+                disabled={isWorking}
+                type="submit"
+              >
+                {isWorking ? (
+                  <>
+                    <span className="admin-button-spinner" aria-hidden="true" />
+                    Extraindo com IA...
+                  </>
+                ) : (
+                  'Extrair e criar rascunhos'
+                )}
+              </button>
+            </div>
           </div>
         </form>
       </AdminCard>
@@ -176,13 +211,14 @@ export function AdminImportWorkoutForm({ error, notice }: ImportWorkoutFormProps
   )
 }
 
-async function extractWorkout(file: File): Promise<ExtractedWorkout> {
+async function extractWorkout(file: File, signal?: AbortSignal): Promise<ExtractedWorkout> {
   const response = await fetch('/api/admin/import/extract-workout', {
     method: 'POST',
     headers: {
       Accept: 'application/json',
     },
     body: createExtractFormData(file),
+    ...(signal ? { signal } : {}),
   })
   const body = (await response.json()) as ExtractWorkoutResponse
 
@@ -199,7 +235,10 @@ async function extractWorkout(file: File): Promise<ExtractedWorkout> {
   return body.workout
 }
 
-async function createDraftFromWorkout(workout: ExtractedWorkout): Promise<string> {
+async function createDraftFromWorkout(
+  workout: ExtractedWorkout,
+  signal?: AbortSignal,
+): Promise<string> {
   const response = await fetch('/api/admin/import/create-plan', {
     method: 'POST',
     headers: {
@@ -207,6 +246,7 @@ async function createDraftFromWorkout(workout: ExtractedWorkout): Promise<string
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({ workout }),
+    ...(signal ? { signal } : {}),
   })
   const body = (await response.json()) as CreateImportedPlanResponse
 
@@ -285,6 +325,45 @@ function getImportNoticeMessage(notice: string | undefined): ImportErrorMessage 
   }
 
   return null
+}
+
+function assertNotAborted(controller: AbortController): void {
+  if (controller.signal.aborted) {
+    const abortError = new Error('Import cancelled')
+    abortError.name = 'AbortError'
+
+    throw abortError
+  }
+}
+
+function getCancelledMessage(createdCount: number, totalCount: number): ImportErrorMessage {
+  if (createdCount === 0) {
+    return {
+      title: 'Importação cancelada',
+      description: 'Nenhuma ficha foi criada. Envie as fotos novamente quando quiser.',
+    }
+  }
+
+  return {
+    title: 'Importação cancelada',
+    description: `${createdCount} de ${totalCount} fichas foram criadas e já estão na lista de planos. Reenvie as fotos restantes quando quiser.`,
+  }
+}
+
+function getPartialFailureMessage(
+  createdCount: number,
+  totalCount: number,
+  caught: unknown,
+): ImportErrorMessage {
+  const cause =
+    caught instanceof Error
+      ? caught.message
+      : 'A conexão caiu durante a extração. Tente novamente em alguns segundos.'
+
+  return {
+    title: 'Fichas parcialmente criadas',
+    description: `${createdCount} de ${totalCount} fichas foram criadas e já estão na lista de planos. ${cause} Reenvie as fotos restantes quando quiser.`,
+  }
 }
 
 function getImportErrorDescription(code: string | undefined, fallback: string | undefined): string {

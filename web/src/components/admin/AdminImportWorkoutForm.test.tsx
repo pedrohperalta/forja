@@ -163,6 +163,78 @@ describe('AdminImportWorkoutForm', () => {
     expect(getRequiredElement<HTMLButtonElement>('button[type="submit"]').disabled).toBe(false)
   })
 
+  it('reports partial progress when a photo fails mid-batch', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(extractResponse(createWorkout('Treino 1', 'Supino')))
+      .mockResolvedValueOnce(createResponse('plan_treino_1_aaaa1111'))
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ error: { code: 'model_output_invalid', message: 'nope' } }), {
+          headers: { 'content-type': 'application/json' },
+          status: 422,
+        }),
+      )
+    vi.stubGlobal('fetch', fetchMock)
+    render(<AdminImportWorkoutForm />)
+
+    setInputFiles(getRequiredElement<HTMLInputElement>('input[name="image"]'), [
+      new File(['ok'], 'boa.jpg', { type: 'image/jpeg' }),
+      new File(['bad'], 'ruim.jpg', { type: 'image/jpeg' }),
+    ])
+
+    await act(async () => {
+      getRequiredElement<HTMLFormElement>('form').dispatchEvent(
+        new Event('submit', { bubbles: true, cancelable: true }),
+      )
+    })
+
+    expect(container.textContent).toContain('Fichas parcialmente criadas')
+    expect(container.textContent).toContain('1 de 2 fichas foram criadas')
+    expect(container.textContent).toContain('ruim.jpg')
+    expect(container.textContent).toContain('Reenvie as fotos restantes')
+    expect(getRequiredElement<HTMLButtonElement>('button[type="submit"]').disabled).toBe(false)
+  })
+
+  it('cancels the batch and reports the drafts created so far', async () => {
+    const secondExtract = createDeferred<Response>()
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(extractResponse(createWorkout('Treino 1', 'Supino')))
+      .mockResolvedValueOnce(createResponse('plan_treino_1_aaaa1111'))
+      .mockReturnValueOnce(secondExtract.promise)
+    vi.stubGlobal('fetch', fetchMock)
+    render(<AdminImportWorkoutForm />)
+
+    setInputFiles(getRequiredElement<HTMLInputElement>('input[name="image"]'), [
+      new File(['first'], 'treino-1.jpg', { type: 'image/jpeg' }),
+      new File(['second'], 'treino-2.jpg', { type: 'image/jpeg' }),
+    ])
+
+    await act(async () => {
+      getRequiredElement<HTMLFormElement>('form').dispatchEvent(
+        new Event('submit', { bubbles: true, cancelable: true }),
+      )
+    })
+
+    expect(container.textContent).toContain('Extraindo imagem 2 de 2')
+
+    await act(async () => {
+      getRequiredButton('Cancelar').dispatchEvent(
+        new MouseEvent('click', { bubbles: true, cancelable: true }),
+      )
+    })
+
+    await act(async () => {
+      secondExtract.resolve(extractResponse(createWorkout('Treino 2', 'Remada')))
+      await secondExtract.promise
+    })
+
+    expect(container.textContent).toContain('Importação cancelada')
+    expect(container.textContent).toContain('1 de 2 fichas foram criadas')
+    expect(container.textContent).toContain('Reenvie as fotos restantes')
+    expect(getRequiredElement<HTMLButtonElement>('button[type="submit"]').disabled).toBe(false)
+  })
+
   function render(element: ReactElement): void {
     container = document.createElement('div')
     document.body.append(container)
@@ -181,6 +253,18 @@ describe('AdminImportWorkoutForm', () => {
     }
 
     return element
+  }
+
+  function getRequiredButton(name: string): HTMLButtonElement {
+    const button = Array.from(container.querySelectorAll('button')).find(
+      (candidate) => candidate.textContent?.includes(name),
+    )
+
+    if (!button) {
+      throw new Error(`Missing button: ${name}`)
+    }
+
+    return button
   }
 
   let originalLocation: Location | undefined
