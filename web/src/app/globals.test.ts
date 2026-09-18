@@ -60,6 +60,30 @@ describe('admin design tokens', () => {
   it('gives the visible file upload affordance a keyboard focus ring', () => {
     expect(css).toMatch(/\.admin-file-upload:focus-within\s*{[\s\S]*outline:\s*2px solid var\(--accent-alpha-subtle\);/)
   })
+
+  it('gives compact and destructive triggers a 44px hit target', () => {
+    expect(css).toMatch(/\.admin-compact-button\s*\{[^}]*min-height:\s*2\.75rem;/)
+    expect(css).toMatch(/\.admin-danger-row-terminal > summary\s*\{[^}]*min-height:\s*2\.75rem;/)
+    expect(css).toMatch(/\.admin-permanent-delete summary\s*\{[^}]*min-height:\s*2\.75rem;/)
+    expect(css).toMatch(/\.admin-exercise-advanced summary\s*\{[^}]*min-height:\s*2\.75rem;/)
+  })
+
+  it('expands the desktop drag handle hit area beyond its visual size', () => {
+    expect(css).toMatch(/\.admin-drag-icon-button\s*\{[^}]*position:\s*relative;/)
+    expect(css).toMatch(/\.admin-drag-icon-button::after\s*\{[^}]*inset:\s*-0\.25rem;/)
+  })
+
+  it('unifies the keyboard focus ring across disclosure summaries', () => {
+    expect(css).toMatch(
+      /summary:focus-visible\s*\{[^}]*outline:\s*2px solid var\(--color-accent\);/,
+    )
+  })
+
+  it('normalizes the equipment photo input to the standard field radius', () => {
+    expect(css).toMatch(
+      /\.admin-equipment-photo-input\s*\{[^}]*border-radius:\s*var\(--radius-md\);/,
+    )
+  })
 })
 
 describe('admin responsive CSS', () => {
@@ -155,8 +179,8 @@ describe('admin responsive CSS', () => {
     expect(css).toMatch(
       /@media \(max-width:\s*860px\)\s*{[\s\S]*\.admin-exercise-summary-actions\s*{[\s\S]*grid-template-columns:\s*minmax\(0,\s*1fr\) auto;/,
     )
-    expect(css).toMatch(/\.admin-drag-icon-button\s*{[\s\S]*width:\s*2\.25rem;/)
-    expect(css).toMatch(/\.admin-drag-icon-button\s*{[\s\S]*height:\s*2\.25rem;/)
+    expect(css).toMatch(/\.admin-drag-icon-button\s*\{[^}]*width:\s*2\.5rem;/)
+    expect(css).toMatch(/\.admin-drag-icon-button\s*\{[^}]*height:\s*2\.5rem;/)
     expect(css).toMatch(
       /@media \(max-width:\s*860px\)\s*{[\s\S]*\.admin-drag-icon-button\s*{[\s\S]*display:\s*none;/,
     )

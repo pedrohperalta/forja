@@ -453,7 +453,7 @@ button:disabled, input:disabled, select:disabled {
   opacity: 0.48;
 }
 .admin-title-input::placeholder {
-  color: var(--color-dim);
+  color: var(--color-muted);
 }
 .admin-subtitle {
   max-width: 42rem;
@@ -969,7 +969,10 @@ NOT a pill (pills are interactive only) */
 }
 
 .admin-danger-row-terminal > summary {
+  display: inline-flex;
   width: fit-content;
+  min-height: 2.75rem;
+  align-items: center;
   color: var(--color-danger);
   cursor: pointer;
   font-size: var(--text-2xs);
@@ -1009,7 +1012,10 @@ NOT a pill (pills are interactive only) */
   padding-top: var(--space-4);
 }
 .admin-permanent-delete summary {
+  display: inline-flex;
   width: fit-content;
+  min-height: 2.75rem;
+  align-items: center;
   cursor: pointer;
   color: var(--color-danger);
   font-size: var(--text-xs);
@@ -1048,7 +1054,7 @@ NOT a pill (pills are interactive only) */
   margin-top: var(--space-3);
 }
 .admin-compact-button {
-  min-height: 2.5rem;
+  min-height: 2.75rem;
   padding: 0 var(--space-4);
   font-size: var(--text-2xs);
 }
@@ -1623,8 +1629,9 @@ no form */
 }
 .admin-drag-icon-button {
   display: inline-grid;
-  width: 2.25rem;
-  height: 2.25rem;
+  position: relative;
+  width: 2.5rem;
+  height: 2.5rem;
   place-items: center;
   border: 1px solid var(--color-border-med);
   border-radius: var(--radius-pill);
@@ -1636,6 +1643,14 @@ no form */
     border-color var(--duration-fast) var(--ease-standard),
     color var(--duration-fast) var(--ease-standard),
     background var(--duration-fast) var(--ease-standard);
+}
+/* Invisible hit-area expander — keeps the visual handle compact while
+   honoring the 44px minimum touch target */
+.admin-drag-icon-button::after {
+  content: '';
+  position: absolute;
+  inset: -0.25rem;
+  border-radius: var(--radius-pill);
 }
 .admin-drag-icon-button:hover {
   border-color: var(--accent-alpha-border);
@@ -1651,6 +1666,16 @@ no form */
 .admin-drag-icon-button:disabled {
   cursor: not-allowed;
   opacity: 0.48;
+}
+/* One focus language for every disclosure trigger, matching the buttons */
+.admin-exercise-editor > summary:focus-visible,
+.admin-exercise-advanced summary:focus-visible,
+.admin-exercise-remove > summary:focus-visible,
+.admin-publish-diff > summary:focus-visible,
+.admin-danger-row-terminal > summary:focus-visible,
+.admin-permanent-delete summary:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
 }
 .admin-drag-icon {
   width: 1rem;
@@ -1682,7 +1707,7 @@ no form */
 .admin-equipment-photo-input {
   width: 100%;
   border: 1px solid var(--color-border-med);
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius-md);
   background: var(--color-surface-overlay);
   color: var(--color-text-med);
   font-family: inherit;
@@ -1739,7 +1764,7 @@ no form */
   align-items: center;
   gap: var(--space-2);
   width: fit-content;
-  min-height: 2.5rem;
+  min-height: 2.75rem;
   border: 1px solid var(--color-border-med);
   border-radius: var(--radius-pill);
   color: var(--color-text-med);
