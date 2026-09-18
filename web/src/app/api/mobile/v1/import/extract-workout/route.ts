@@ -1,7 +1,6 @@
 import { AdminImportExtractWorkoutRequestSchema } from '@forja/domain'
 
 import { createDefaultMobileAuthService } from '@/server/auth/defaultService'
-import { readServerEnv } from '@/server/env'
 import { errorResponse, jsonWithRequestId, requestId, toErrorResponse } from '@/server/http/responses'
 import {
   ImportServiceError,
