@@ -9,6 +9,12 @@ import type { MuscleCategory, Plan } from '@forja/domain'
 import { AdminPlanDraftForm } from './AdminPlanDraftForm'
 import type { PublicationStatus } from '@/lib/publicationState'
 
+const routerRefresh = vi.fn()
+
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ refresh: routerRefresh }),
+}))
+
 const categoryOptions: readonly MuscleCategory[] = ['Peito', 'Costas']
 
 const draft: Plan = {
@@ -61,6 +67,7 @@ describe('AdminPlanDraftForm autosave', () => {
   beforeEach(() => {
     vi.useFakeTimers()
     saveDraftAction.mockReset()
+    routerRefresh.mockReset()
   })
 
   afterEach(() => {
@@ -204,6 +211,41 @@ describe('AdminPlanDraftForm autosave', () => {
     expect(saveDraftAction).not.toHaveBeenCalled()
   })
 
+  it('removes an exercise through a direct action call and refreshes the page', async () => {
+    const removeExerciseAction = vi.fn<(formData: FormData) => Promise<void>>()
+    removeExerciseAction.mockResolvedValue(undefined)
+    renderForm({ removeExerciseAction })
+
+    await act(async () => {
+      getRequiredButton('Confirmar remoção').dispatchEvent(
+        new MouseEvent('click', { bubbles: true, cancelable: true }),
+      )
+    })
+
+    expect(removeExerciseAction).toHaveBeenCalledTimes(1)
+    const removalFormData = removeExerciseAction.mock.calls[0]?.[0]
+    expect(removalFormData?.get('planId')).toBe('plan_a')
+    expect(removalFormData?.get('removeExerciseId')).toBe('supino')
+    expect(routerRefresh).toHaveBeenCalledTimes(1)
+    expect(container.textContent).not.toContain('Não foi possível remover')
+  })
+
+  it('surfaces a removal failure without losing the exercise card', async () => {
+    const removeExerciseAction = vi.fn<(formData: FormData) => Promise<void>>()
+    removeExerciseAction.mockRejectedValueOnce(new Error('boom'))
+    renderForm({ removeExerciseAction })
+
+    await act(async () => {
+      getRequiredButton('Confirmar remoção').dispatchEvent(
+        new MouseEvent('click', { bubbles: true, cancelable: true }),
+      )
+    })
+
+    expect(container.textContent).toContain('Não foi possível remover')
+    expect(container.textContent).toContain('Supino Reto')
+    expect(routerRefresh).not.toHaveBeenCalled()
+  })
+
   function renderForm(overrides: Partial<Parameters<typeof AdminPlanDraftForm>[0]> = {}): void {
     container = document.createElement('div')
     document.body.append(container)
@@ -220,7 +262,10 @@ describe('AdminPlanDraftForm autosave', () => {
           previewHref="/admin/plans/plan_a/preview"
           publicationDiff={[]}
           publishAction={vi.fn()}
-          removeExerciseAction={vi.fn()}
+          removeExerciseAction={(formData: FormData): Promise<void> => {
+            void formData
+            return Promise.resolve()
+          }}
           saveDraftAction={saveDraftAction}
           status={status}
           {...overrides}

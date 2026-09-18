@@ -2,6 +2,7 @@
 
 import type { MuscleCategory, Plan } from '@forja/domain'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import type { DragEvent, KeyboardEvent, ReactElement } from 'react'
 import { useEffect, useRef, useState } from 'react'
 
@@ -49,6 +50,7 @@ export function AdminPlanDraftForm({
   const formRef = useRef<HTMLFormElement>(null)
   const autosaveTimerRef = useRef<number | null>(null)
   const runAutosaveRef = useRef((): Promise<void> => Promise.resolve())
+  const router = useRouter()
   const [exerciseIds, setExerciseIds] = useState(() =>
     draft.exercises.map((exercise) => exercise.id),
   )
@@ -56,7 +58,28 @@ export function AdminPlanDraftForm({
   const [dropTargetId, setDropTargetId] = useState<string | null>(null)
   const [saveState, setSaveState] = useState<SaveState>('idle')
   const [savedAt, setSavedAt] = useState<Date | null>(null)
+  const [removingExerciseId, setRemovingExerciseId] = useState<string | null>(null)
+  const [removeFailedExerciseId, setRemoveFailedExerciseId] = useState<string | null>(null)
   const [, setSaveTick] = useState(0)
+
+  // Reconcile local order with refreshed draft data (e.g. after a removal
+  // triggered by a direct action call, which refreshes without remounting).
+  useEffect(() => {
+    setExerciseIds((current) => {
+      const draftIds = draft.exercises.map((exercise) => exercise.id)
+      const currentSet = new Set(current)
+      const kept = draftIds.filter((id) => currentSet.has(id))
+      const keptSet = new Set(kept)
+      const appended = draftIds.filter((id) => !keptSet.has(id))
+      const next = [...kept, ...appended]
+
+      if (next.length === current.length && next.every((id, index) => id === current[index])) {
+        return current
+      }
+
+      return next
+    })
+  }, [draft])
 
   useEffect(() => {
     return () => {
@@ -122,6 +145,28 @@ export function AdminPlanDraftForm({
   }
 
   runAutosaveRef.current = runAutosave
+
+  async function removeExercise(exerciseId: string): Promise<void> {
+    if (archived || removingExerciseId !== null) {
+      return
+    }
+
+    setRemovingExerciseId(exerciseId)
+    setRemoveFailedExerciseId(null)
+
+    try {
+      const formData = new FormData()
+      formData.set('planId', planId)
+      formData.set('removeExerciseId', exerciseId)
+
+      await removeExerciseAction(formData)
+      router.refresh()
+    } catch {
+      setRemoveFailedExerciseId(exerciseId)
+    } finally {
+      setRemovingExerciseId(null)
+    }
+  }
 
   useEffect(() => {
     const form = formRef.current
@@ -447,15 +492,31 @@ export function AdminPlanDraftForm({
                     <p className="admin-muted">
                       O exercício sai do rascunho. A última revisão publicada permanece no app.
                     </p>
-                    <AdminSubmitButton
+                    {removeFailedExerciseId === exercise.id ? (
+                      <p className="admin-field-error" role="alert">
+                        Não foi possível remover. Tente de novo.
+                      </p>
+                    ) : null}
+                    <button
                       className="admin-danger-button admin-compact-button"
-                      formAction={removeExerciseAction}
-                      name="removeExerciseId"
-                      spinnerTone="light"
-                      value={exercise.id}
+                      disabled={removingExerciseId !== null}
+                      onClick={() => {
+                        void removeExercise(exercise.id)
+                      }}
+                      type="button"
                     >
-                      Confirmar remoção
-                    </AdminSubmitButton>
+                      {removingExerciseId === exercise.id ? (
+                        <>
+                          <span
+                            aria-hidden="true"
+                            className="admin-button-spinner admin-button-spinner-light"
+                          />
+                          Removendo…
+                        </>
+                      ) : (
+                        'Confirmar remoção'
+                      )}
+                    </button>
                   </details>
                 )}
               </details>
