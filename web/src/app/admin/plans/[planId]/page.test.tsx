@@ -102,10 +102,10 @@ describe('/admin/plans/[planId]', () => {
       markup.indexOf('admin-drag-instructions'),
     )
     expect(markup.indexOf('Adicionar exercício')).toBeLessThan(
-      markup.indexOf('admin-danger-section'),
-    )
-    expect(markup.indexOf('admin-danger-section')).toBeLessThan(
       markup.indexOf('admin-editor-actionbar'),
+    )
+    expect(markup.indexOf('admin-editor-actionbar')).toBeLessThan(
+      markup.indexOf('admin-danger-section'),
     )
     expect(markup).not.toContain('Salvar rascunho')
     expect(markup).not.toContain('Salvar agora')

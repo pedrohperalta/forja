@@ -148,6 +148,19 @@ export function PlanEditorView({
         />
       )}
 
+      <AdminEditorFooter
+        archived={plan.archived}
+        formId={`plan-draft-${plan.plan.id}`}
+        latestRevisionNumber={plan.latestRevisionNumber}
+        previewHref={`/admin/plans/${plan.plan.id}/preview`}
+        publicationDiff={publicationDiff}
+        publishAction={publishPlanAction}
+        restoreAction={restorePlanAction}
+        saveDraftAction={saveDraftAction}
+        status={status}
+      />
+
+
       <section className="admin-section admin-danger-section" aria-label="Ações destrutivas">
         <p className="admin-section-title">Ações destrutivas</p>
         <div className="admin-danger-row">
@@ -186,18 +199,6 @@ export function PlanEditorView({
           </div>
         </details>
       </section>
-
-      <AdminEditorFooter
-        archived={plan.archived}
-        formId={`plan-draft-${plan.plan.id}`}
-        latestRevisionNumber={plan.latestRevisionNumber}
-        previewHref={`/admin/plans/${plan.plan.id}/preview`}
-        publicationDiff={publicationDiff}
-        publishAction={publishPlanAction}
-        restoreAction={restorePlanAction}
-        saveDraftAction={saveDraftAction}
-        status={status}
-      />
     </AdminFrame>
   )
 }
