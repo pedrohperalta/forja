@@ -47,6 +47,8 @@ describe('admin design tokens', () => {
       'admin-import-review',
       'admin-simple-actions',
       'admin-chip',
+      'admin-danger-zone',
+      'admin-danger-actions',
       'bg-accent',
     ]
 
@@ -121,7 +123,7 @@ describe('admin responsive CSS', () => {
       /@media \(max-width:\s*860px\)\s*{[\s\S]*\.admin-header-row,[\s\S]*\.admin-panel-header,[\s\S]*\.admin-form-heading,[\s\S]*\.admin-section-heading-row\s*{[\s\S]*grid-template-columns:\s*1fr;/,
     )
     expect(css).toMatch(
-      /@media \(max-width:\s*860px\)\s*{[\s\S]*\.admin-build-header,[\s\S]*\.admin-log-toolbar,[\s\S]*\.admin-linear-footer,[\s\S]*\.admin-actions-row,[\s\S]*\.admin-danger-actions,[\s\S]*\.admin-focus-actions\s*{[\s\S]*grid-template-columns:\s*1fr;/,
+      /@media \(max-width:\s*860px\)\s*{[\s\S]*\.admin-build-header,[\s\S]*\.admin-log-toolbar,[\s\S]*\.admin-linear-footer,[\s\S]*\.admin-actions-row,[\s\S]*\.admin-focus-actions\s*{[\s\S]*grid-template-columns:\s*1fr;/,
     )
     expect(css).toMatch(
       /@media \(max-width:\s*860px\)\s*{[\s\S]*\.admin-header-row > \.admin-primary-button,[\s\S]*width:\s*100%;/,
@@ -136,7 +138,7 @@ describe('admin responsive CSS', () => {
       /@media \(max-width:\s*860px\)\s*{[\s\S]*\.admin-actions-row \.admin-primary-button,[\s\S]*width:\s*100%;/,
     )
     expect(css).toMatch(
-      /@media \(max-width:\s*860px\)\s*{[\s\S]*\.admin-danger-actions \.admin-danger-button,[\s\S]*width:\s*100%;/,
+      /@media \(max-width:\s*860px\)\s*{[\s\S]*\.admin-danger-row form\s*\{[\s\S]*width:\s*100%;/,
     )
   })
 
@@ -166,15 +168,9 @@ describe('admin responsive CSS', () => {
     )
   })
 
-  it('aligns mobile danger-zone destructive controls to the same row width', () => {
+  it('stacks destructive action rows on small screens', () => {
     expect(css).toMatch(
-      /@media \(max-width:\s*860px\)\s*{[\s\S]*\.admin-danger-zone\s+\.admin-permanent-delete\s+summary\s*{[\s\S]*width:\s*100%;/,
-    )
-    expect(css).toMatch(
-      /@media \(max-width:\s*860px\)\s*{[\s\S]*\.admin-danger-zone\s+\.admin-permanent-delete\s+summary\s*{[\s\S]*justify-content:\s*center;/,
-    )
-    expect(css).toMatch(
-      /@media \(max-width:\s*860px\)\s*{[\s\S]*\.admin-danger-zone\s+\.admin-permanent-delete\s+summary\s*{[\s\S]*border-radius:\s*var\(--radius-pill\);/,
+      /@media \(max-width:\s*860px\)\s*{[\s\S]*\.admin-danger-row\s*{[\s\S]*grid-template-columns:\s*1fr;/,
     )
   })
 

@@ -148,46 +148,43 @@ export function PlanEditorView({
         />
       )}
 
-      <section className="admin-section" aria-label="Zona de risco">
-        <AdminCard>
-          <div className="admin-danger-zone">
-            <div className="admin-danger-actions">
-              <div>
-                <p className="admin-section-title">Zona de risco</p>
-                <p className="admin-muted">
-                  Arquivar oculta este plano do app e bloqueia novas edições neste rascunho.
-                </p>
-              </div>
-              <form action={archivePlanAction}>
-                <input name="planId" type="hidden" value={plan.plan.id} />
-                <AdminSubmitButton
-                  className="admin-danger-button"
-                  disabled={plan.archived}
-                  spinnerTone="light"
-                >
-                  Arquivar
-                </AdminSubmitButton>
-              </form>
-            </div>
-            <details className="admin-permanent-delete admin-delete-confirmation">
-              <summary>Excluir definitivamente</summary>
-              <div>
-                <p className="admin-muted">
-                  Esta ação apaga o plano, rascunhos e revisões. Não dá para desfazer.
-                </p>
-                <form action={deletePlanAction}>
-                  <input name="planId" type="hidden" value={plan.plan.id} />
-                  <AdminSubmitButton
-                    className="admin-danger-button admin-compact-button"
-                    spinnerTone="light"
-                  >
-                    Confirmar exclusão
-                  </AdminSubmitButton>
-                </form>
-              </div>
-            </details>
+      <section className="admin-section admin-danger-section" aria-label="Ações destrutivas">
+        <p className="admin-section-title">Ações destrutivas</p>
+        <div className="admin-danger-row">
+          <div>
+            <strong>Arquivar plano</strong>
+            <p className="admin-muted">
+              Oculta do app e bloqueia novas edições. É reversível — dá para restaurar depois.
+            </p>
           </div>
-        </AdminCard>
+          <form action={archivePlanAction}>
+            <input name="planId" type="hidden" value={plan.plan.id} />
+            <AdminSubmitButton
+              className="admin-secondary-button admin-compact-button"
+              disabled={plan.archived}
+              spinnerTone="light"
+            >
+              Arquivar
+            </AdminSubmitButton>
+          </form>
+        </div>
+        <details className="admin-danger-row-terminal">
+          <summary>Excluir definitivamente</summary>
+          <div className="admin-danger-row-content">
+            <p className="admin-muted">
+              Apaga o plano, rascunhos e revisões. Não dá para desfazer.
+            </p>
+            <form action={deletePlanAction}>
+              <input name="planId" type="hidden" value={plan.plan.id} />
+              <AdminSubmitButton
+                className="admin-danger-button admin-compact-button"
+                spinnerTone="light"
+              >
+                Confirmar exclusão
+              </AdminSubmitButton>
+            </form>
+          </div>
+        </details>
       </section>
 
       <AdminEditorFooter

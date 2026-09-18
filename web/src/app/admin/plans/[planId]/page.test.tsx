@@ -66,11 +66,14 @@ describe('/admin/plans/[planId]', () => {
     expect(markup).toContain('name="name"')
     expect(markup.match(/name="name"/g)).toHaveLength(1)
     expect(markup).toContain('form="plan-draft-plan_a"')
-    expect(markup).toContain('Arquivar')
+    expect(markup).toContain('Ações destrutivas')
+    expect(markup).toContain('Arquivar plano')
+    expect(markup).toContain('É reversível')
     expect(markup).toContain('Excluir definitivamente')
     expect(markup).toContain('Confirmar exclusão')
-    expect(markup).toContain('apaga o plano, rascunhos e revisões')
-    expect(markup).toContain('Zona de risco')
+    expect(markup).toContain('Apaga o plano, rascunhos e revisões')
+    expect(markup).toContain('admin-danger-row')
+    expect(markup).not.toContain('admin-danger-zone')
     expect(markup).toContain('admin-exercise-editor')
     expect(markup).toContain('admin-exercise-summary-actions')
     expect(markup).toContain('admin-exercise-toggle')
@@ -84,8 +87,6 @@ describe('/admin/plans/[planId]', () => {
     expect(markup).toContain('admin-equipment-photo-input')
     expect(markup).toContain('admin-exercise-advanced')
     expect(markup).toContain('Ajustes avançados')
-    expect(markup).toContain('admin-danger-actions')
-    expect(markup).toContain('admin-delete-confirmation')
 
     expect(markup).toContain('admin-editor-footer')
     expect(markup).toContain('admin-editor-actionbar')
@@ -100,8 +101,10 @@ describe('/admin/plans/[planId]', () => {
     expect(markup.indexOf('admin-plan-draft-form')).toBeLessThan(
       markup.indexOf('admin-drag-instructions'),
     )
-    expect(markup.indexOf('Adicionar exercício')).toBeLessThan(markup.indexOf('admin-danger-zone'))
-    expect(markup.indexOf('admin-danger-zone')).toBeLessThan(
+    expect(markup.indexOf('Adicionar exercício')).toBeLessThan(
+      markup.indexOf('admin-danger-section'),
+    )
+    expect(markup.indexOf('admin-danger-section')).toBeLessThan(
       markup.indexOf('admin-editor-actionbar'),
     )
     expect(markup).not.toContain('Salvar rascunho')
@@ -264,6 +267,8 @@ describe('/admin/plans/[planId]', () => {
 
     expect(markup).toContain('Arquivado')
     expect(markup).toContain('Não aparece no app')
+    expect(markup).toContain('Arquivar plano')
+    expect(markup).toContain('disabled=""')
     expect(markup).toContain('Restaurar para editar')
     expect(markup).toContain('Excluir definitivamente')
     expect(markup).toContain('Confirmar exclusão')
