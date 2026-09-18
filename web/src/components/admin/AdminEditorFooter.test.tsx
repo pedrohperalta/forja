@@ -62,6 +62,7 @@ describe('AdminEditorFooter', () => {
     })
 
     expect(container.textContent).toContain('Salvar agora')
+    expect(container.textContent).toContain('Alterações não salvas')
     expect(saveDraftAction).not.toHaveBeenCalled()
 
     await act(async () => {
@@ -107,6 +108,7 @@ describe('AdminEditorFooter', () => {
     })
 
     expect(saveDraftAction).not.toHaveBeenCalled()
+    expect(container.textContent).toContain('Não salvo — corrija os campos destacados')
 
     saveDraftAction.mockRejectedValueOnce(new Error('boom'))
     focusInput.value = 'Costas'
@@ -125,6 +127,39 @@ describe('AdminEditorFooter', () => {
     })
 
     expect(saveDraftAction).toHaveBeenCalledTimes(2)
+    expect(container.textContent).toContain('Salvo')
+  })
+
+  it('warns before leaving while there are unsaved edits, and stays silent once saved', async () => {
+    saveDraftAction.mockResolvedValue(undefined)
+    const form = createTestForm()
+    renderFooter()
+
+    const focusInput = getRequiredInput(form, 'focus')
+    focusInput.value = 'Peito e Ombros'
+    await act(async () => {
+      focusInput.dispatchEvent(new Event('input', { bubbles: true }))
+    })
+
+    const dirtyUnloadEvent = new Event('beforeunload', { cancelable: true })
+    const dirtyPreventDefault = vi.spyOn(dirtyUnloadEvent, 'preventDefault')
+    await act(async () => {
+      window.dispatchEvent(dirtyUnloadEvent)
+    })
+
+    expect(dirtyPreventDefault).toHaveBeenCalledTimes(1)
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1500)
+    })
+
+    const cleanUnloadEvent = new Event('beforeunload', { cancelable: true })
+    const cleanPreventDefault = vi.spyOn(cleanUnloadEvent, 'preventDefault')
+    await act(async () => {
+      window.dispatchEvent(cleanUnloadEvent)
+    })
+
+    expect(cleanPreventDefault).not.toHaveBeenCalled()
     expect(container.textContent).toContain('Salvo')
   })
 

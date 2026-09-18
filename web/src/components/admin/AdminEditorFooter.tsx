@@ -10,7 +10,7 @@ import type { PublicationStatus } from '@/lib/publicationState'
 const AUTOSAVE_DELAY_MS = 1500
 const DRAFT_CHANGED_EVENT = 'admin-draft-changed'
 
-type SaveState = 'idle' | 'dirty' | 'saving' | 'saved' | 'error'
+type SaveState = 'idle' | 'dirty' | 'saving' | 'saved' | 'error' | 'invalid'
 
 type AdminEditorFooterProps = {
   archived: boolean
@@ -44,6 +44,7 @@ export function AdminEditorFooter({
   const autosaveTimerRef = useRef<number | null>(null)
   const runAutosaveRef = useRef((): Promise<void> => Promise.resolve())
   const scheduleAutosaveRef = useRef((): void => {})
+  const hasUnsavedChangesRef = useRef(false)
   const [saveState, setSaveState] = useState<SaveState>('idle')
   const [savedAt, setSavedAt] = useState<Date | null>(null)
   const [, setSaveTick] = useState(0)
@@ -69,6 +70,23 @@ export function AdminEditorFooter({
       window.clearInterval(interval)
     }
   }, [saveState])
+
+  useEffect(() => {
+    const beforeUnloadHandler = (event: BeforeUnloadEvent): void => {
+      if (!hasUnsavedChangesRef.current) {
+        return
+      }
+
+      event.preventDefault()
+      event.returnValue = ''
+    }
+
+    window.addEventListener('beforeunload', beforeUnloadHandler)
+
+    return () => {
+      window.removeEventListener('beforeunload', beforeUnloadHandler)
+    }
+  }, [])
 
   useEffect(() => {
     const form = document.getElementById(formId)
@@ -98,6 +116,7 @@ export function AdminEditorFooter({
     }
 
     setSaveState('dirty')
+    hasUnsavedChangesRef.current = true
 
     if (autosaveTimerRef.current !== null) {
       window.clearTimeout(autosaveTimerRef.current)
@@ -113,7 +132,12 @@ export function AdminEditorFooter({
   async function runAutosave(): Promise<void> {
     const form = document.getElementById(formId)
 
-    if (!(form instanceof HTMLFormElement) || archived || !form.checkValidity()) {
+    if (!(form instanceof HTMLFormElement) || archived) {
+      return
+    }
+
+    if (!form.checkValidity()) {
+      setSaveState('invalid')
       return
     }
 
@@ -123,6 +147,7 @@ export function AdminEditorFooter({
       await saveDraftAction(new FormData(form))
       setSavedAt(new Date())
       setSaveState('saved')
+      hasUnsavedChangesRef.current = false
     } catch {
       setSaveState('error')
     }
@@ -219,6 +244,14 @@ function getActionbarStateLabel(
 
   if (saveState === 'error') {
     return 'Falhou ao salvar'
+  }
+
+  if (saveState === 'dirty') {
+    return 'Alterações não salvas'
+  }
+
+  if (saveState === 'invalid') {
+    return 'Não salvo — corrija os campos destacados'
   }
 
   if (saveState === 'saved') {
