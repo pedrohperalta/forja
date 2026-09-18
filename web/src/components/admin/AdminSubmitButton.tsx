@@ -8,6 +8,7 @@ type AdminSubmitButtonProps = {
   children: ReactNode
   className: string
   disabled?: boolean
+  form?: string
   formAction?: (formData: FormData) => Promise<void>
   name?: string
   spinnerTone?: 'dark' | 'light'
@@ -19,6 +20,7 @@ export function AdminSubmitButton({
   children,
   className,
   disabled = false,
+  form,
   formAction,
   name,
   spinnerTone = 'dark',
@@ -31,6 +33,7 @@ export function AdminSubmitButton({
       aria-label={ariaLabel}
       className={className}
       disabled={disabled || pending}
+      form={form}
       formAction={formAction}
       name={name}
       type="submit"

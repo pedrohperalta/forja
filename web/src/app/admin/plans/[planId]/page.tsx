@@ -6,6 +6,7 @@ import { notFound, redirect } from 'next/navigation'
 import type { ReactElement } from 'react'
 
 import { AdminAddExerciseForm } from '@/components/admin/AdminAddExerciseForm'
+import { AdminEditorFooter } from '@/components/admin/AdminEditorFooter'
 import { AdminSubmitButton } from '@/components/admin/AdminSubmitButton'
 import { AdminPlanDraftForm } from '@/components/admin/AdminPlanDraftForm'
 import { AdminCard, AdminFrame, StatusPill } from '@/components/admin/AdminUi'
@@ -134,13 +135,8 @@ export function PlanEditorView({
         draft={draft.data}
         latestRevisionNumber={plan.latestRevisionNumber}
         planId={plan.plan.id}
-        previewHref={`/admin/plans/${plan.plan.id}/preview`}
-        publicationDiff={publicationDiff}
-        publishAction={publishPlanAction}
         removeExerciseAction={removeExerciseAction}
-        restoreAction={restorePlanAction}
         saveDraftAction={saveDraftAction}
-        status={status}
       />
 
       {plan.archived ? null : (
@@ -193,6 +189,18 @@ export function PlanEditorView({
           </div>
         </AdminCard>
       </section>
+
+      <AdminEditorFooter
+        archived={plan.archived}
+        formId={`plan-draft-${plan.plan.id}`}
+        latestRevisionNumber={plan.latestRevisionNumber}
+        previewHref={`/admin/plans/${plan.plan.id}/preview`}
+        publicationDiff={publicationDiff}
+        publishAction={publishPlanAction}
+        restoreAction={restorePlanAction}
+        saveDraftAction={saveDraftAction}
+        status={status}
+      />
     </AdminFrame>
   )
 }

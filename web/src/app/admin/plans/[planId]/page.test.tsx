@@ -87,10 +87,8 @@ describe('/admin/plans/[planId]', () => {
     expect(markup).toContain('admin-danger-actions')
     expect(markup).toContain('admin-delete-confirmation')
 
+    expect(markup).toContain('admin-editor-footer')
     expect(markup).toContain('admin-editor-actionbar')
-    expect(markup.indexOf('admin-plan-draft-form')).toBeLessThan(
-      markup.indexOf('admin-editor-actionbar'),
-    )
     expect(markup).toContain('salvam sozinhas')
     expect(markup).toContain('admin-save-state')
     expect(markup).toContain('Pré-visualizar')
@@ -99,6 +97,13 @@ describe('/admin/plans/[planId]', () => {
     expect(markup).toContain('admin-publish-diff')
     expect(markup).toContain('alterações desde a Rev. 1')
     expect(markup).toContain('Adicionado: Supino Reto')
+    expect(markup.indexOf('admin-plan-draft-form')).toBeLessThan(
+      markup.indexOf('admin-drag-instructions'),
+    )
+    expect(markup.indexOf('Adicionar exercício')).toBeLessThan(markup.indexOf('admin-danger-zone'))
+    expect(markup.indexOf('admin-danger-zone')).toBeLessThan(
+      markup.indexOf('admin-editor-actionbar'),
+    )
     expect(markup).not.toContain('Salvar rascunho')
     expect(markup).not.toContain('Salvar agora')
     expect(markup).not.toContain('admin-editor-next-step')

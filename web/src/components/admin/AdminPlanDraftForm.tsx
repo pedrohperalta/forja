@@ -1,21 +1,16 @@
 'use client'
 
 import type { MuscleCategory, Plan } from '@forja/domain'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import type { DragEvent, KeyboardEvent, ReactElement } from 'react'
 import { useEffect, useRef, useState } from 'react'
 
 import { ChevronDownIcon } from '@/components/admin/AdminIcons'
 import { AdminCard, AdminField, StatusPill } from '@/components/admin/AdminUi'
-import { AdminSubmitButton } from '@/components/admin/AdminSubmitButton'
-import type { PublicationStatus } from '@/lib/publicationState'
-import { describePlanDiffEntry, type PlanDiffEntry } from '@/lib/planDiff'
+
 type ServerAction = (formData: FormData) => Promise<void>
 
-const AUTOSAVE_DELAY_MS = 1500
-
-type SaveState = 'idle' | 'dirty' | 'saving' | 'saved' | 'error'
+const DRAFT_CHANGED_EVENT = 'admin-draft-changed'
 
 type AdminPlanDraftFormProps = {
   addedExerciseId?: string | undefined
@@ -24,13 +19,8 @@ type AdminPlanDraftFormProps = {
   draft: Plan
   latestRevisionNumber: number | null
   planId: string
-  previewHref: string
-  publicationDiff: PlanDiffEntry[]
-  publishAction: ServerAction
   removeExerciseAction: ServerAction
-  restoreAction?: ServerAction | undefined
   saveDraftAction: ServerAction
-  status: PublicationStatus
 }
 
 export function AdminPlanDraftForm({
@@ -40,28 +30,18 @@ export function AdminPlanDraftForm({
   draft,
   latestRevisionNumber,
   planId,
-  previewHref,
-  publicationDiff,
-  publishAction,
   removeExerciseAction,
-  restoreAction,
   saveDraftAction,
-  status,
 }: AdminPlanDraftFormProps): ReactElement {
   const formRef = useRef<HTMLFormElement>(null)
-  const autosaveTimerRef = useRef<number | null>(null)
-  const runAutosaveRef = useRef((): Promise<void> => Promise.resolve())
   const router = useRouter()
   const [exerciseIds, setExerciseIds] = useState(() =>
     draft.exercises.map((exercise) => exercise.id),
   )
   const [draggingId, setDraggingId] = useState<string | null>(null)
   const [dropTargetId, setDropTargetId] = useState<string | null>(null)
-  const [saveState, setSaveState] = useState<SaveState>('idle')
-  const [savedAt, setSavedAt] = useState<Date | null>(null)
   const [removingExerciseId, setRemovingExerciseId] = useState<string | null>(null)
   const [removeFailedExerciseId, setRemoveFailedExerciseId] = useState<string | null>(null)
-  const [, setSaveTick] = useState(0)
 
   // Reconcile local order with refreshed draft data (e.g. after a removal
   // triggered by a direct action call, which refreshes without remounting).
@@ -82,70 +62,33 @@ export function AdminPlanDraftForm({
     })
   }, [draft])
 
-  useEffect(() => {
-    return () => {
-      if (autosaveTimerRef.current !== null) {
-        window.clearTimeout(autosaveTimerRef.current)
-      }
-    }
-  }, [])
-
-  useEffect(() => {
-    if (saveState !== 'saved') {
-      return
-    }
-
-    const interval = window.setInterval(() => {
-      setSaveTick((tick) => tick + 1)
-    }, 5000)
-
-    return () => {
-      window.clearInterval(interval)
-    }
-  }, [saveState])
-
   const orderedExercises = exerciseIds
     .map((exerciseId) => draft.exercises.find((exercise) => exercise.id === exerciseId))
     .filter((exercise): exercise is Plan['exercises'][number] => Boolean(exercise))
 
-  function scheduleAutosave(): void {
-    if (archived) {
+  function moveExercise(sourceId: string, targetId: string): void {
+    if (archived || sourceId === targetId) {
       return
     }
 
-    setSaveState('dirty')
+    const sourceIndex = exerciseIds.indexOf(sourceId)
+    const targetIndex = exerciseIds.indexOf(targetId)
 
-    if (autosaveTimerRef.current !== null) {
-      window.clearTimeout(autosaveTimerRef.current)
-    }
-
-    autosaveTimerRef.current = window.setTimeout(() => {
-      void runAutosaveRef.current()
-    }, AUTOSAVE_DELAY_MS)
-  }
-
-  const scheduleAutosaveRef = useRef(scheduleAutosave)
-  scheduleAutosaveRef.current = scheduleAutosave
-
-  async function runAutosave(): Promise<void> {
-    const form = formRef.current
-
-    if (!form || archived || !form.checkValidity()) {
+    if (sourceIndex === -1 || targetIndex === -1) {
       return
     }
 
-    setSaveState('saving')
+    const nextExerciseIds = [...exerciseIds]
+    const [movedExerciseId] = nextExerciseIds.splice(sourceIndex, 1)
 
-    try {
-      await saveDraftAction(new FormData(form))
-      setSavedAt(new Date())
-      setSaveState('saved')
-    } catch {
-      setSaveState('error')
+    if (!movedExerciseId) {
+      return
     }
-  }
 
-  runAutosaveRef.current = runAutosave
+    nextExerciseIds.splice(targetIndex, 0, movedExerciseId)
+    setExerciseIds(nextExerciseIds)
+    formRef.current?.dispatchEvent(new CustomEvent(DRAFT_CHANGED_EVENT))
+  }
 
   async function removeExercise(exerciseId: string): Promise<void> {
     if (archived || removingExerciseId !== null) {
@@ -167,53 +110,6 @@ export function AdminPlanDraftForm({
     } finally {
       setRemovingExerciseId(null)
     }
-  }
-
-  useEffect(() => {
-    const form = formRef.current
-
-    if (!form || archived) {
-      return
-    }
-
-    const handler = () => {
-      scheduleAutosaveRef.current()
-    }
-
-    form.addEventListener('input', handler)
-    form.addEventListener('change', handler)
-
-    return () => {
-      form.removeEventListener('input', handler)
-      form.removeEventListener('change', handler)
-    }
-  }, [archived])
-
-  function moveExercise(sourceId: string, targetId: string): void {
-    if (archived || sourceId === targetId) {
-      return
-    }
-
-    setExerciseIds((currentExerciseIds) => {
-      const sourceIndex = currentExerciseIds.indexOf(sourceId)
-      const targetIndex = currentExerciseIds.indexOf(targetId)
-
-      if (sourceIndex === -1 || targetIndex === -1) {
-        return currentExerciseIds
-      }
-
-      const nextExerciseIds = [...currentExerciseIds]
-      const [movedExerciseId] = nextExerciseIds.splice(sourceIndex, 1)
-
-      if (!movedExerciseId) {
-        return currentExerciseIds
-      }
-
-      nextExerciseIds.splice(targetIndex, 0, movedExerciseId)
-      scheduleAutosave()
-
-      return nextExerciseIds
-    })
   }
 
   function handleDragStart(event: DragEvent, exerciseId: string): void {
@@ -529,117 +425,6 @@ export function AdminPlanDraftForm({
           )
         })}
       </section>
-
-      {publicationDiff.length > 0 ? (
-        <details className="admin-publish-diff">
-          <summary>
-            {publicationDiff.length}{' '}
-            {publicationDiff.length === 1 ? 'alteração' : 'alterações'} desde a Rev.{' '}
-            {latestRevisionNumber}
-          </summary>
-          <ul className="admin-publish-diff-list">
-            {publicationDiff.map((entry, entryIndex) => (
-              <li key={`${entry.kind}-${entryIndex}`}>{describePlanDiffEntry(entry)}</li>
-            ))}
-          </ul>
-        </details>
-      ) : null}
-
-      <div className="admin-editor-actionbar">
-        <div className="admin-editor-actionbar-state">
-          <StatusPill tone={status.tone}>{status.label}</StatusPill>
-          <span className="admin-save-state" role="status">
-            {getActionbarStateLabel(saveState, savedAt, status.description)}
-          </span>
-        </div>
-        <div className="admin-editor-actionbar-actions">
-          {archived ? (
-            restoreAction ? (
-              <AdminSubmitButton
-                className="admin-primary-button"
-                formAction={restoreAction}
-                spinnerTone="light"
-              >
-                Restaurar para editar
-              </AdminSubmitButton>
-            ) : null
-          ) : (
-            <>
-              {saveState === 'dirty' ? (
-                <button
-                  className="admin-secondary-button admin-compact-button"
-                  onClick={() => {
-                    void runAutosave()
-                  }}
-                  type="button"
-                >
-                  Salvar agora
-                </button>
-              ) : null}
-              {saveState === 'error' ? (
-                <button
-                  className="admin-secondary-button admin-compact-button"
-                  onClick={() => {
-                    void runAutosave()
-                  }}
-                  type="button"
-                >
-                  Tentar de novo
-                </button>
-              ) : null}
-              <Link className="admin-secondary-button admin-compact-button" href={previewHref}>
-                Pré-visualizar
-              </Link>
-              {status.canPublish ? (
-                <AdminSubmitButton
-                  className="admin-primary-button"
-                  formAction={publishAction}
-                >
-                  {status.publishLabel}
-                </AdminSubmitButton>
-              ) : (
-                <button className="admin-secondary-button" disabled type="button">
-                  {status.publishLabel}
-                </button>
-              )}
-            </>
-          )}
-        </div>
-      </div>
     </form>
   )
-}
-
-function getActionbarStateLabel(
-  saveState: SaveState,
-  savedAt: Date | null,
-  idleDescription: string,
-): string {
-  if (saveState === 'saving') {
-    return 'Salvando…'
-  }
-
-  if (saveState === 'error') {
-    return 'Falhou ao salvar'
-  }
-
-  if (saveState === 'saved') {
-    if (!savedAt) {
-      return 'Salvo'
-    }
-
-    const seconds = Math.max(0, Math.floor((Date.now() - savedAt.getTime()) / 1000))
-
-    if (seconds < 5) {
-      return 'Salvo agora'
-    }
-
-    if (seconds < 60) {
-      return `Salvo há ${seconds}s`
-    }
-
-    return `Salvo há ${Math.floor(seconds / 60)}min`
-  }
-
-  return idleDescription
 }

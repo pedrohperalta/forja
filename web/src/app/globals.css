@@ -1428,6 +1428,13 @@ no form */
 .admin-hubcard-empty {
   align-self: end;
 }
+/* Editor footer — diff + sticky action bar at the very end of the editor */
+.admin-editor-footer {
+  display: grid;
+  gap: var(--space-3);
+  margin-top: var(--space-8);
+}
+
 /* Editor action bar — one home for state + Salvar + Publicar */
 .admin-editor-actionbar {
   position: sticky;
