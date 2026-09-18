@@ -6,7 +6,7 @@ import { type Exercise } from '@forja/domain'
 import { migrateDatabase } from '../../db/migrate'
 import * as schema from '../../db/schema'
 import { assertTestDatabaseUrl, resetDatabase } from '../../db/testDatabase'
-import { createUser } from '../../repositories'
+import { createPlanDraft, createUser } from '../../repositories'
 import {
   addDraftExercise,
   archivePlan,
@@ -768,5 +768,108 @@ describe('plan service', () => {
     expect(restored?.archived).toBe(false)
     expect(restored?.plan.label).toBe('Treino R 2')
     expect(restored?.draft?.data.label).toBe('Treino R 2')
+  })
+
+  it('duplicates keep a consistent uniquified label in row and draft', async () => {
+    await createDraftPlan(db, {
+      userId: USER_ID,
+      planId: 'plan_source_copy2',
+      label: 'Treino 2',
+      name: 'Treino 2',
+      focus: 'Peito',
+      exercises: [firstExercise],
+      now: NOW,
+    })
+
+    const firstCopy = await duplicatePlan(db, {
+      userId: USER_ID,
+      sourcePlanId: 'plan_source_copy2',
+      now: LATER,
+    })
+    const secondCopy = await duplicatePlan(db, {
+      userId: USER_ID,
+      sourcePlanId: 'plan_source_copy2',
+      now: LATER,
+    })
+    const secondCopyDetail = await getAdminPlan(db, {
+      userId: USER_ID,
+      planId: secondCopy.data.id,
+    })
+
+    expect(firstCopy.data.label).toBe('Cópia de Treino 2')
+    expect(secondCopy.data.label).toBe('Cópia de Treino 2 2')
+    expect(secondCopyDetail?.plan.label).toBe('Cópia de Treino 2 2')
+    expect(secondCopyDetail?.draft?.data.label).toBe('Cópia de Treino 2 2')
+  })
+
+  it('removes an exercise from a duplicate without label collisions', async () => {
+    await createDraftPlan(db, {
+      userId: USER_ID,
+      planId: 'plan_source_copy3',
+      label: 'Treino 2',
+      name: 'Treino 2',
+      focus: 'Peito',
+      exercises: [firstExercise, secondExercise],
+      now: NOW,
+    })
+
+    const copy = await duplicatePlan(db, {
+      userId: USER_ID,
+      sourcePlanId: 'plan_source_copy3',
+      now: LATER,
+    })
+    const updated = await removeDraftExercise(db, {
+      userId: USER_ID,
+      planId: copy.data.id,
+      exerciseId: copy.data.exercises[0]!.id,
+      now: LATER,
+    })
+    const detail = await getAdminPlan(db, { userId: USER_ID, planId: copy.data.id })
+
+    expect(updated.data.exercises).toHaveLength(1)
+    expect(detail?.plan.label).toBe('Cópia de Treino 2')
+    expect(detail?.draft?.data.label).toBe('Cópia de Treino 2')
+  })
+
+  it('heals a stale draft label on exercise-level saves instead of failing', async () => {
+    await createDraftPlan(db, {
+      userId: USER_ID,
+      planId: 'plan_owner',
+      label: 'Treino 2',
+      name: 'Treino 2',
+      focus: 'Peito',
+      exercises: [],
+      now: NOW,
+    })
+
+    // Forge the inconsistent state older duplicates could produce:
+    // plan row label differs from the draft's internal label.
+    await createPlanDraft(db, {
+      planId: 'plan_stale',
+      userId: USER_ID,
+      label: 'Cópia de Treino 2',
+      data: {
+        id: 'plan_stale',
+        label: 'Treino 2',
+        name: 'Cópia de Treino 2',
+        focus: 'Peito',
+        exercises: [firstExercise],
+        createdAt: NOW.toISOString(),
+        updatedAt: NOW.toISOString(),
+      },
+      now: NOW,
+    })
+
+    const updated = await removeDraftExercise(db, {
+      userId: USER_ID,
+      planId: 'plan_stale',
+      exerciseId: 'supino-reto',
+      now: LATER,
+    })
+    const detail = await getAdminPlan(db, { userId: USER_ID, planId: 'plan_stale' })
+
+    expect(updated.data.exercises).toHaveLength(0)
+    expect(detail?.plan.label).toBe('Treino 2 2')
+    expect(detail?.draft?.data.label).toBe('Treino 2 2')
   })
 })

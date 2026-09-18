@@ -346,10 +346,12 @@ export async function duplicatePlan(
 ): Promise<PlanDraftRow> {
   const source = await requireEditableDraft(db, input.userId, input.sourcePlanId)
   const name = `Cópia de ${source.data.name}`
+  const label = await uniquifyActiveLabel(db, input.userId, name)
   const nowIso = input.now.toISOString()
   const data = PlanSchema.parse({
     ...stripImportMetadata(source.data),
     id: `plan_${randomUUID()}`,
+    label,
     name,
     exercises: stripImportMetadata(source.data).exercises.map((exercise) => ({
       ...exercise,
@@ -363,7 +365,7 @@ export async function duplicatePlan(
   return createPlanDraft(db, {
     planId: data.id,
     userId: input.userId,
-    label: name,
+    label,
     data,
     now: input.now,
   })
@@ -551,8 +553,10 @@ type SaveDraftDataInput = {
 }
 
 async function saveDraftData(db: Database, input: SaveDraftDataInput): Promise<PlanDraftRow> {
+  const label = await uniquifyActiveLabel(db, input.userId, input.label, input.planId)
   const data = PlanSchema.parse({
     ...input.draft.data,
+    label,
     exercises: input.exercises,
     updatedAt: input.now.toISOString(),
   })
@@ -561,7 +565,7 @@ async function saveDraftData(db: Database, input: SaveDraftDataInput): Promise<P
     await updatePlanDraft(db, {
       planId: input.planId,
       userId: input.userId,
-      label: input.label,
+      label,
       data,
       now: input.now,
     }),
