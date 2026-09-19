@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, type ChangeEvent, type ReactElement } from 'react'
+import { useEffect, useRef, useState, type ChangeEvent, type ReactElement } from 'react'
 import { CloseIcon, UploadIcon } from '@/components/admin/AdminIcons'
 
 export const SUPPORTED_IMAGE_ACCEPT = 'image/jpeg,image/png,image/webp,image/gif,.heic,.heif'
@@ -36,6 +36,10 @@ export function AdminFileUpload({
   const [error, setError] = useState<string | null>(null)
   const [isOptimizing, setIsOptimizing] = useState(false)
   const [accumulatedFiles, setAccumulatedFiles] = useState<File[]>([])
+  const [previewUrls, setPreviewUrls] = useState<Map<string, string>>(() => new Map())
+  const previewUrlsRef = useRef(previewUrls)
+
+  previewUrlsRef.current = previewUrls
 
   useEffect(() => {
     return () => {
@@ -44,6 +48,16 @@ export function AdminFileUpload({
       }
     }
   }, [previewUrl])
+
+  useEffect(() => {
+    const urls = previewUrlsRef.current
+
+    return () => {
+      for (const url of urls.values()) {
+        URL.revokeObjectURL(url)
+      }
+    }
+  }, [])
 
   const handleChange = (event: ChangeEvent<HTMLInputElement>): void => {
     void updateSelectedFile(event.currentTarget)
@@ -196,14 +210,15 @@ export function AdminFileUpload({
   function finalizeMerge(added: File[]): void {
     const merged = [...accumulatedFiles, ...added]
     const state = getSelectedFilesState(merged, maxBytes)
+    const addedUrls = new Map(added.map((file) => [fileKey(file), URL.createObjectURL(file)]))
 
     setAccumulatedFiles(merged)
+    setPreviewUrls((current) => new Map([...current, ...addedUrls]))
     onSelectionChange?.(merged)
     setFileName(state.fileName)
     setFileSize(state.fileSize)
     setHelper(state.helper)
     setError(null)
-    setPreviewUrl(URL.createObjectURL(added[0] ?? merged[0] ?? new File([], 'vazio')))
   }
 
   function removeAccumulatedFile(target: File): void {
@@ -211,16 +226,23 @@ export function AdminFileUpload({
     const state = getSelectedFilesState(next, maxBytes)
 
     setAccumulatedFiles(next)
+    setPreviewUrls((current) => {
+      const targetUrl = current.get(fileKey(target))
+
+      if (targetUrl) {
+        URL.revokeObjectURL(targetUrl)
+      }
+
+      const nextUrls = new Map(current)
+      nextUrls.delete(fileKey(target))
+
+      return nextUrls
+    })
     onSelectionChange?.(next)
     setFileName(state.fileName)
     setFileSize(state.fileSize)
     setHelper(state.helper)
     setError(null)
-
-    if (previewUrl) {
-      URL.revokeObjectURL(previewUrl)
-    }
-    setPreviewUrl(next[0] ? URL.createObjectURL(next[0]) : null)
   }
 
   return (
@@ -262,13 +284,15 @@ export function AdminFileUpload({
         {fileSize ? <span>{fileSize}</span> : null}
       </p>
       {multiple && accumulatedFiles.length > 0 ? (
-        <ul className="admin-file-chip-list">
+        <ul className="admin-file-preview-list">
           {accumulatedFiles.map((file) => (
-            <li className="admin-file-chip" key={fileKey(file)}>
+            <li className="admin-file-preview-item" key={fileKey(file)}>
+              {/* eslint-disable-next-line @next/next/no-img-element -- preview renders a local object URL that next/image cannot optimize */}
+              <img alt={`Prévia de ${file.name}`} src={previewUrls.get(fileKey(file))} />
               <span>{file.name}</span>
               <button
                 aria-label={`Remover ${file.name}`}
-                className="admin-file-chip-remove"
+                className="admin-file-preview-remove"
                 onClick={() => removeAccumulatedFile(file)}
                 type="button"
               >

@@ -51,6 +51,19 @@ describe('AdminFileUpload accumulation', () => {
     expect(selections.at(-1)).toHaveLength(1)
   })
 
+  it('shows one preview thumbnail per accumulated image', () => {
+    renderMultiple(() => {})
+    const input = getRequiredInput()
+
+    pickFiles(input, [createImageFile('a.jpg')])
+    pickFiles(input, [createImageFile('b.jpg')])
+
+    const images = Array.from(container.querySelectorAll('img'))
+
+    expect(images).toHaveLength(2)
+    expect(images.map((image) => image.alt)).toEqual(['Prévia de a.jpg', 'Prévia de b.jpg'])
+  })
+
   it('lets the admin remove an accumulated file from its chip', () => {
     const selections: File[][] = []
     renderMultiple((files) => selections.push(files))
