@@ -79,6 +79,21 @@ describe('admin design tokens', () => {
     )
   })
 
+  it('spaces destructive disclosures with the token grid gap, not ad-hoc margins', () => {
+    expect(css).toMatch(
+      /\.admin-plan-card-actions \.admin-permanent-delete\[open\]\s*\{[^}]*display:\s*grid;/,
+    )
+    expect(css).toMatch(
+      /\.admin-plan-card-actions \.admin-permanent-delete\[open\]\s*\{[^}]*gap:\s*var\(--space-3\);/,
+    )
+    expect(css).toMatch(/\.admin-exercise-remove\s*\{[^}]*display:\s*grid;/)
+    expect(css).toMatch(/\.admin-exercise-remove\s*\{[^}]*gap:\s*var\(--space-3\);/)
+    expect(css).toMatch(/\.admin-danger-row-terminal\s*\{[^}]*display:\s*grid;/)
+    expect(css).toMatch(/\.admin-danger-row-terminal\s*\{[^}]*gap:\s*var\(--space-3\);/)
+    expect(css).not.toContain('.admin-exercise-remove[open] > summary')
+    expect(css).not.toContain('.admin-danger-row-terminal[open] > summary')
+  })
+
   it('gives the removable preview tiles a 44px remove target', () => {
     expect(css).toContain('.admin-file-preview-item')
     expect(css).toMatch(/\.admin-file-preview-remove\s*\{[^}]*width:\s*2\.75rem;/)
