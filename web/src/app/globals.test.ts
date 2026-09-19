@@ -84,7 +84,10 @@ describe('admin design tokens', () => {
       /\.admin-plan-card-actions \.admin-permanent-delete\[open\]\s*\{[^}]*display:\s*grid;/,
     )
     expect(css).toMatch(
-      /\.admin-plan-card-actions \.admin-permanent-delete\[open\]\s*\{[^}]*gap:\s*var\(--space-3\);/,
+      /\.admin-plan-card-actions \.admin-permanent-delete\[open\]\s*\{[^}]*gap:\s*var\(--space-4\);/,
+    )
+    expect(css).toMatch(
+      /\.admin-plan-card-actions \.admin-permanent-delete\[open\]\s*\{[^}]*padding-bottom:\s*var\(--space-4\);/,
     )
     expect(css).toMatch(/\.admin-exercise-remove\s*\{[^}]*display:\s*grid;/)
     expect(css).toMatch(/\.admin-exercise-remove\s*\{[^}]*gap:\s*var\(--space-3\);/)
