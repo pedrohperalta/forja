@@ -815,6 +815,48 @@ NOT a pill (pills are interactive only) */
   color: var(--color-text-med);
   font-weight: 600;
 }
+/* Accumulated batch picks — one removable chip per photo */
+.admin-file-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.admin-file-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  border: 1px solid var(--color-border-med);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-2);
+  color: var(--color-text-med);
+  font-size: var(--text-2xs);
+  padding: var(--space-1) var(--space-1) var(--space-1) var(--space-3);
+}
+.admin-file-chip > span {
+  overflow: hidden;
+  max-width: 14rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.admin-file-chip-remove {
+  display: inline-grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: var(--radius-pill);
+  color: var(--color-muted);
+  cursor: pointer;
+}
+.admin-file-chip-remove:hover {
+  color: var(--color-danger);
+}
+.admin-file-chip-remove:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
 .admin-file-preview {
   display: grid;
   grid-template-columns: 4rem minmax(0, 1fr);

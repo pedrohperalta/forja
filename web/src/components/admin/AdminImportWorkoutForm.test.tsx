@@ -337,6 +337,10 @@ function setInputFiles(input: HTMLInputElement, files: File[]): void {
     configurable: true,
     value: files,
   })
+
+  act(() => {
+    input.dispatchEvent(new Event('change', { bubbles: true }))
+  })
 }
 
 function createDeferred<Value>(): {

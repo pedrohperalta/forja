@@ -1,6 +1,9 @@
-import { createElement } from 'react'
+// @vitest-environment jsdom
+
+import { act, createElement, type ReactElement } from 'react'
+import { createRoot, type Root } from 'react-dom/client'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it } from 'vitest'
 
 import {
   AdminFileUpload,
@@ -8,6 +11,125 @@ import {
   shouldAttemptLocalCompression,
   SUPPORTED_IMAGE_ACCEPT,
 } from './AdminFileUpload'
+
+describe('AdminFileUpload accumulation', () => {
+  let container: HTMLDivElement
+  let root: Root
+
+  afterEach(() => {
+    act(() => {
+      root?.unmount()
+    })
+    container?.remove()
+  })
+
+  it('accumulates files across consecutive picks in multiple mode', () => {
+    const selections: File[][] = []
+    renderMultiple((files) => selections.push(files))
+    const input = getRequiredInput()
+
+    pickFiles(input, [createImageFile('a.jpg')])
+    expect(container.textContent).toContain('1 imagem selecionada')
+
+    pickFiles(input, [createImageFile('b.jpg')])
+    expect(container.textContent).toContain('2 imagens selecionadas')
+    expect(selections.at(-1)?.map((file) => file.name)).toEqual(['a.jpg', 'b.jpg'])
+    expect(container.textContent).toContain('Adicionar mais')
+    expect(container.textContent).toContain('a.jpg')
+    expect(container.textContent).toContain('b.jpg')
+  })
+
+  it('does not duplicate a file that is picked again', () => {
+    const selections: File[][] = []
+    renderMultiple((files) => selections.push(files))
+    const input = getRequiredInput()
+
+    pickFiles(input, [createImageFile('a.jpg', 1_700_000_000_000)])
+    pickFiles(input, [createImageFile('a.jpg', 1_700_000_000_000)])
+
+    expect(container.textContent).toContain('1 imagem selecionada')
+    expect(selections.at(-1)).toHaveLength(1)
+  })
+
+  it('lets the admin remove an accumulated file from its chip', () => {
+    const selections: File[][] = []
+    renderMultiple((files) => selections.push(files))
+    const input = getRequiredInput()
+
+    pickFiles(input, [createImageFile('a.jpg'), createImageFile('b.jpg')])
+
+    const removeButton = Array.from(container.querySelectorAll('button')).find(
+      (candidate) => candidate.getAttribute('aria-label') === 'Remover a.jpg',
+    )
+
+    expect(removeButton).toBeDefined()
+
+    act(() => {
+      removeButton?.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }))
+    })
+
+    expect(container.textContent).toContain('1 imagem selecionada')
+    expect(selections.at(-1)?.map((file) => file.name)).toEqual(['b.jpg'])
+    expect(container.textContent).not.toContain('a.jpg')
+  })
+
+  it('keeps the selection when the picker is cancelled with no new files', () => {
+    const selections: File[][] = []
+    renderMultiple((files) => selections.push(files))
+    const input = getRequiredInput()
+
+    pickFiles(input, [createImageFile('a.jpg')])
+    pickFiles(input, [])
+
+    expect(container.textContent).toContain('1 imagem selecionada')
+    expect(selections).toHaveLength(1)
+  })
+
+  function renderMultiple(onSelectionChange: (files: File[]) => void): void {
+    container = document.createElement('div')
+    document.body.append(container)
+    root = createRoot(container)
+
+    act(() => {
+      root.render(
+        createElement(AdminFileUpload, {
+          id: 'image',
+          multiple: true,
+          name: 'image',
+          onSelectionChange,
+        }) satisfies ReactElement,
+      )
+    })
+  }
+
+  function getRequiredInput(): HTMLInputElement {
+    const input = container.querySelector<HTMLInputElement>('input[type="file"]')
+
+    if (!input) {
+      throw new Error('Missing file input')
+    }
+
+    return input
+  }
+
+  function pickFiles(input: HTMLInputElement, files: File[]): void {
+    Object.defineProperty(input, 'files', {
+      configurable: true,
+      value: files,
+    })
+
+    act(() => {
+      input.dispatchEvent(new Event('change', { bubbles: true }))
+    })
+  }
+
+  function createImageFile(name: string, lastModified?: number): File {
+    return new File(['image-bytes'], name, {
+      type: 'image/jpeg',
+      ...(lastModified !== undefined ? { lastModified } : {}),
+    })
+  }
+})
 
 describe('AdminFileUpload', () => {
   it('renders a styled file picker instead of exposing the native input as the visible control', () => {

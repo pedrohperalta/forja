@@ -47,6 +47,7 @@ type ImportErrorMessage = {
 export function AdminImportWorkoutForm({ error, notice }: ImportWorkoutFormProps): ReactElement {
   const formRef = useRef<HTMLFormElement>(null)
   const abortControllerRef = useRef<AbortController | null>(null)
+  const [selectedImages, setSelectedImages] = useState<File[]>([])
   const [isWorking, setIsWorking] = useState(false)
   const [clientError, setClientError] = useState<ImportErrorMessage | null>(null)
   const [progress, setProgress] = useState<{ current: number; total: number } | null>(null)
@@ -59,8 +60,7 @@ export function AdminImportWorkoutForm({ error, notice }: ImportWorkoutFormProps
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>): Promise<void> => {
     event.preventDefault()
-    const form = event.currentTarget
-    const files = getSelectedImageFiles(form)
+    const files = selectedImages
 
     if (files.length === 0) {
       setClientError({
@@ -167,6 +167,7 @@ export function AdminImportWorkoutForm({ error, notice }: ImportWorkoutFormProps
                 id="image"
                 multiple
                 name="image"
+                onSelectionChange={setSelectedImages}
                 required
               />
             </div>
@@ -255,16 +256,6 @@ async function createDraftFromWorkout(
   }
 
   return body.planId
-}
-
-function getSelectedImageFiles(form: HTMLFormElement): File[] {
-  const input = form.elements.namedItem('image')
-
-  if (!(input instanceof HTMLInputElement)) {
-    return []
-  }
-
-  return Array.from(input.files ?? [])
 }
 
 function createExtractFormData(file: File): FormData {

@@ -79,6 +79,12 @@ describe('admin design tokens', () => {
     )
   })
 
+  it('gives the removable file chips a 44px remove target', () => {
+    expect(css).toContain('.admin-file-chip')
+    expect(css).toMatch(/\.admin-file-chip-remove\s*\{[^}]*width:\s*2\.75rem;/)
+    expect(css).toMatch(/\.admin-file-chip-remove\s*\{[^}]*height:\s*2\.75rem;/)
+  })
+
   it('normalizes the equipment photo input to the standard field radius', () => {
     expect(css).toMatch(
       /\.admin-equipment-photo-input\s*\{[^}]*border-radius:\s*var\(--radius-md\);/,

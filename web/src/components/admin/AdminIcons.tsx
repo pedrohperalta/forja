@@ -79,3 +79,11 @@ export function UploadIcon({ size = 20 }: IconProps): ReactElement {
     </svg>
   )
 }
+
+export function CloseIcon({ size = 20 }: IconProps): ReactElement {
+  return (
+    <svg {...iconProps(size)}>
+      <path d="M6 6l12 12M18 6 6 18" stroke="currentColor" strokeLinecap="round" strokeWidth="2" />
+    </svg>
+  )
+}

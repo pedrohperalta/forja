@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, type ChangeEvent, type ReactElement } from 'react'
-import { UploadIcon } from '@/components/admin/AdminIcons'
+import { CloseIcon, UploadIcon } from '@/components/admin/AdminIcons'
 
 export const SUPPORTED_IMAGE_ACCEPT = 'image/jpeg,image/png,image/webp,image/gif,.heic,.heif'
 
@@ -16,6 +16,7 @@ type AdminFileUploadProps = {
   maxBytes?: number
   multiple?: boolean
   name: string
+  onSelectionChange?: (files: File[]) => void
   required?: boolean
 }
 
@@ -25,6 +26,7 @@ export function AdminFileUpload({
   maxBytes = 5 * 1024 * 1024,
   multiple = false,
   name,
+  onSelectionChange,
   required = false,
 }: AdminFileUploadProps): ReactElement {
   const [fileName, setFileName] = useState('Nenhuma imagem selecionada')
@@ -33,6 +35,7 @@ export function AdminFileUpload({
   const [helper, setHelper] = useState<string | null>('Otimizamos imagens grandes antes do envio.')
   const [error, setError] = useState<string | null>(null)
   const [isOptimizing, setIsOptimizing] = useState(false)
+  const [accumulatedFiles, setAccumulatedFiles] = useState<File[]>([])
 
   useEffect(() => {
     return () => {
@@ -48,10 +51,18 @@ export function AdminFileUpload({
 
   const updateSelectedFile = async (input: HTMLInputElement): Promise<void> => {
     const files = Array.from(input.files ?? [])
+
+    if (multiple) {
+      if (files.length === 0) {
+        return
+      }
+
+      await mergePickedFiles(input, files)
+      return
+    }
+
     const file = files[0]
-    const selected = multiple
-      ? getSelectedFilesState(files, maxBytes)
-      : getSelectedFileState(file, maxBytes)
+    const selected = getSelectedFileState(file, maxBytes)
 
     if (previewUrl) {
       URL.revokeObjectURL(previewUrl)
@@ -80,27 +91,16 @@ export function AdminFileUpload({
     setHelper(selected.helper)
     setError(null)
 
-    const filesToOptimize = multiple ? files : [file]
-    const shouldOptimize = filesToOptimize.some((candidate) =>
-      shouldAttemptLocalCompression(candidate, maxBytes),
-    )
-
-    if (shouldOptimize) {
+    if (shouldAttemptLocalCompression(file, maxBytes)) {
       setIsOptimizing(true)
-      setHelper(
-        multiple ? 'Otimizando imagens no navegador...' : 'Otimizando imagem no navegador...',
-      )
+      setHelper('Otimizando imagem no navegador...')
 
       try {
-        const optimizedFiles = await Promise.all(
-          filesToOptimize.map((candidate) =>
-            shouldAttemptLocalCompression(candidate, maxBytes)
-              ? optimizeImageFile(candidate, maxBytes)
-              : Promise.resolve(candidate),
-          ),
-        )
+        const optimizedFiles = [
+          await optimizeImageFile(file, maxBytes),
+        ]
 
-        if (optimizedFiles.some((candidate) => candidate.size > maxBytes)) {
+        if ((optimizedFiles[0]?.size ?? 0) > maxBytes) {
           input.value = ''
           setFileName('Nenhuma imagem selecionada')
           setFileSize(null)
@@ -111,16 +111,10 @@ export function AdminFileUpload({
         }
 
         replaceInputFiles(input, optimizedFiles)
-        const optimizedSelected = multiple
-          ? getSelectedFilesState(optimizedFiles, maxBytes)
-          : getSelectedFileState(optimizedFiles[0], maxBytes)
+        const optimizedSelected = getSelectedFileState(optimizedFiles[0], maxBytes)
         setFileName(optimizedSelected.fileName)
         setFileSize(optimizedSelected.fileSize)
-        setHelper(
-          multiple
-            ? 'Imagens otimizadas e prontas para envio.'
-            : 'Imagem otimizada e pronta para envio.',
-        )
+        setHelper('Imagem otimizada e pronta para envio.')
         setPreviewUrl(URL.createObjectURL(optimizedFiles[0] ?? file))
       } catch {
         input.value = ''
@@ -141,6 +135,94 @@ export function AdminFileUpload({
     setPreviewUrl(URL.createObjectURL(file))
   }
 
+  // Batch mode: consecutive picks accumulate; the picker never wipes the
+  // previous selection and duplicates are ignored.
+  const mergePickedFiles = async (input: HTMLInputElement, picked: File[]): Promise<void> => {
+    const fresh = picked.filter(
+      (candidate) => !accumulatedFiles.some((existing) => fileKey(existing) === fileKey(candidate)),
+    )
+
+    if (fresh.length === 0) {
+      return
+    }
+
+    const invalidFile = fresh.find((candidate) => !isSupportedUploadImage(candidate))
+
+    if (invalidFile) {
+      input.value = ''
+      setError(getSelectedFileState(invalidFile, maxBytes).error)
+      return
+    }
+
+    if (fresh.some((candidate) => shouldAttemptLocalCompression(candidate, maxBytes))) {
+      setIsOptimizing(true)
+      setHelper(
+        fresh.length > 1 ? 'Otimizando imagens no navegador...' : 'Otimizando imagem no navegador...',
+      )
+
+      try {
+        const optimizedFiles = await Promise.all(
+          fresh.map((candidate) =>
+            shouldAttemptLocalCompression(candidate, maxBytes)
+              ? optimizeImageFile(candidate, maxBytes)
+              : Promise.resolve(candidate),
+          ),
+        )
+
+        if (optimizedFiles.some((candidate) => candidate.size > maxBytes)) {
+          input.value = ''
+          setHelper(null)
+          setError('Tentamos otimizar, mas pelo menos uma imagem ainda passou de 5MB.')
+          return
+        }
+
+        finalizeMerge(optimizedFiles)
+      } catch {
+        input.value = ''
+        setHelper(null)
+        setError(
+          'Não foi possível otimizar esta imagem no navegador. Exporte como JPG ou PNG e tente novamente.',
+        )
+      } finally {
+        setIsOptimizing(false)
+      }
+
+      return
+    }
+
+    finalizeMerge(fresh)
+  }
+
+  function finalizeMerge(added: File[]): void {
+    const merged = [...accumulatedFiles, ...added]
+    const state = getSelectedFilesState(merged, maxBytes)
+
+    setAccumulatedFiles(merged)
+    onSelectionChange?.(merged)
+    setFileName(state.fileName)
+    setFileSize(state.fileSize)
+    setHelper(state.helper)
+    setError(null)
+    setPreviewUrl(URL.createObjectURL(added[0] ?? merged[0] ?? new File([], 'vazio')))
+  }
+
+  function removeAccumulatedFile(target: File): void {
+    const next = accumulatedFiles.filter((candidate) => fileKey(candidate) !== fileKey(target))
+    const state = getSelectedFilesState(next, maxBytes)
+
+    setAccumulatedFiles(next)
+    onSelectionChange?.(next)
+    setFileName(state.fileName)
+    setFileSize(state.fileSize)
+    setHelper(state.helper)
+    setError(null)
+
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl)
+    }
+    setPreviewUrl(next[0] ? URL.createObjectURL(next[0]) : null)
+  }
+
   return (
     <>
       <label className="admin-file-upload" htmlFor={id} data-invalid={error ? true : undefined}>
@@ -154,12 +236,12 @@ export function AdminFileUpload({
         <span className="admin-file-upload-action">
           {isOptimizing
             ? 'Otimizando...'
-            : previewUrl
-              ? multiple
-                ? 'Trocar imagens'
-                : 'Trocar imagem'
-              : multiple
-                ? 'Escolher arquivos'
+            : multiple
+              ? accumulatedFiles.length > 0
+                ? 'Adicionar mais'
+                : 'Escolher arquivos'
+              : previewUrl
+                ? 'Trocar imagem'
                 : 'Escolher arquivo'}
         </span>
       </label>
@@ -179,6 +261,23 @@ export function AdminFileUpload({
         {fileName}
         {fileSize ? <span>{fileSize}</span> : null}
       </p>
+      {multiple && accumulatedFiles.length > 0 ? (
+        <ul className="admin-file-chip-list">
+          {accumulatedFiles.map((file) => (
+            <li className="admin-file-chip" key={fileKey(file)}>
+              <span>{file.name}</span>
+              <button
+                aria-label={`Remover ${file.name}`}
+                className="admin-file-chip-remove"
+                onClick={() => removeAccumulatedFile(file)}
+                type="button"
+              >
+                <CloseIcon size={14} />
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : null}
       {helper ? <p className="admin-file-helper">{helper}</p> : null}
       {previewUrl ? (
         <div className="admin-file-preview">
@@ -197,6 +296,7 @@ export function AdminFileUpload({
 }
 
 type SelectedFileLike = {
+  lastModified?: number
   name: string
   size: number
   type?: string
@@ -271,12 +371,16 @@ export function getSelectedFilesState(
 
   return {
     error: null,
-    fileName: `${files.length} imagens selecionadas`,
+    fileName: files.length === 1 ? '1 imagem selecionada' : `${files.length} imagens selecionadas`,
     fileSize: formatMegabytes(totalBytes),
     helper: needsOptimization
       ? 'Algumas imagens serão otimizadas antes do envio.'
       : 'Imagens prontas para envio.',
   }
+}
+
+function fileKey(file: SelectedFileLike): string {
+  return `${file.name}:${file.size}:${file.lastModified ?? 0}`
 }
 
 export function shouldAttemptLocalCompression(file: SelectedFileLike, maxBytes: number): boolean {
