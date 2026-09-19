@@ -21,8 +21,6 @@ services:
     image: forja-web:latest
     container_name: forja-web
     restart: unless-stopped
-    group_add:
-      - "${DOCKER_GID:-988}"
     env_file:
       - path: .env
         required: false
@@ -41,10 +39,6 @@ services:
       FORJA_SYNC_CURSOR_SECRET: ${FORJA_SYNC_CURSOR_SECRET:?set FORJA_SYNC_CURSOR_SECRET}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:?set ANTHROPIC_API_KEY}
       ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-sonnet-4-5}
-      FORJA_MOBILE_BUILD_API_URL: ${FORJA_MOBILE_BUILD_API_URL:-https://forja.phperalta.me}
-      FORJA_MOBILE_BUILD_OUTPUT_DIR: /data/mobile-builds
-      FORJA_MOBILE_BUILD_REPO_DIR: /repo
-      FORJA_MOBILE_BUILD_SCRIPT: /repo/build-apk.sh
       UPLOADS_DIR: /data/uploads
       NODE_ENV: production
       PORT: 3000
@@ -58,9 +52,7 @@ services:
       retries: 5
     volumes:
       - forja-uploads:/data/uploads
-      - forja-mobile-builds:/data/mobile-builds
       - /root/projects/forja:/repo:ro
-      - /var/run/docker.sock:/var/run/docker.sock
     labels:
       - traefik.enable=true
       - traefik.docker.network=root_default
@@ -98,7 +90,6 @@ services:
 volumes:
   forja-postgres-data:
   forja-uploads:
-  forja-mobile-builds:
   forja-backups:
 
 networks:

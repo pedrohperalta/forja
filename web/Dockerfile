@@ -20,17 +20,11 @@ ENV NODE_ENV=production
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
 ENV UPLOADS_DIR=/data/uploads
-ENV FORJA_MOBILE_BUILD_OUTPUT_DIR=/data/mobile-builds
-ENV FORJA_MOBILE_BUILD_REPO_DIR=/repo
-ENV FORJA_MOBILE_BUILD_SCRIPT=/repo/build-apk.sh
 
-RUN apk add --no-cache bash docker-cli docker-cli-buildx \
-  && addgroup -S nodejs \
+RUN addgroup -S nodejs \
   && adduser -S nextjs -G nodejs \
-  && addgroup -S docker \
-  && adduser nextjs docker \
-  && mkdir -p /data/uploads /data/mobile-builds \
-  && chown -R nextjs:nodejs /app /data/uploads /data/mobile-builds
+  && mkdir -p /data/uploads \
+  && chown -R nextjs:nodejs /app /data/uploads
 
 COPY --from=builder --chown=nextjs:nodejs /app/web/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/web/.next/static ./web/.next/static

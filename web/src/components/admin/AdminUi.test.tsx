@@ -43,7 +43,6 @@ describe('AdminFrame shell', () => {
     expect(markup).toContain('admin-nav')
     expect(markup).toContain('href="/admin"')
     expect(markup).toContain('href="/admin/plans"')
-    expect(markup).toContain('href="/admin/mobile-builds"')
     expect(markup).toContain('aria-current="page"')
     expect(markup).toContain('data-active="true"')
     expect(markup).toContain('Sair')

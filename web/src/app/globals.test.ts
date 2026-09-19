@@ -150,19 +150,7 @@ describe('admin responsive CSS', () => {
     expect(css).toContain('bottom: 0;')
     expect(css).toContain('env(safe-area-inset-bottom)')
     expect(css).toMatch(
-      /@media \(max-width:\s*860px\)\s*{[\s\S]*\.admin-nav\s*{[\s\S]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\);/,
-    )
-  })
-
-  it('stacks mobile build generation controls below their copy', () => {
-    expect(css).toMatch(
-      /@media \(max-width:\s*860px\)\s*{[\s\S]*\.admin-build-command\s*{[\s\S]*grid-template-columns:\s*1fr;/,
-    )
-    expect(css).toMatch(
-      /@media \(max-width:\s*860px\)\s*{[\s\S]*\.admin-build-actions\s*{[\s\S]*display:\s*grid;/,
-    )
-    expect(css).toMatch(
-      /@media \(max-width:\s*860px\)\s*{[\s\S]*\.admin-build-actions\s*{[\s\S]*grid-template-columns:\s*1fr;/,
+      /@media \(max-width:\s*860px\)\s*{[\s\S]*\.admin-nav\s*{[\s\S]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\);/,
     )
   })
 
@@ -171,7 +159,7 @@ describe('admin responsive CSS', () => {
       /@media \(max-width:\s*860px\)\s*{[\s\S]*\.admin-header-row,[\s\S]*\.admin-panel-header,[\s\S]*\.admin-form-heading,[\s\S]*\.admin-section-heading-row\s*{[\s\S]*grid-template-columns:\s*1fr;/,
     )
     expect(css).toMatch(
-      /@media \(max-width:\s*860px\)\s*{[\s\S]*\.admin-build-header,[\s\S]*\.admin-log-toolbar,[\s\S]*\.admin-linear-footer,[\s\S]*\.admin-actions-row,[\s\S]*\.admin-focus-actions\s*{[\s\S]*grid-template-columns:\s*1fr;/,
+      /@media \(max-width:\s*860px\)\s*{[\s\S]*\.admin-linear-footer,[\s\S]*\.admin-actions-row,[\s\S]*\.admin-focus-actions\s*{[\s\S]*grid-template-columns:\s*1fr;/,
     )
     expect(css).toMatch(
       /@media \(max-width:\s*860px\)\s*{[\s\S]*\.admin-header-row > \.admin-primary-button,[\s\S]*width:\s*100%;/,
@@ -257,7 +245,6 @@ describe('admin responsive CSS', () => {
     expect(css).toMatch(/\.admin-content\s*{[\s\S]*min-width:\s*0;/)
     expect(css).toMatch(/\.admin-simple-dashboard\s*{[\s\S]*width:\s*100%;/)
     expect(css).toMatch(/\.admin-linear-flow\s*{[\s\S]*width:\s*100%;/)
-    expect(css).toMatch(/\.admin-build-page\s*{[\s\S]*width:\s*100%;/)
     expect(css).toMatch(
       /@media \(max-width:\s*860px\)\s*{[\s\S]*\.admin-shell\s*{[\s\S]*display:\s*grid;/,
     )

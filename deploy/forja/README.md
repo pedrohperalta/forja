@@ -37,25 +37,6 @@ Verify:
 curl -fsS https://forja.phperalta.me/api/health
 ```
 
-Mobile builds:
-
-```sh
-docker logs -f forja-web
-```
-
-Open `https://forja.phperalta.me/admin/mobile-builds` while logged in to start an APK
-or AAB build and download finished artifacts. The web container mounts:
-
-- `/root/projects/forja:/repo:ro` so the builder can read the source checkout.
-- `/var/run/docker.sock:/var/run/docker.sock` so the admin route can run the Dockerized Android build.
-- `forja-mobile-builds:/data/mobile-builds` for generated APK/AAB artifacts and logs.
-
-Set `DOCKER_GID` to the host Docker socket group id when it is not `988`:
-
-```sh
-stat -c '%g' /var/run/docker.sock
-```
-
 Local Postgres exposure for development/tests:
 
 ```sh
@@ -81,7 +62,6 @@ Production notes:
 - `forja-web` joins external Docker network `root_default` for Traefik.
 - Traefik routes `Host($FORJA_HOST)` to port `3000`.
 - The production router uses the existing Docker middleware `cf-only@docker`.
-- The admin mobile build feature requires Docker socket access from `forja-web`.
 - Direct VPS IP access is not a supported client path.
 - Future `forja.p3ralta.dev` routing stays disabled until DNS exists.
 - Generate secrets with `openssl rand -base64 48`; never commit real `.env` files.
