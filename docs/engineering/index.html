@@ -175,7 +175,7 @@
       Um fluxo deliberado de <strong>artefatos</strong>, <strong>portões de qualidade</strong> e
       <strong>TDD estrito</strong>, onde nada entra em produção sem passar pelo gate local.</p>
     <div class="meta reveal">
-      <span class="chip"><span class="dot"></span>Monorepo pnpm · mobile · web · domain</span>
+      <span class="chip"><span class="dot"></span>Monorepo pnpm · web · domain</span>
       <span class="chip"><span class="dot"></span>TDD estrito</span>
       <span class="chip"><span class="dot"></span>Gate local autoritativo (sem CI)</span>
       <span class="chip"><span class="dot"></span>Loop superpowers · revisores acoplados via hooks</span>
@@ -356,10 +356,9 @@ $ pnpm verify
           e é entregue.</p>
         <div class="stage">
           <div class="stage-top"><span class="stage-n">08</span><span class="stage-title">DEPLOY</span><span class="stage-skill">finishing-a-development-branch</span></div>
-          <p><strong>Nunca</strong> se faz push em <code>main</code> sem confirmação — ele dispara a entrega. O <code>web</code> sobe como imagem Docker via compose; o app <strong>mobile</strong> usa EAS Workflows (preview no push em <code>main</code>, produção em tags <code>v*</code>).</p>
+          <p><strong>Nunca</strong> se faz push em <code>main</code> sem confirmação. O <code>web</code> sobe como imagem Docker via compose.</p>
           <div class="facts">
             <div class="fact"><div class="k">Web</div><div class="v">Imagem Docker · <code>deploy/forja/compose.yml</code></div></div>
-            <div class="fact"><div class="k">Mobile</div><div class="v">EAS Workflows — preview / produção</div></div>
             <div class="fact gate"><div class="k">Portão</div><div class="v">pre-push verde + confirmação de push</div></div>
           </div>
         </div>
@@ -369,7 +368,7 @@ $ pnpm verify
         <div class="sec-head"><span class="sec-num">★</span><h2>Princípios</h2></div>
         <p class="sec-intro">As regras transversais que valem em todas as etapas.</p>
         <div class="grid">
-          <div class="pr"><div class="ico">⌗</div><h4>Monorepo em camadas</h4><p>pnpm: <code>mobile</code> · <code>web</code> · <code>domain</code>. Fluxo <code>route → service → repository → db</code>, imposto por ESLint.</p></div>
+          <div class="pr"><div class="ico">⌗</div><h4>Monorepo em camadas</h4><p>pnpm: <code>web</code> · <code>domain</code>. Fluxo <code>route → service → repository → db</code>, imposto por ESLint.</p></div>
           <div class="pr"><div class="ico">RG</div><h4>TDD estrito</h4><p>Nenhum código de produção sem um teste falhando antes. Viu falhar, então implementa.</p></div>
           <div class="pr"><div class="ico">!</div><h4>Erros tipados</h4><p><code>AppError</code> + <code>toErrorResponse</code> mapeiam código e status HTTP. Nada de <em>catch-all</em> que vira 401.</p></div>
           <div class="pr"><div class="ico">⎇</div><h4>Commits convencionais</h4><p><code>feat</code>/<code>fix</code>/<code>refactor</code>… Nunca push em <code>main</code> sem confirmação explícita.</p></div>

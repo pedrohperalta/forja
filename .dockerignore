@@ -1,9 +1,6 @@
 .git
 **/.next
 **/node_modules
-**/.expo
-mobile/android
-mobile/ios
 packages/*/dist
 
 .env

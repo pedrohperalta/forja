@@ -1,13 +1,11 @@
 import { describe, expect, it } from 'vitest'
 
-import { MUSCLE_CATEGORIES as MOBILE_MUSCLE_CATEGORIES } from '../../../mobile/src/constants/categories'
 import {
   AdminImportExtractWorkoutResponseSchema,
   EquipmentPhotoListResponseSchema,
   EquipmentPhotoUploadResponseSchema,
   MobileAuthExchangeResponseSchema,
   MobileAuthRefreshResponseSchema,
-  MUSCLE_CATEGORIES,
   PlanSchema,
   SyncPullResponseSchema,
   SyncPushRequestSchema,
@@ -94,9 +92,7 @@ describe('domain schemas', () => {
   })
 
   it('validates a mobile workout session', () => {
-    expect(WorkoutSessionSchema.safeParse(validWorkoutSession).success).toBe(
-      true,
-    )
+    expect(WorkoutSessionSchema.safeParse(validWorkoutSession).success).toBe(true)
   })
 
   it('validates a sync pull response', () => {
@@ -162,10 +158,6 @@ describe('domain schemas', () => {
     expect(result.success).toBe(true)
   })
 
-  it('keeps domain categories aligned with the mobile app', () => {
-    expect(MUSCLE_CATEGORIES).toEqual(MOBILE_MUSCLE_CATEGORIES)
-  })
-
   it('validates mobile auth exchange responses', () => {
     const result = MobileAuthExchangeResponseSchema.safeParse({
       user: {
@@ -207,8 +199,7 @@ describe('domain schemas', () => {
         photos: [
           {
             exerciseId: validExercise.id,
-            downloadUrl:
-              '/api/mobile/v1/photos/equipment/exercise_chest_press/download',
+            downloadUrl: '/api/mobile/v1/photos/equipment/exercise_chest_press/download',
             updatedAt: NOW,
           },
         ],
